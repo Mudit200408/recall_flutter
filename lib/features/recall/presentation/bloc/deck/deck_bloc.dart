@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
@@ -12,6 +14,7 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
   DeckBloc({required this.repository}) : super(DeckInitial()) {
     on<LoadDecks>(_onLoadDecks);
     on<CreateDeck>(_onCreateDeck);
+    on<DeleteDeck>(_onDeleteDeck);
   }
 
   Future<void> _onLoadDecks(LoadDecks event, Emitter<DeckState> emit) async {
@@ -28,7 +31,7 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
     emit(DeckLoading());
     try {
       // Generate flash cards from AI using the title
-     final cards = await repository.generateFlashCards(event.title);
+     final cards = await repository.generateFlashCards(event.title,event.count);
 
       // Save the result to Firestore
       await repository.saveDeck(event.title, cards);
@@ -38,6 +41,16 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
 
     } catch (e) {
       emit(DeckError(message: "Failed to create deck: $e"));
+    }
+  }
+
+  FutureOr<void> _onDeleteDeck(DeleteDeck event, Emitter<DeckState> emit) async {
+    emit(DeckLoading());
+    try {
+      await repository.deleteDeck(event.deckId);
+      add(LoadDecks());
+    } catch (e) {
+      emit(DeckError(message: "Failed to delete deck: $e"));
     }
   }
 }

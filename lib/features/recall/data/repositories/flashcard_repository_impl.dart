@@ -13,8 +13,11 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
   final GenerativeModel aiModel;
   final String userId;
 
-  FlashcardRepositoryImpl({required this.firestore, required this.aiModel, required this.userId});
-
+  FlashcardRepositoryImpl({
+    required this.firestore,
+    required this.aiModel,
+    required this.userId,
+  });
 
   @override
   Future<List<Flashcard>> getDueCards(String deckId) async {
@@ -120,20 +123,15 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
   }
 
   @override
-  Future<List<Flashcard>> generateFlashCards(String sourceText) async {
+  Future<List<Flashcard>> generateFlashCards(String topic, int count) async {
     try {
       // 1: Construct the prompt
       final prompt = Content.text('''
-        You are a strict teacher. Analyze the following text and generate 5-10 flashcards.
-        Return ONLY valid JSON. Do not add markdown formatting (no ```json tags).
-        
-        Structure:
-        [
-          { "front": "Question here", "back": "Answer here" }
-        ]
-
-        Text to analyze:
-        $sourceText
+      You are a strict teacher. 
+      Generate exactly $count flashcards about "$topic".
+      
+      Return ONLY valid JSON.
+      Structure: [ { "front": "...", "back": "..." } ]
       ''');
 
       // 2: Call Gemini
@@ -164,5 +162,21 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
       debugPrint("AI Generation Error: $e");
       return [];
     }
+  }
+
+  @override
+  Future<void> deleteDeck(String deckId) async {
+    final batch = firestore.batch();
+    final deckRef = firestore.collection('users').doc(userId).collection('decks').doc(deckId);
+ 
+    // 1. Get all the cards in the deck
+    final cardSnapshot = await deckRef.collection('cards').get();
+
+    // 2. Delete all the cards
+    for (var doc in cardSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(deckRef);
+    await batch.commit();
   }
 }

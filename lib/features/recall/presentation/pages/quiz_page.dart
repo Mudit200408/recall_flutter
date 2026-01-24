@@ -14,7 +14,21 @@ class QuizPage extends StatelessWidget {
       create: (context) =>
           QuizBloc(repository: context.read())..add(StartQuiz(deckId: deckId)),
       child: Scaffold(
-        appBar: AppBar(title: Text(deckTitle)),
+        appBar: AppBar(
+          title: Hero(
+            tag: 'deck-title-$deckId', // Must match the tag from the list!
+            child: Material(
+              color: Colors.transparent,
+              child: Text(
+                deckTitle,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ),
         body: BlocBuilder<QuizBloc, QuizState>(
           builder: (context, state) {
             switch (state) {
@@ -94,4 +108,3 @@ class QuizPage extends StatelessWidget {
     );
   }
 }
-

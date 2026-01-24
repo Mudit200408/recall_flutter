@@ -7,7 +7,7 @@ import 'package:recall/features/auth/presentation/pages/login_page.dart';
 import 'package:recall/features/recall/data/repositories/flashcard_repository_impl.dart';
 import 'package:recall/features/recall/domain/repositories/flashcard_repository.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
-import 'package:recall/features/recall/presentation/pages/deck_page.dart';
+import 'package:recall/features/recall/presentation/pages/deck_list_page.dart';
 import 'package:recall/firebase_options.dart';
 import 'injection_container.dart' as di;
 
