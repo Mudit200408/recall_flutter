@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:recall/core/notifications/notification_service.dart';
 import 'package:recall/features/recall/domain/entities/flashcard.dart';
 import 'package:recall/features/recall/domain/repositories/flashcard_repository.dart';
 import 'package:recall/features/recall/domain/services/spaced_repetition_service.dart';
@@ -12,8 +13,9 @@ part 'quiz_state.dart';
 class QuizBloc extends Bloc<QuizEvent, QuizState> {
   final FlashcardRepository repository;
   final SpacedRepetitionService _algo = SpacedRepetitionService();
+  final NotificationService notificationService;
 
-  QuizBloc({required this.repository}) : super(QuizInitial()) {
+  QuizBloc({required this.repository, required this.notificationService}) : super(QuizInitial()) {
     on<StartQuiz>(_onStartQuiz);
     on<FlipCard>(_onFlipCard);
     on<RateCard>(_onRateCard);
@@ -68,6 +70,11 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         ..removeAt(0);
 
       if (nextList.isEmpty) {
+        // Calculate the next due date
+        final tomorrow = DateTime.now().add(const Duration(days: 1));
+        
+        // Schedule Notification
+        notificationService.scheduleStudyReminder(tomorrow);
         emit(QuizFinished());
       } else {
         emit(

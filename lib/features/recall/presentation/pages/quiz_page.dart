@@ -5,6 +5,7 @@ import 'package:recall/features/recall/presentation/pages/quiz_completed_page.da
 import 'package:recall/features/recall/presentation/widgets/flashcard_face.dart';
 import 'package:recall/features/recall/presentation/widgets/flip_card_widget.dart';
 import 'package:recall/features/recall/presentation/widgets/rating_button.dart';
+import 'package:recall/injection_container.dart' as di;
 
 class QuizPage extends StatelessWidget {
   final String deckId;
@@ -15,7 +16,8 @@ class QuizPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          QuizBloc(repository: context.read())..add(StartQuiz(deckId: deckId)),
+          QuizBloc(repository: context.read(), notificationService: di.sl())
+            ..add(StartQuiz(deckId: deckId)),
       child: Scaffold(
         appBar: AppBar(
           title: Hero(
