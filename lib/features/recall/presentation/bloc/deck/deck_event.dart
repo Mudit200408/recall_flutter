@@ -8,17 +8,23 @@ sealed class DeckEvent extends Equatable {
 }
 
 class LoadDecks extends DeckEvent {}
+
 class CreateDeck extends DeckEvent {
   final String title;
   final int count;
-  const CreateDeck({required this.title, required this.count});
-   @override
-   List<Object> get props => [title];
+  final bool useImages;
+  const CreateDeck({
+    required this.title,
+    required this.count,
+    required this.useImages,
+  });
+  @override
+  List<Object> get props => [title, count, useImages];
 }
 
 class DeleteDeck extends DeckEvent {
   final String deckId;
   const DeleteDeck({required this.deckId});
-   @override
-   List<Object> get props => [deckId];
+  @override
+  List<Object> get props => [deckId];
 }

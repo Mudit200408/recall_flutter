@@ -8,10 +8,18 @@ abstract class FlashcardRepository {
 
   // 2: AI Magic
   // Returns a list of generated cards from a text source
-  Future<List<Flashcard>> generateFlashCards(String topic, int count);
-
+  Future<List<Flashcard>> generateFlashCards(
+    String topic,
+    int count,
+    bool useImages,
+  );
+  Future<String> generateImageForCard(String prompt);
   // 3. Saving Data
-  Future<void> saveDeck(String deckTitle, List<Flashcard> cards);
+  Future<void> saveDeck(
+    String deckTitle,
+    List<Flashcard> cards, {
+    String? imageUrl,
+  });
   Future<void> updateCardProgress(Flashcard card);
 
   // 4. Delete Decks

@@ -31,20 +31,37 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
     emit(DeckLoading());
     try {
       // Generate flash cards from AI using the title
-     final cards = await repository.generateFlashCards(event.title,event.count);
+      final cards = await repository.generateFlashCards(
+        event.title,
+        event.count,
+        event.useImages,
+      );
+
+      String? deckImageUrl;
+      if (event.useImages) {
+        try {
+          deckImageUrl = await repository.generateImageForCard(
+            "Concept art representing: ${event.title}",
+          );
+        } catch (e) {
+          // Ignore deck image failure
+        }
+      }
 
       // Save the result to Firestore
-      await repository.saveDeck(event.title, cards);
+      await repository.saveDeck(event.title, cards, imageUrl: deckImageUrl);
 
       // Refresh the list to show the new deck
       add(LoadDecks());
-
     } catch (e) {
       emit(DeckError(message: "Failed to create deck: $e"));
     }
   }
 
-  FutureOr<void> _onDeleteDeck(DeleteDeck event, Emitter<DeckState> emit) async {
+  FutureOr<void> _onDeleteDeck(
+    DeleteDeck event,
+    Emitter<DeckState> emit,
+  ) async {
     emit(DeckLoading());
     try {
       await repository.deleteDeck(event.deckId);

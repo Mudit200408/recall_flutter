@@ -15,6 +15,8 @@ class DeckListPage extends StatefulWidget {
 }
 
 class _DeckListPageState extends State<DeckListPage> {
+  bool useImages = false;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +36,19 @@ class _DeckListPageState extends State<DeckListPage> {
             onPressed: () =>
                 context.read<AuthBloc>().add(AuthLogoutRequested()),
             icon: const Icon(Icons.logout),
+          ),
+          Row(
+            children: [
+              const Text("Images", style: TextStyle(fontSize: 14)),
+              Switch(
+                value: useImages,
+                onChanged: (value) {
+                  setState(() {
+                    useImages = value;
+                  });
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -135,7 +150,11 @@ class _DeckListPageState extends State<DeckListPage> {
               return CreateDeckDialog(
                 onSubmit: (topic, count) {
                   context.read<DeckBloc>().add(
-                    CreateDeck(title: topic, count: count),
+                    CreateDeck(
+                      title: topic,
+                      count: count,
+                      useImages: useImages,
+                    ),
                   );
                 },
               );

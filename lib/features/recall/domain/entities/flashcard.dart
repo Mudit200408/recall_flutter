@@ -5,10 +5,11 @@ class Flashcard extends Equatable {
   final String deckId;
   final String front;
   final String back;
-  final int interval;      // Days
-  final int repetitions;   // Consecutive correct answers
+  final int interval; // Days
+  final int repetitions; // Consecutive correct answers
   final double easeFactor; // Multiplier (Standard start is 2.5)
   final DateTime dueDate;
+  final String? imageUrl;
 
   const Flashcard({
     required this.id,
@@ -19,6 +20,7 @@ class Flashcard extends Equatable {
     required this.repetitions,
     required this.easeFactor,
     required this.dueDate,
+    this.imageUrl,
   });
 
   // Factory for creating a BRAND NEW card with default stats
@@ -27,6 +29,7 @@ class Flashcard extends Equatable {
     required String deckId,
     required String front,
     required String back,
+    String? imageUrl,
   }) {
     return Flashcard(
       id: id,
@@ -37,6 +40,7 @@ class Flashcard extends Equatable {
       repetitions: 0,
       easeFactor: 2.5, // Standard SM-2 starting value
       dueDate: DateTime.now(),
+      imageUrl: imageUrl,
     );
   }
 
@@ -50,6 +54,7 @@ class Flashcard extends Equatable {
     int? repetitions,
     double? easeFactor,
     DateTime? dueDate,
+    String? imageUrl,
   }) {
     return Flashcard(
       id: id ?? this.id,
@@ -60,18 +65,20 @@ class Flashcard extends Equatable {
       repetitions: repetitions ?? this.repetitions,
       easeFactor: easeFactor ?? this.easeFactor,
       dueDate: dueDate ?? this.dueDate,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 
   @override
   List<Object?> get props => [
-        id,
-        deckId,
-        front,
-        back,
-        interval,
-        repetitions,
-        easeFactor,
-        dueDate,
-      ];
+    id,
+    deckId,
+    front,
+    back,
+    interval,
+    repetitions,
+    easeFactor,
+    dueDate,
+    imageUrl,
+  ];
 }

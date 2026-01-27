@@ -1,4 +1,4 @@
-import 'package:firebase_ai/firebase_ai.dart';
+import 'package:http/http.dart' as http;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,22 +15,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await di.init();
-  final aiModel = FirebaseAI.googleAI().generativeModel(
-    model: 'gemini-2.5-flash',
-    generationConfig: GenerationConfig(responseMimeType: 'application/json'),
-  );
-
-  // final repo = FlashcardRepositoryImpl(
-  //   firestore: FirebaseFirestore.instance,
-  //   aiModel: model, userId: '',
-  // );
-
-  runApp(MainApp(aiModel: aiModel));
+  runApp(MainApp());
 }
 
 class MainApp extends StatelessWidget {
-  final GenerativeModel aiModel;
-  const MainApp({super.key, required this.aiModel});
+  const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,36 +33,36 @@ class MainApp extends StatelessWidget {
           create: (_) => di.sl<AuthBloc>()..add(AuthCheckRequested()),
         ),
       ],
-      child:  BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if(state is AuthAuthenticated) {
-             return RepositoryProvider<FlashcardRepository>(
-                  create: (context) => FlashcardRepositoryImpl(
-                    firestore: di.sl(),
-                    aiModel: aiModel,
-                    userId: state.user.uid,
-                  ),
-                  child: BlocProvider(
-                    create: (context) => DeckBloc(
-                      repository: context.read<FlashcardRepository>(),
-                    )..add(LoadDecks()),
-                    child: MaterialApp(
-                      theme: theme,
-                      home: const DeckListPage(),
-                    ),
-                  ),
-                );
-            }
-
-            return MaterialApp(
-              theme: theme,
-              home: state is AuthLoading ? const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              ) : const LoginPage(),
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is AuthAuthenticated) {
+            return RepositoryProvider<FlashcardRepository>(
+              create: (context) => FlashcardRepositoryImpl(
+                firestore: di.sl(),
+                openRouterApiKey:
+                    '',
+                userId: state.user.uid,
+                httpClient: http.Client(), // You might need to import http
+              ),
+              child: BlocProvider(
+                create: (context) =>
+                    DeckBloc(repository: context.read<FlashcardRepository>())
+                      ..add(LoadDecks()),
+                child: MaterialApp(theme: theme, home: const DeckListPage()),
+              ),
             );
-          },
-        ),
-    
+          }
+
+          return MaterialApp(
+            theme: theme,
+            home: state is AuthLoading
+                ? const Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  )
+                : const LoginPage(),
+          );
+        },
+      ),
     );
   }
 }

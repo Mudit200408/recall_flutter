@@ -11,6 +11,7 @@ class FlashcardModel extends Flashcard {
     required super.repetitions,
     required super.easeFactor,
     required super.dueDate,
+    super.imageUrl,
   });
 
   // 1: From JSON
@@ -27,6 +28,7 @@ class FlashcardModel extends Flashcard {
       dueDate: json['dueDate'] is Timestamp
           ? (json['dueDate'] as Timestamp).toDate()
           : DateTime.parse(json['dueDate'] as String),
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 
@@ -43,6 +45,7 @@ class FlashcardModel extends Flashcard {
       repetitions: (data['repetitions'] ?? 0) as int,
       easeFactor: (data['easeFactor'] ?? 2.5).toDouble(),
       dueDate: (data['dueDate'] as Timestamp).toDate(),
+      imageUrl: data['imageUrl'] as String?,
     );
   }
 
@@ -50,14 +53,16 @@ class FlashcardModel extends Flashcard {
   // Convert Dart Object into Map to send to Firestore
   Map<String, dynamic> toJson() {
     return {
-      'deckId' : deckId,
-      'front' : front,
-      'back' : back,
-      'interval' : interval,
-      'repetitions' : repetitions,
-      'easeFactor' : easeFactor,
-      'dueDate' : Timestamp.fromDate(dueDate), // Convert Dart datetime to firebase timestamp
+      'deckId': deckId,
+      'front': front,
+      'back': back,
+      'interval': interval,
+      'repetitions': repetitions,
+      'easeFactor': easeFactor,
+      'dueDate': Timestamp.fromDate(
+        dueDate,
+      ), // Convert Dart datetime to firebase timestamp
+      'imageUrl': imageUrl,
     };
   }
 }
-
