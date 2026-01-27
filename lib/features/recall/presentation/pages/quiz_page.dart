@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recall/features/recall/presentation/bloc/quiz/quiz_bloc.dart';
+import 'package:recall/features/recall/presentation/pages/quiz_completed_page.dart';
+import 'package:recall/features/recall/presentation/widgets/flashcard_face.dart';
+import 'package:recall/features/recall/presentation/widgets/flip_card_widget.dart';
 import 'package:recall/features/recall/presentation/widgets/rating_button.dart';
 
 class QuizPage extends StatelessWidget {
@@ -39,21 +42,7 @@ class QuizPage extends StatelessWidget {
                 return const Center(child: Text("No cards available"));
 
               case QuizFinished _:
-                return Scaffold(
-                  body: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 100),
-                      const SizedBox(height: 16),
-                      Text("Quiz Completed"),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text("Back to decks"),
-                      ),
-                    ],
-                  ),
-                );
+                return QuizCompletedPage();
               case QuizActive state:
                 return _buildQuizContent(context, state);
               case _:
@@ -73,15 +62,22 @@ class QuizPage extends StatelessWidget {
         Expanded(
           child: GestureDetector(
             onTap: () => context.read<QuizBloc>().add(FlipCard()),
-            child: Card(
-              elevation: 4,
-              child: Center(
-                child: Text(
-                  state.isFlipped
-                      ? state.currentCard.back
-                      : state.currentCard.front,
-                  style: const TextStyle(fontSize: 24),
-                  textAlign: TextAlign.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 24.0,
+              ),
+              child: FlipCardWidget(
+                isFlipped: state.isFlipped,
+                front: FlashcardFace(
+                  text: state.currentCard.front,
+                  color: Colors.deepPurple,
+                  label: "QUESTION",
+                ),
+                back: FlashcardFace(
+                  text: state.currentCard.back,
+                  color: Colors.indigo, // Slightly different color for back
+                  label: "ANSWER",
                 ),
               ),
             ),

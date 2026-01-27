@@ -19,6 +19,7 @@ dependencies:
   firebase_auth: ^6.1.4
   google_sign_in: ^7.2.0
   get_it: ^9.2.0
+  lottie: ^3.3.2
 
 dev_dependencies:
   flutter_test:
@@ -27,3 +28,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/lottie/
