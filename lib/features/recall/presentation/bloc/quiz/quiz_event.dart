@@ -8,11 +8,11 @@ sealed class QuizEvent extends Equatable {
 }
 
 class StartQuiz extends QuizEvent {
-  final String deckId;
-  const StartQuiz({required this.deckId});
+  final Deck deck;
+  const StartQuiz({required this.deck});
 }
 
-class FlipCard extends QuizEvent{}
+class FlipCard extends QuizEvent {}
 
 class RateCard extends QuizEvent {
   final int rating;

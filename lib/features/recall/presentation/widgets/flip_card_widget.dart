@@ -22,68 +22,31 @@ class _FlipCardWidgetState extends State<FlipCardWidget>
   late AnimationController _controller;
   late Animation<double> _animation;
 
-  // Cache the widgets to prevent content switching mid-flip
-  late Widget _currentFront;
-  late Widget _currentBack;
-
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600), // Smooth 0.6s flip
+      duration: const Duration(milliseconds: 600),
     );
     _animation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOutBack),
     );
 
-    _currentFront = widget.front;
-    _currentBack = widget.back;
-
-    // Listen for animation completion to update content after a "flip back"
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.dismissed) {
-        setState(() {
-          _currentFront = widget.front;
-          _currentBack = widget.back;
-        });
-      }
-    });
-
-    // If starting flipped, set controller to end
     if (widget.isFlipped) {
       _controller.value = 1.0;
     }
   }
 
   @override
-  void didUpdateWidget(covariant FlipCardWidget oldWidget) {
+  void didUpdateWidget(FlipCardWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     if (widget.isFlipped != oldWidget.isFlipped) {
       if (widget.isFlipped) {
-        // Front -> Back
-        // Update content immediately so we see the new back
-        setState(() {
-          _currentFront = widget.front;
-          _currentBack = widget.back;
-        });
         _controller.forward();
       } else {
-        // Back -> Front (The Glitchy Case)
-        // Keep the OLD back answer visible while we flip back to front
-        setState(() {
-          _currentBack = oldWidget.back; // KEEP OLD ANSWER
-          _currentFront = widget.front; // NEW QUESTION (will be seen at end)
-        });
         _controller.reverse();
       }
-    } else {
-      // Normal update (no flip change), just update content
-      setState(() {
-        _currentFront = widget.front;
-        _currentBack = widget.back;
-      });
     }
   }
 
@@ -98,24 +61,21 @@ class _FlipCardWidgetState extends State<FlipCardWidget>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        // Calculate rotation (0 to 180 degrees)
         final angle = _animation.value * pi;
-
-        // Is the front visible? (0 to 90 degrees)
         final isFrontVisible = angle < pi / 2;
+        final transform = Matrix4.identity()
+          ..setEntry(3, 2, 0.001)
+          ..rotateY(angle);
 
         return Transform(
-          transform: Matrix4.identity()
-            ..setEntry(3, 2, 0.001) // Add perspective (3D depth)
-            ..rotateY(angle), // Rotate around Y axis
+          transform: transform,
           alignment: Alignment.center,
           child: isFrontVisible
-              ? _currentFront
+              ? widget.front
               : Transform(
-                  // Fix mirrored text on the back
                   transform: Matrix4.identity()..rotateY(pi),
                   alignment: Alignment.center,
-                  child: _currentBack,
+                  child: widget.back,
                 ),
         );
       },

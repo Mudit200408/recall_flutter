@@ -8,6 +8,7 @@ import 'package:recall/features/recall/data/repositories/flashcard_repository_im
 import 'package:recall/features/recall/domain/repositories/flashcard_repository.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/pages/deck_list_page.dart';
+import 'package:recall/features/recall/presentation/pages/quiz_completed_page.dart';
 import 'package:recall/firebase_options.dart';
 import 'injection_container.dart' as di;
 
@@ -39,10 +40,10 @@ class MainApp extends StatelessWidget {
             return RepositoryProvider<FlashcardRepository>(
               create: (context) => FlashcardRepositoryImpl(
                 firestore: di.sl(),
-                openRouterApiKey:
-                    '',
+                storage: di.sl(),
                 userId: state.user.uid,
-                httpClient: http.Client(), // You might need to import http
+                httpClient: http.Client(),
+                imageService: di.sl(),
               ),
               child: BlocProvider(
                 create: (context) =>

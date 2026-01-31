@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CreateDeckDialog extends StatefulWidget {
-  final Function(String topic, int count) onSubmit;
+  final Function(String topic, int count, bool useImages) onSubmit;
   const CreateDeckDialog({super.key, required this.onSubmit});
 
   @override
@@ -11,6 +11,8 @@ class CreateDeckDialog extends StatefulWidget {
 class _CreateDeckDialogState extends State<CreateDeckDialog> {
   String topic = "";
   int count = 5;
+  bool useImages = true;
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -53,6 +55,18 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               });
             },
           ),
+
+          const SizedBox(height: 8),
+          SwitchListTile(
+            title: const Text("Generate AI Images"),
+            subtitle: const Text(
+              "Adds visual context to cards",
+              style: TextStyle(fontSize: 12),
+            ),
+            value: useImages,
+            onChanged: (value) => setState(() => useImages = value),
+            contentPadding: EdgeInsets.zero,
+          ),
         ],
       ),
       actions: [
@@ -63,7 +77,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
         FilledButton(
           onPressed: () {
             if (topic.isNotEmpty) {
-              widget.onSubmit(topic, count.round());
+              widget.onSubmit(topic, count.round(), useImages);
               Navigator.pop(context);
             }
           },

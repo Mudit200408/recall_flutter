@@ -23,8 +23,8 @@ dependencies:
   flutter_local_notifications: ^20.0.0
   timezone: ^0.10.1
   firebase_storage: ^13.0.6
-  http: ^1.2.0
-  openrouter_api: ^1.0.2
+  http: ^1.6.0
+  flutter_svg: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -35,3 +35,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/lottie/
+    - assets/svg/
+    - assets/png/

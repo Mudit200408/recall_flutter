@@ -4,6 +4,7 @@ import 'package:recall/core/notifications/notification_service.dart';
 import 'package:recall/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/widgets/create_deck_dialog.dart';
+import 'package:recall/features/recall/presentation/widgets/deck_card.dart';
 import 'package:recall/features/recall/presentation/pages/quiz_page.dart';
 import 'package:recall/injection_container.dart';
 
@@ -15,8 +16,6 @@ class DeckListPage extends StatefulWidget {
 }
 
 class _DeckListPageState extends State<DeckListPage> {
-  bool useImages = false;
-
   @override
   void initState() {
     super.initState();
@@ -37,19 +36,6 @@ class _DeckListPageState extends State<DeckListPage> {
                 context.read<AuthBloc>().add(AuthLogoutRequested()),
             icon: const Icon(Icons.logout),
           ),
-          Row(
-            children: [
-              const Text("Images", style: TextStyle(fontSize: 14)),
-              Switch(
-                value: useImages,
-                onChanged: (value) {
-                  setState(() {
-                    useImages = value;
-                  });
-                },
-              ),
-            ],
-          ),
         ],
       ),
       body: BlocBuilder<DeckBloc, DeckState>(
@@ -63,20 +49,25 @@ class _DeckListPageState extends State<DeckListPage> {
             return ListView.builder(
               itemCount: state.decks.length,
               itemBuilder: (context, index) {
-                return Dismissible(
-                  key: Key(state.decks[index].id),
-                  direction: DismissDirection.endToStart,
-                  // 1. Visual Feedback (The Red Background)
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-
-                  // 2. The Decision (Returns true/false)
-                  confirmDismiss: (direction) async {
-                    return await showDialog(
+                return DeckCard(
+                  deck: state.decks[index],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => QuizPage(deck: state.decks[index]),
+                      ),
+                    );
+                  },
+                  onEdit: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Edit feature coming soon!"),
+                      ),
+                    );
+                  },
+                  onDelete: () {
+                    showDialog(
                       context: context,
                       builder: (context) {
                         return AlertDialog(
@@ -84,13 +75,16 @@ class _DeckListPageState extends State<DeckListPage> {
                           content: const Text("This action cannot be undone."),
                           actions: [
                             TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(context, false), // Return False
+                              onPressed: () => Navigator.pop(context),
                               child: const Text("Cancel"),
                             ),
                             TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(context, true), // Return True
+                              onPressed: () {
+                                context.read<DeckBloc>().add(
+                                  DeleteDeck(deckId: state.decks[index].id),
+                                );
+                                Navigator.pop(context);
+                              },
                               child: const Text(
                                 "Delete",
                                 style: TextStyle(color: Colors.red),
@@ -101,38 +95,6 @@ class _DeckListPageState extends State<DeckListPage> {
                       },
                     );
                   },
-                  onDismissed: (direction) {
-                    context.read<DeckBloc>().add(
-                      DeleteDeck(deckId: state.decks[index].id),
-                    );
-                  },
-                  child: ListTile(
-                    title: Hero(
-                      tag: 'deck-title-${state.decks[index].id}', // Unique Tag
-                      child: Material(
-                        color: Colors.transparent,
-                        child: Text(
-                          state.decks[index].title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    subtitle: Text("${state.decks[index].cardCount} cards"),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => QuizPage(
-                            deckId: state.decks[index].id,
-                            deckTitle: state.decks[index].title,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
                 );
               },
             );
@@ -148,7 +110,7 @@ class _DeckListPageState extends State<DeckListPage> {
             context: context,
             builder: (context) {
               return CreateDeckDialog(
-                onSubmit: (topic, count) {
+                onSubmit: (topic, count, useImages) {
                   context.read<DeckBloc>().add(
                     CreateDeck(
                       title: topic,

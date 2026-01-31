@@ -38,15 +38,6 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
       );
 
       String? deckImageUrl;
-      if (event.useImages) {
-        try {
-          deckImageUrl = await repository.generateImageForCard(
-            "Concept art representing: ${event.title}",
-          );
-        } catch (e) {
-          // Ignore deck image failure
-        }
-      }
 
       // Save the result to Firestore
       await repository.saveDeck(event.title, cards, imageUrl: deckImageUrl);

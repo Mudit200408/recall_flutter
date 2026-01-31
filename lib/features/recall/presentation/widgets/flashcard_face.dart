@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class FlashcardFace extends StatelessWidget {
@@ -18,47 +17,48 @@ class FlashcardFace extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          )
-        ],
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            color.withOpacity(0.9),
-            color,
-          ],
-        ),
+        color: const Color(0xFFF0F0F0), // Off-white/Paper color
+        border: Border.all(color: Colors.black, width: 4),
+        boxShadow: const [BoxShadow(offset: Offset(6, 6))],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
         children: [
-          Text(
-            label.toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-              letterSpacing: 2,
-              fontWeight: FontWeight.bold,
+          // Texture Overlay
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.6,
+              child: Image.asset(
+                'assets/png/brushed-alum-dark.png',
+                repeat: ImageRepeat.repeat,
+              ),
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            text,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w600,
-              height: 1.3,
+          // Your Content
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: Center(
+              child: Column(
+                children: [
+                  Text(
+                    label.toUpperCase(),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 24,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 30,
+                    ),
+                  ),
+                  const Spacer(),
+                ],
+              ),
             ),
           ),
         ],

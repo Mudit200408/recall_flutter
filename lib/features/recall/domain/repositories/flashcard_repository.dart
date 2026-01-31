@@ -13,7 +13,6 @@ abstract class FlashcardRepository {
     int count,
     bool useImages,
   );
-  Future<String> generateImageForCard(String prompt);
   // 3. Saving Data
   Future<void> saveDeck(
     String deckTitle,

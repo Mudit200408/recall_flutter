@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:recall/core/notifications/notification_service.dart';
+import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:recall/features/recall/domain/entities/flashcard.dart';
 import 'package:recall/features/recall/domain/repositories/flashcard_repository.dart';
 import 'package:recall/features/recall/domain/services/spaced_repetition_service.dart';
@@ -15,7 +16,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   final SpacedRepetitionService _algo = SpacedRepetitionService();
   final NotificationService notificationService;
 
-  QuizBloc({required this.repository, required this.notificationService}) : super(QuizInitial()) {
+  QuizBloc({required this.repository, required this.notificationService})
+    : super(QuizInitial()) {
     on<StartQuiz>(_onStartQuiz);
     on<FlipCard>(_onFlipCard);
     on<RateCard>(_onRateCard);
@@ -24,7 +26,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   FutureOr<void> _onStartQuiz(StartQuiz event, Emitter<QuizState> emit) async {
     emit(QuizLoading());
     try {
-      final cards = await repository.getDueCards(event.deckId);
+      final cards = await repository.getDueCards(event.deck.id);
       if (cards.isEmpty) {
         emit(QuizEmpty());
       } else {
@@ -33,6 +35,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             currentCard: cards.first,
             remainingCards: cards,
             isFlipped: false,
+            totalCards: cards.length,
+            deck: event.deck,
           ),
         );
       }
@@ -49,6 +53,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           remainingCards: currentState.remainingCards,
           currentCard: currentState.currentCard,
           isFlipped: true,
+          totalCards: currentState.totalCards,
+          deck: currentState.deck,
         ),
       );
     }
@@ -72,16 +78,19 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       if (nextList.isEmpty) {
         // Calculate the next due date
         final tomorrow = DateTime.now().add(const Duration(days: 1));
-        
+
+        // Schedule Notification
         // Schedule Notification
         notificationService.scheduleStudyReminder(tomorrow);
-        emit(QuizFinished());
+        emit(QuizFinished(deck: currentState.deck));
       } else {
         emit(
           QuizActive(
             remainingCards: nextList,
             currentCard: nextList.first,
             isFlipped: false,
+            totalCards: currentState.totalCards,
+            deck: currentState.deck,
           ),
         );
       }
