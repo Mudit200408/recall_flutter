@@ -18,9 +18,25 @@ abstract class FlashcardRepository {
     String deckTitle,
     List<Flashcard> cards, {
     String? imageUrl,
+    bool useImages = false,
+    String topic = '',
+    int scheduledDays = 0,
+    int dailyCardCount = 0,
+    int easyCount = 0,
+    int hardCount = 0,
+    int failCount = 0,
   });
   Future<void> updateCardProgress(Flashcard card);
 
   // 4. Delete Decks
   Future<void> deleteDeck(String deckId);
+
+  Future<void> generateMoreCards(Deck deck);
+
+  Future<void> updateDeckStats(
+    String deckId, {
+    int easyIncrement = 0,
+    int hardIncrement = 0,
+    int failIncrement = 0,
+  });
 }

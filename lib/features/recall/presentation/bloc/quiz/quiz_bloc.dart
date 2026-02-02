@@ -28,7 +28,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     try {
       final cards = await repository.getDueCards(event.deck.id);
       if (cards.isEmpty) {
-        emit(QuizEmpty());
+        emit(QuizEmpty(deck: event.deck));
       } else {
         emit(
           QuizActive(
@@ -55,6 +55,9 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           isFlipped: true,
           totalCards: currentState.totalCards,
           deck: currentState.deck,
+          easyCount: currentState.easyCount,
+          hardCount: currentState.hardCount,
+          failCount: currentState.failCount,
         ),
       );
     }
@@ -69,7 +72,35 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       final updateCard = _algo.calculateNextReview(currentCard, event.rating);
 
       // 2: Save to DB
-      repository.updateCardProgress(updateCard);
+      await repository.updateCardProgress(updateCard);
+
+      // 2.5: Update Stats
+      int easy = currentState.easyCount;
+      int hard = currentState.hardCount;
+      int fail = currentState.failCount;
+
+      int easyIncrement = 0;
+      int hardIncrement = 0;
+      int failIncrement = 0;
+
+      if (event.rating == 5) {
+        easy++;
+        easyIncrement = 1;
+      } else if (event.rating == 3) {
+        hard++;
+        hardIncrement = 1;
+      } else if (event.rating == 1) {
+        fail++;
+        failIncrement = 1;
+      }
+
+      // Update Deck Stats in Repo
+      await repository.updateDeckStats(
+        currentState.deck.id,
+        easyIncrement: easyIncrement,
+        hardIncrement: hardIncrement,
+        failIncrement: failIncrement,
+      );
 
       // 3: Calculate the next state
       final nextList = List<Flashcard>.from(currentState.remainingCards)
@@ -82,7 +113,14 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         // Schedule Notification
         // Schedule Notification
         notificationService.scheduleStudyReminder(tomorrow);
-        emit(QuizFinished(deck: currentState.deck));
+        emit(
+          QuizFinished(
+            deck: currentState.deck,
+            easyCount: easy,
+            hardCount: hard,
+            failCount: fail,
+          ),
+        );
       } else {
         emit(
           QuizActive(
@@ -91,6 +129,9 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             isFlipped: false,
             totalCards: currentState.totalCards,
             deck: currentState.deck,
+            easyCount: easy,
+            hardCount: hard,
+            failCount: fail,
           ),
         );
       }

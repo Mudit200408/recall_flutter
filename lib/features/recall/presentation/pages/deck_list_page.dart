@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recall/core/notifications/notification_service.dart';
 import 'package:recall/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
+import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
 import 'package:recall/features/recall/presentation/widgets/create_deck_dialog.dart';
 import 'package:recall/features/recall/presentation/widgets/deck_card.dart';
+import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 import 'package:recall/features/recall/presentation/pages/quiz_page.dart';
+import 'package:recall/features/recall/presentation/pages/search_page.dart';
 import 'package:recall/injection_container.dart';
 
 class DeckListPage extends StatefulWidget {
@@ -29,101 +32,245 @@ class _DeckListPageState extends State<DeckListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Decks"),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         actions: [
-          IconButton(
-            onPressed: () =>
-                context.read<AuthBloc>().add(AuthLogoutRequested()),
-            icon: const Icon(Icons.logout),
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: SquareButton(
+              icon: Icons.search,
+              color: Colors.black,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SearchPage()),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: SquareButton(
+              icon: Icons.logout,
+              color: const Color.fromARGB(255, 255, 17, 0),
+              onTap: () => context.read<AuthBloc>().add(AuthLogoutRequested()),
+            ),
           ),
         ],
       ),
-      body: BlocBuilder<DeckBloc, DeckState>(
-        builder: (context, state) {
-          if (state is DeckLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is DeckLoaded) {
-            if (state.decks.isEmpty) {
-              return const Center(child: Text("No decks yet. Create one!"));
-            }
-            return ListView.builder(
-              itemCount: state.decks.length,
-              itemBuilder: (context, index) {
-                return DeckCard(
-                  deck: state.decks[index],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => QuizPage(deck: state.decks[index]),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 12.0,
+                horizontal: 24,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "RECALL",
+                    style: TextStyle(
+                      fontSize: 52,
+                      letterSpacing: 4,
+                      color: Colors.black,
+                      height: 1.0,
+                      fontFamily: "ArchivoBlack",
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      "MASTER YOUR MIND",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                        color: Colors.white,
                       ),
-                    );
-                  },
-                  onEdit: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Edit feature coming soon!"),
-                      ),
-                    );
-                  },
-                  onDelete: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text("Delete Deck"),
-                          content: const Text("This action cannot be undone."),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("Cancel"),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                context.read<DeckBloc>().add(
-                                  DeleteDeck(deckId: state.decks[index].id),
-                                );
-                                Navigator.pop(context);
-                              },
-                              child: const Text(
-                                "Delete",
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          BlocBuilder<DeckBloc, DeckState>(
+            builder: (context, state) {
+              if (state is DeckLoading) {
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              } else if (state is DeckLoaded) {
+                if (state.decks.isEmpty) {
+                  return SliverFillRemaining(child: _buildEmptyView());
+                }
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    return DeckCard(
+                      deck: state.decks[index],
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => QuizPage(deck: state.decks[index]),
+                          ),
                         );
+                        if (context.mounted) {
+                          context.read<DeckBloc>().add(LoadDecks());
+                        }
+                      },
+
+                      onDelete: () {
+                        _buildDeleteDialog(context, state, index);
                       },
                     );
-                  },
+                  }, childCount: state.decks.length),
                 );
-              },
-            );
-          } else if (state is DeckError) {
-            return Center(child: Text(state.message));
-          }
-          return const Center(child: Text("Welcome to Recall"));
-        },
+              } else if (state is DeckError) {
+                return SliverFillRemaining(
+                  child: Center(child: Text(state.message)),
+                );
+              }
+              return const SliverFillRemaining(
+                child: Center(child: Text("Welcome to Recall")),
+              );
+            },
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 30)),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return CreateDeckDialog(
-                onSubmit: (topic, count, useImages) {
-                  context.read<DeckBloc>().add(
-                    CreateDeck(
-                      title: topic,
-                      count: count,
-                      useImages: useImages,
-                    ),
+
+      floatingActionButton: Row(
+        children: [
+          const Spacer(),
+          AnimatedButton(
+            text: "NEW DECK",
+            iconSide: "left",
+            icon: Icons.add,
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return CreateDeckDialog(
+                    onSubmit: (topic, count, useImages, duration) {
+                      context.read<DeckBloc>().add(
+                        CreateDeck(
+                          title: topic,
+                          count: count,
+                          useImages: useImages,
+                          duration: duration,
+                        ),
+                      );
+                    },
                   );
                 },
               );
             },
-          );
-        },
-        child: const Icon(Icons.add),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyView() => Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset('assets/images/question-mark.png', height: 300),
+        const Text(
+          "NULL_DATA",
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+            fontFamily: 'ArchivoBlack',
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Future<dynamic> _buildDeleteDialog(
+    BuildContext context,
+    DeckLoaded state,
+    int index,
+  ) {
+    return showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        child: Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black, width: 4),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black,
+                offset: Offset(4, 4),
+                blurRadius: 0,
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: .start,
+            spacing: 8,
+            children: [
+              const Text(
+                "DELETE DECK?",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontVariations: [FontVariation.weight(900)],
+                ),
+              ),
+              const Text(
+                "WARNING: This action cannot be undone.",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontVariations: [FontVariation.weight(900)],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: AnimatedButton(
+                      text: "CANCEL",
+                      color: Colors.white,
+                      onTap: () => Navigator.pop(context),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AnimatedButton(
+                      text: "DELETE",
+                      textColor: Colors.white,
+                      color: Colors.red,
+                      onTap: () {
+                        context.read<DeckBloc>().add(
+                          DeleteDeck(deckId: state.decks[index].id),
+                        );
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

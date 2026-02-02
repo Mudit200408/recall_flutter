@@ -8,7 +8,6 @@ import 'package:recall/features/recall/data/repositories/flashcard_repository_im
 import 'package:recall/features/recall/domain/repositories/flashcard_repository.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/pages/deck_list_page.dart';
-import 'package:recall/features/recall/presentation/pages/quiz_completed_page.dart';
 import 'package:recall/firebase_options.dart';
 import 'injection_container.dart' as di;
 
@@ -25,7 +24,9 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      scaffoldBackgroundColor: Colors.white,
+      fontFamily: 'SpaceGrotesk',
+      // colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
       useMaterial3: true,
     );
     return MultiBlocProvider(

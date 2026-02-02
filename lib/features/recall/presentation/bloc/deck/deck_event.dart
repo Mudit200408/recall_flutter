@@ -13,13 +13,15 @@ class CreateDeck extends DeckEvent {
   final String title;
   final int count;
   final bool useImages;
+  final int duration;
   const CreateDeck({
     required this.title,
     required this.count,
     required this.useImages,
+    this.duration = 0,
   });
   @override
-  List<Object> get props => [title, count, useImages];
+  List<Object> get props => [title, count, useImages, duration];
 }
 
 class DeleteDeck extends DeckEvent {

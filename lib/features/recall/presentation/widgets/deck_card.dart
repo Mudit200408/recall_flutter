@@ -1,18 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
+import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 
 class DeckCard extends StatelessWidget {
   final Deck deck;
   final VoidCallback onTap;
-  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const DeckCard({
     super.key,
     required this.deck,
     required this.onTap,
-    required this.onEdit,
     required this.onDelete,
   });
 
@@ -25,12 +24,8 @@ class DeckCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: Colors.black, width: 3),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black,
-              offset: const Offset(4, 4),
-              blurRadius: 0,
-            ),
+          boxShadow: const [
+            BoxShadow(color: Colors.black, offset: Offset(4, 4), blurRadius: 0),
           ],
         ),
         child: Column(
@@ -38,7 +33,7 @@ class DeckCard extends StatelessWidget {
           children: [
             // Header Image
             SizedBox(
-              height: 250,
+              height: 200,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -97,8 +92,7 @@ class DeckCard extends StatelessWidget {
                     deck.title.toUpperCase(),
                     style: const TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
+                      fontVariations: [FontVariation.weight(900)],
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -109,12 +103,24 @@ class DeckCard extends StatelessWidget {
                     color: Colors.grey[300],
                   ),
                   const SizedBox(height: 8),
-
+                  _builProgressBar(
+                    "PROGRESS",
+                    "${deck.daysGenerated}/${deck.scheduledDays} DAYS",
+                    progress:
+                        deck.daysGenerated /
+                        (deck.scheduledDays == 0 ? 1 : deck.scheduledDays),
+                  ),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _buildStat("SIZE", "${deck.cardCount} CARDS"),
-                      _deleteButton(),
+
+                      SquareButton(
+                        icon: Icons.delete_outline,
+                        color: Colors.red,
+                        onTap: onDelete,
+                      ),
                     ],
                   ),
                 ],
@@ -126,27 +132,12 @@ class DeckCard extends StatelessWidget {
     );
   }
 
-  Container _deleteButton() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.red, width: 2),
-        boxShadow: [
-          BoxShadow(blurRadius: 0, offset: Offset(4, 4), color: Colors.red),
-        ],
-      ),
-      child: IconButton(
-        onPressed: onDelete,
-        icon: const Icon(Icons.delete_outline),
-        color: Colors.red,
-        padding: const EdgeInsets.all(10),
-        constraints: const BoxConstraints(),
-        style: IconButton.styleFrom(shape: const RoundedRectangleBorder()),
-      ),
-    );
-  }
-
-  Widget _buildStat(String label, String value) {
+  Widget _buildStat(
+    String label,
+    String value, {
+    bool showBar = false,
+    double progress = 0.0,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -161,6 +152,66 @@ class DeckCard extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+        if (showBar) ...[
+          const SizedBox(height: 4),
+          Container(
+            width: 80,
+            height: 6,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black, width: 1),
+            ),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.white,
+              color: const Color(0xFFCCFF00), // Neo-brutalist green
+              minHeight: 6,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _builProgressBar(String label, String value, {double progress = 0.0}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black, width: 2),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.white,
+                color: const Color(0xFFCCFF00), // Neo-brutalist green
+                minHeight: 21,
+              ),
+              Text(
+                "${deck.daysGenerated}/${deck.scheduledDays} DAYS",
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontVariations: [FontVariation.weight(900)],
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

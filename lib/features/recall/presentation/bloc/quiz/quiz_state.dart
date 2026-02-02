@@ -17,6 +17,9 @@ class QuizActive extends QuizState {
   final bool isFlipped;
   final int totalCards;
   final Deck deck;
+  final int easyCount;
+  final int hardCount;
+  final int failCount;
 
   const QuizActive({
     required this.remainingCards,
@@ -24,6 +27,9 @@ class QuizActive extends QuizState {
     required this.isFlipped,
     required this.totalCards,
     required this.deck,
+    this.easyCount = 0,
+    this.hardCount = 0,
+    this.failCount = 0,
   });
 
   @override
@@ -33,17 +39,35 @@ class QuizActive extends QuizState {
     isFlipped,
     totalCards,
     deck,
+    easyCount,
+    hardCount,
+    failCount,
   ];
 }
 
-class QuizEmpty extends QuizState {}
-
-class QuizFinished extends QuizState {
+class QuizEmpty extends QuizState {
   final Deck deck;
-  const QuizFinished({required this.deck});
+  const QuizEmpty({required this.deck});
 
   @override
   List<Object> get props => [deck];
+}
+
+class QuizFinished extends QuizState {
+  final Deck deck;
+  final int easyCount;
+  final int hardCount;
+  final int failCount;
+
+  const QuizFinished({
+    required this.deck,
+    required this.easyCount,
+    required this.hardCount,
+    required this.failCount,
+  });
+
+  @override
+  List<Object> get props => [deck, easyCount, hardCount, failCount];
 }
 
 class QuizError extends QuizState {

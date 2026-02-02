@@ -36,4 +36,13 @@ flutter:
   assets:
     - assets/lottie/
     - assets/svg/
-    - assets/png/
+    - assets/images/
+
+  fonts:
+    - family: SpaceGrotesk
+      fonts:
+        - asset: assets/fonts/SpaceGrotesk.ttf
+      
+    - family: ArchivoBlack
+      fonts:
+        - asset: assets/fonts/ArchivoBlack.ttf

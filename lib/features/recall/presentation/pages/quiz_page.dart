@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recall/features/recall/presentation/bloc/quiz/quiz_bloc.dart';
 import 'package:recall/features/recall/presentation/pages/quiz_completed_page.dart';
+import 'package:recall/features/recall/presentation/pages/quiz_empty_page.dart';
+import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
 import 'package:recall/features/recall/presentation/widgets/flashcard_face.dart';
 import 'package:recall/features/recall/presentation/widgets/flip_card_widget.dart';
 import 'package:recall/features/recall/presentation/widgets/rating_button.dart';
 import 'package:recall/features/recall/domain/entities/flashcard.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
+import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 import 'package:recall/injection_container.dart' as di;
 
 class QuizPage extends StatelessWidget {
@@ -20,44 +23,44 @@ class QuizPage extends StatelessWidget {
           QuizBloc(repository: context.read(), notificationService: di.sl())
             ..add(StartQuiz(deck: deck)),
       child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          leading: Container(
-            margin: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.black, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black,
-                  offset: const Offset(2, 2),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
+        // appBar: AppBar(
+        //   automaticallyImplyLeading: false,
+        // leading: Container(
+        //   margin: EdgeInsets.all(12),
+        //   decoration: BoxDecoration(
+        //     color: Colors.white,
+        //     border: Border.all(color: Colors.black, width: 3),
+        //     boxShadow: [
+        //       BoxShadow(
+        //         color: Colors.black,
+        //         offset: const Offset(2, 2),
+        //         blurRadius: 0,
+        //       ),
+        //     ],
+        //   ),
 
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context),
-              padding: EdgeInsets.zero,
-              splashColor: Colors.transparent,
-            ),
-          ),
-          title: Hero(
-            tag: 'deck-title-${deck.id}', // Must match the tag from the list!
-            child: Material(
-              color: Colors.transparent,
-              child: Text(
-                deck.title.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.3,
-                ),
-              ),
-            ),
-          ),
-        ),
+        //   child: IconButton(
+        //     icon: const Icon(Icons.arrow_back),
+        //     onPressed: () => Navigator.pop(context),
+        //     padding: EdgeInsets.zero,
+        //     splashColor: Colors.transparent,
+        //   ),
+        // ),
+        //   title: Hero(
+        //     tag: 'deck-title-${deck.id}', // Must match the tag from the list!
+        //     child: Material(
+        //       color: Colors.transparent,
+        //       child: Text(
+        //         deck.title.toUpperCase(),
+        //         style: const TextStyle(
+        //           fontSize: 20,
+        //           fontVariations: [FontVariation.weight(900)],
+        //           letterSpacing: 1.3,
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ),
         body: SafeArea(
           child: BlocBuilder<QuizBloc, QuizState>(
             builder: (context, state) {
@@ -65,11 +68,16 @@ class QuizPage extends StatelessWidget {
                 case QuizLoading _:
                   return const Center(child: CircularProgressIndicator());
 
-                case QuizEmpty _:
-                  return const Center(child: Text("No cards available"));
+                case QuizEmpty state:
+                  return QuizEmptyPage(deck: state.deck);
 
-                case QuizFinished _:
-                  return QuizCompletedPage(deck: state.deck);
+                case QuizFinished state:
+                  return QuizCompletedPage(
+                    deck: state.deck,
+                    easyCount: state.easyCount,
+                    hardCount: state.hardCount,
+                    failCount: state.failCount,
+                  );
                 case QuizActive state:
                   return QuizContent(state: state);
                 case _:
@@ -164,42 +172,59 @@ class _QuizContentState extends State<QuizContent>
       crossAxisAlignment: .stretch,
       spacing: 20,
       children: [
+        Row(
+          children: [
+            const SizedBox(width: 16),
+            SquareButton(
+              icon: Icons.close,
+              color: Colors.red,
+              onTap: () => Navigator.pop(context),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              widget.state.deck.title,
+              style: const TextStyle(
+                fontSize: 32,
+                fontVariations: [FontVariation.weight(900)],
+                letterSpacing: 1.3,
+              ),
+            ),
+          ],
+        ),
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16),
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.zero,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 3),
-                  ),
-                  child: Stack(
-                    alignment: AlignmentGeometry.center,
-                    children: [
-                      LinearProgressIndicator(
-                        value:
-                            (widget.state.totalCards -
-                                widget.state.remainingCards.length +
-                                1) /
-                            widget.state.totalCards,
-                        minHeight: 28,
-                        backgroundColor: Colors.grey[200],
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xff9de749),
-                        ),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black, width: 3),
+                ),
+                child: Stack(
+                  alignment: AlignmentGeometry.center,
+                  children: [
+                    LinearProgressIndicator(
+                      value:
+                          (widget.state.totalCards -
+                              widget.state.remainingCards.length +
+                              1) /
+                          widget.state.totalCards,
+                      minHeight: 28,
+                      backgroundColor: Colors.grey[200],
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Color(0xFFCCFF00),
                       ),
-                      Text(
-                        "${widget.state.totalCards - widget.state.remainingCards.length + 1} / ${widget.state.totalCards}",
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                    ),
+                    Text(
+                      "${widget.state.totalCards - widget.state.remainingCards.length + 1} / ${widget.state.totalCards}",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontVariations: [FontVariation.weight(900)],
+                        color: Colors.black,
+                        fontStyle: FontStyle.italic,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -258,43 +283,15 @@ class _QuizContentState extends State<QuizContent>
         ),
 
         if (!widget.state.isFlipped)
-          GestureDetector(
-            onTap: () {
-              context.read<QuizBloc>().add(FlipCard());
-            },
-            child: Container(
-              margin: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                bottom: 10,
-              ),
-              padding: const EdgeInsets.all(26),
-              decoration: BoxDecoration(
-                color: const Color(0xff9de749),
-                border: Border.all(color: Colors.black, width: 3),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black,
-                    offset: const Offset(4, 4),
-                    blurRadius: 0,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "SHOW ANSWER",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Icon(Icons.arrow_forward),
-                ],
-              ),
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 10),
+            child: AnimatedButton(
+              text: "DECRYPT",
+              icon: Icons.lock_open,
+              onTap: () {
+                context.read<QuizBloc>().add(FlipCard());
+              },
+              iconSide: 'left',
             ),
           )
         else
@@ -318,7 +315,7 @@ class _QuizContentState extends State<QuizContent>
               ),
               RatingButton(
                 label: "EASY",
-                color: Colors.green,
+                color: const Color.fromARGB(255, 90, 223, 97),
                 rating: 5,
                 assetName: 'assets/svg/easy.svg',
                 onPressed: () => _handleRating(5, const Offset(1.5, 0)), // Left
