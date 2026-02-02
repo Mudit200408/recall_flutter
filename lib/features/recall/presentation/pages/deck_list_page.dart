@@ -57,6 +57,10 @@ class _DeckListPageState extends State<DeckListPage> {
             ),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(4),
+          child: Container(color: Colors.black, height: 4),
+        ),
       ),
       body: CustomScrollView(
         slivers: [
