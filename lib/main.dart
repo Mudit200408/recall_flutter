@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,6 +15,13 @@ import 'injection_container.dart' as di;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // TODO: Add your Supabase URL and Anon Key here
+  await Supabase.initialize(
+    url: 'https://yjjobxkhilbbdbuzrook.supabase.co',
+    anonKey: 'sb_publishable_sKkQU3chssIJTbpFw2O6zg_SMKV44qo',
+  );
+
   await di.init();
   runApp(MainApp());
 }
@@ -41,7 +49,7 @@ class MainApp extends StatelessWidget {
             return RepositoryProvider<FlashcardRepository>(
               create: (context) => FlashcardRepositoryImpl(
                 firestore: di.sl(),
-                storage: di.sl(),
+                supabase: di.sl(),
                 userId: state.user.uid,
                 httpClient: http.Client(),
                 imageService: di.sl(),
