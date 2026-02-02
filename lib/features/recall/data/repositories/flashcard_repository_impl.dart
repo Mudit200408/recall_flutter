@@ -9,11 +9,11 @@ import 'package:recall/features/recall/domain/entities/flashcard.dart';
 import 'package:recall/features/recall/domain/repositories/flashcard_repository.dart';
 import 'package:recall/features/recall/domain/services/image_generation_service.dart';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class FlashcardRepositoryImpl implements FlashcardRepository {
   final FirebaseFirestore firestore;
-  final SupabaseClient supabase;
+  final FirebaseStorage storage;
   final String userId;
   final http.Client httpClient;
   final String modelId;
@@ -21,7 +21,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
 
   FlashcardRepositoryImpl({
     required this.firestore,
-    required this.supabase,
+    required this.storage,
     required this.userId,
     required this.httpClient,
     required this.imageService,
@@ -270,33 +270,16 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
         .collection('decks')
         .doc(deckId);
 
-    // Helper function to extract path from Supabase URL
-    String? getPathFromUrl(String url) {
-      try {
-        final uri = Uri.parse(url);
-        // Supabase public URL format: .../storage/v1/object/public/bucket/path/to/file
-        final segments = uri.pathSegments;
-        final publicIndex = segments.indexOf('public');
-        if (publicIndex != -1 &&
-            publicIndex + 2 < segments.length &&
-            segments[publicIndex + 1] == 'deck_images') {
-          return segments.sublist(publicIndex + 2).join('/');
-        }
-        return null;
-      } catch (e) {
-        return null;
-      }
-    }
-
     // 1. Get Deck Data to find image URL
     final deckSnapshot = await deckRef.get();
     final deckData = deckSnapshot.data();
     if (deckData != null && deckData['imageUrl'] != null) {
       final imageUrl = deckData['imageUrl'] as String;
-      final path = getPathFromUrl(imageUrl);
-      if (path != null) {
+      if (imageUrl.startsWith('https://firebasestorage')) {
         try {
-          await supabase.storage.from('deck_images').remove([path]);
+          // Extract path or ref from URL?
+          // Actually, getting ref from URL is easy
+          await storage.refFromURL(imageUrl).delete();
         } catch (e) {
           debugPrint("Error deleting deck image: $e");
         }
@@ -311,10 +294,9 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
       final data = doc.data();
       if (data['imageUrl'] != null) {
         final cardImageUrl = data['imageUrl'] as String;
-        final path = getPathFromUrl(cardImageUrl);
-        if (path != null) {
+        if (cardImageUrl.startsWith('https://firebasestorage')) {
           try {
-            await supabase.storage.from('deck_images').remove([path]);
+            await storage.refFromURL(cardImageUrl).delete();
           } catch (e) {
             debugPrint("Error deleting card image: $e");
           }
@@ -329,28 +311,25 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
   Future<String> _uploadImageToStorage(String base64Image, String title) async {
     try {
       // 1. Parse Base64
+      // Format: "data:image/png;base64,....."
       final split = base64Image.split(',');
-      final imageString = split.length == 2 ? split.last : base64Image;
-      final data = base64Decode(imageString);
+      if (split.length != 2) return base64Image; // Not valid format
 
-      // 2. Create Filename
+      final data = base64Decode(split.last);
+
+      // 2. Create Reference
       final filename =
           '${DateTime.now().millisecondsSinceEpoch}_${title.replaceAll(' ', '_')}.png';
-      final path = 'users/$userId/$filename';
+      final ref = storage.ref().child('users/$userId/deck_images/$filename');
 
-      // 3. Upload to Supabase
-      await supabase.storage
-          .from('deck_images')
-          .uploadBinary(
-            path,
-            data,
-            fileOptions: const FileOptions(contentType: 'image/png'),
-          );
+      // 3. Upload
+      final metadata = SettableMetadata(contentType: 'image/png');
+      await ref.putData(data, metadata);
 
-      // 4. Get Public URL
-      return supabase.storage.from('deck_images').getPublicUrl(path);
+      // 4. Get URL
+      return await ref.getDownloadURL();
     } catch (e) {
-      debugPrint("Supabase Storage Upload Error: $e");
+      debugPrint("Storage Upload Error: $e");
       rethrow;
     }
   }

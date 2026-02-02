@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -11,19 +11,22 @@ import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/bloc/quiz/quiz_bloc.dart';
 import 'package:recall/features/recall/domain/services/image_generation_service.dart';
 
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
   sl.registerLazySingleton(() => FirebaseAuth.instance);
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
-  sl.registerLazySingleton(() => Supabase.instance.client);
+  sl.registerLazySingleton(() => FirebaseStorage.instance);
   sl.registerLazySingleton(() => GoogleSignIn.instance);
 
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl());
   sl.registerLazySingleton(() => AuthBloc(authRepository: sl()));
 
   sl.registerLazySingleton(() => NotificationService());
-  sl.registerLazySingleton(() => ImageGenerationService());
+  sl.registerLazySingleton(
+    () => ImageGenerationService(),
+  );
   sl.registerLazySingleton(
     () => QuizBloc(repository: sl(), notificationService: sl()),
   );
