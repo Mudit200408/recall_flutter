@@ -11,12 +11,15 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
   AuthBloc({required this.authRepository}) : super(AuthInitial()) {
-on<AuthCheckRequested>(_onAuthCheckRequested);
-on<AuthLoginRequested>(_onAuthLoginRequested);
-on<AuthLogoutRequested>(_onAuthLogoutRequested);
+    on<AuthCheckRequested>(_onAuthCheckRequested);
+    on<AuthLoginRequested>(_onAuthLoginRequested);
+    on<AuthLogoutRequested>(_onAuthLogoutRequested);
   }
 
-  FutureOr<void> _onAuthCheckRequested(AuthCheckRequested event, Emitter<AuthState> emit) {
+  FutureOr<void> _onAuthCheckRequested(
+    AuthCheckRequested event,
+    Emitter<AuthState> emit,
+  ) {
     final user = authRepository.currentUser;
     if (user != null) {
       emit(AuthAuthenticated(user: user));
@@ -25,21 +28,28 @@ on<AuthLogoutRequested>(_onAuthLogoutRequested);
     }
   }
 
-  FutureOr<void> _onAuthLoginRequested(AuthLoginRequested event, Emitter<AuthState> emit) async{
+  FutureOr<void> _onAuthLoginRequested(
+    AuthLoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    print("EMITTING AUTH LOADING");
     emit(AuthLoading());
     try {
       final user = await authRepository.signInWithGoogle();
-      if(user !=null) {
+      if (user != null) {
         emit(AuthAuthenticated(user: user.user!));
       } else {
         emit(AuthUnauthenticated());
       }
-    } catch(_){
+    } catch (_) {
       emit(AuthUnauthenticated());
     }
   }
 
-  FutureOr<void> _onAuthLogoutRequested(AuthLogoutRequested event, Emitter<AuthState> emit) async{
+  FutureOr<void> _onAuthLogoutRequested(
+    AuthLogoutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     await authRepository.signOut();
     emit(AuthUnauthenticated());
   }

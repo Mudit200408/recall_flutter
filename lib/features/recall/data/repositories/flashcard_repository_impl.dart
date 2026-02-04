@@ -256,7 +256,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
       return cards;
     } catch (e) {
       debugPrint("AI Generation Error: $e");
-      return [];
+      rethrow; // Rethrow to let the Bloc handle the error (and prevent deck creation)
     }
   }
 

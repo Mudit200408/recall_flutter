@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:recall/core/network/connectivity_cubit.dart';
+import 'package:recall/core/widgets/loader.dart';
 import 'package:recall/features/recall/presentation/bloc/quiz/quiz_bloc.dart';
+import 'package:recall/features/recall/presentation/pages/offline_view.dart';
 import 'package:recall/features/recall/presentation/pages/quiz_completed_page.dart';
 import 'package:recall/features/recall/presentation/pages/quiz_empty_page.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
@@ -62,28 +65,115 @@ class QuizPage extends StatelessWidget {
         //   ),
         // ),
         body: SafeArea(
-          child: BlocBuilder<QuizBloc, QuizState>(
-            builder: (context, state) {
-              switch (state) {
-                case QuizLoading _:
-                  return const Center(child: CircularProgressIndicator());
+          child: BlocBuilder<ConnectivityCubit, ConnectivityState>(
+            builder: (context, connectivityState) {
+              final isOffline = connectivityState is ConnectivityOffline;
 
-                case QuizEmpty state:
-                  return QuizEmptyPage(deck: state.deck);
+              return BlocBuilder<QuizBloc, QuizState>(
+                builder: (context, state) {
+                  switch (state) {
+                    case QuizLoading _:
+                      return const Center(child: Loader());
 
-                case QuizFinished state:
-                  return QuizCompletedPage(
-                    deck: state.deck,
-                    easyCount: state.easyCount,
-                    hardCount: state.hardCount,
-                    failCount: state.failCount,
-                    isDeckDeleted: state.isDeckDeleted,
-                  );
-                case QuizActive state:
-                  return QuizContent(state: state);
-                case _:
-                  return SizedBox.shrink();
-              }
+                    case QuizEmpty state:
+                      return QuizEmptyPage(deck: state.deck);
+
+                    case QuizFinished state:
+                      return QuizCompletedPage(
+                        deck: state.deck,
+                        easyCount: state.easyCount,
+                        hardCount: state.hardCount,
+                        failCount: state.failCount,
+                        isDeckDeleted: state.isDeckDeleted,
+                      );
+
+                    case QuizError state:
+                      final message = state.message.toLowerCase();
+                      if (message.contains('connection') ||
+                          message.contains('network') ||
+                          message.contains('socket') ||
+                          message.contains('offline') ||
+                          message.contains('clientexception') ||
+                          isOffline == true) {
+                        return OfflineView(
+                          onRetry: () {
+                            context.read<QuizBloc>().add(StartQuiz(deck: deck));
+                          },
+                        );
+                      }
+
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.black, width: 4),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black,
+                                  offset: Offset(8, 8),
+                                  blurRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  size: 64,
+                                  color: Colors.red,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  "OOPS!",
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  state.message,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                AnimatedButton(
+                                  text: "GO BACK",
+                                  icon: Icons.arrow_back,
+                                  onTap: () => Navigator.pop(context),
+                                  iconSide: 'left',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+
+                    case QuizActive state:
+                      return isOffline
+                          ? OfflineView(
+                              onRetry: () {
+                                context.read<QuizBloc>().add(
+                                  StartQuiz(deck: deck),
+                                );
+                              },
+                            )
+                          : QuizContent(state: state);
+                    case _:
+                      return SizedBox.shrink();
+                  }
+                },
+              );
             },
           ),
         ),

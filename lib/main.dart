@@ -11,6 +11,7 @@ import 'package:recall/core/network/connectivity_service.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/pages/deck_list_page.dart';
 import 'package:recall/firebase_options.dart';
+import 'package:recall/core/widgets/loader.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
@@ -65,9 +66,7 @@ class MainApp extends StatelessWidget {
           return MaterialApp(
             theme: theme,
             home: state is AuthLoading
-                ? const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  )
+                ? const Scaffold(body: Center(child: Loader()))
                 : const LoginPage(),
           );
         },

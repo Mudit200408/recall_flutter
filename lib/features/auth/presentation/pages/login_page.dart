@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recall/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:recall/features/auth/presentation/widgets/cyberpunk_button.dart';
 import 'package:recall/core/network/connectivity_cubit.dart';
+import 'package:recall/core/widgets/loader.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -99,7 +100,7 @@ class LoginPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
 
-                       //SYSTEM BOOT
+                      //SYSTEM BOOT
                       Stack(
                         children: [
                           Text(
@@ -239,25 +240,32 @@ class LoginPage extends StatelessWidget {
                       const SizedBox(height: 24),
 
                       // Login Button
-                      Opacity(
-                        opacity: isOffline ? 0.5 : 1.0,
-                        child: CyberpunkButton(
-                          text: "SIGN IN WITH GOOGLE",
-                          icon: const Icon(
-                            Icons.g_mobiledata,
-                            size: 32,
-                            color: Colors.black,
-                          ), // Using G icon surrogate
-                          onTap: isOffline
-                              ? () {}
-                              : () {
-                                  context.read<AuthBloc>().add(
-                                    AuthLoginRequested(),
-                                  );
-                                },
-                          width: double.infinity,
-                          height: 72,
-                        ),
+                      BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, state) {
+                          if (state is AuthLoading) {
+                            return const Center(child: Loader());
+                          }
+                          return Opacity(
+                            opacity: isOffline ? 0.5 : 1.0,
+                            child: CyberpunkButton(
+                              text: "SIGN IN WITH GOOGLE",
+                              icon: const Icon(
+                                Icons.g_mobiledata,
+                                size: 32,
+                                color: Colors.black,
+                              ),
+                              onTap: isOffline
+                                  ? () {}
+                                  : () {
+                                      context.read<AuthBloc>().add(
+                                        AuthLoginRequested(),
+                                      );
+                                    },
+                              width: double.infinity,
+                              height: 72,
+                            ),
+                          );
+                        },
                       ),
 
                       const SizedBox(height: 64),

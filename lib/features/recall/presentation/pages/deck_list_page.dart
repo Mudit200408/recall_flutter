@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recall/core/network/connectivity_cubit.dart';
 import 'package:recall/core/notifications/notification_service.dart';
+import 'package:recall/core/widgets/loader.dart';
 import 'package:recall/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
@@ -137,7 +138,7 @@ class _DeckListPageState extends State<DeckListPage>
                 builder: (context, state) {
                   if (state is DeckLoading) {
                     return const SliverFillRemaining(
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Center(child: Loader()),
                     );
                   } else if (state is DeckLoaded) {
                     if (state.decks.isEmpty) {
@@ -147,6 +148,14 @@ class _DeckListPageState extends State<DeckListPage>
                         ? _buildOfflineView()
                         : _buildDeckList(state);
                   } else if (state is DeckError) {
+                    final message = state.message.toLowerCase();
+                    if (message.contains('connection') ||
+                        message.contains('network') ||
+                        message.contains('socket') ||
+                        message.contains('offline') ||
+                        message.contains('clientexception')) {
+                      return _buildOfflineView();
+                    }
                     return SliverFillRemaining(
                       child: Center(child: Text(state.message)),
                     );
