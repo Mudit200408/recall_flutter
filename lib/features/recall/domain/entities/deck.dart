@@ -6,7 +6,6 @@ class Deck extends Equatable {
   final int cardCount;
   final String? imageUrl;
   final bool useImages;
-  final String topic;
   final int scheduledDays;
   final int daysGenerated;
   final DateTime? lastGeneratedDate;
@@ -14,6 +13,7 @@ class Deck extends Equatable {
   final int easyCount;
   final int hardCount;
   final int failCount;
+  final int skippedDays;
 
   const Deck({
     required this.id,
@@ -21,7 +21,6 @@ class Deck extends Equatable {
     required this.cardCount,
     this.imageUrl,
     this.useImages = false,
-    this.topic = '',
     this.scheduledDays = 0,
     this.daysGenerated = 0,
     this.lastGeneratedDate,
@@ -29,6 +28,7 @@ class Deck extends Equatable {
     this.easyCount = 0,
     this.hardCount = 0,
     this.failCount = 0,
+    this.skippedDays = 0,
   });
 
   @override
@@ -38,7 +38,6 @@ class Deck extends Equatable {
     cardCount,
     imageUrl,
     useImages,
-    topic,
     scheduledDays,
     daysGenerated,
     lastGeneratedDate,
@@ -46,5 +45,6 @@ class Deck extends Equatable {
     easyCount,
     hardCount,
     failCount,
+    skippedDays,
   ];
 }

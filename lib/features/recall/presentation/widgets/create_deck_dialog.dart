@@ -115,7 +115,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               context,
               "DEADLINE (DAYS)",
               duration,
-              2,
+              1,
               10,
               (val) => setState(() => duration = val),
             ),

@@ -77,7 +77,6 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
     List<Flashcard> cards, {
     String? imageUrl,
     bool useImages = false,
-    String topic = '',
     int scheduledDays = 0,
     int dailyCardCount = 0,
     int easyCount = 0,
@@ -116,7 +115,6 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
       'cardCount': cards.length,
       'createdAt': FieldValue.serverTimestamp(),
       'imageUrl': imageUrl,
-      'topic': topic,
       'scheduledDays': scheduledDays,
       'daysGenerated': 1,
       'lastGeneratedDate': FieldValue.serverTimestamp(),
@@ -125,6 +123,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
       'easyCount': easyCount,
       'hardCount': hardCount,
       'failCount': failCount,
+      'skippedDays': 0, // Initial value
     });
 
     // 3: Set Cards Data
@@ -181,7 +180,6 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
         title: data['title'] ?? 'Untitled',
         cardCount: data['cardCount'] ?? 0,
         imageUrl: data['imageUrl'] as String?,
-        topic: data['topic'] ?? '',
         scheduledDays: data['scheduledDays'] ?? 0,
         daysGenerated: data['daysGenerated'] ?? 0,
         lastGeneratedDate: (data['lastGeneratedDate'] as Timestamp?)?.toDate(),
@@ -190,13 +188,14 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
         easyCount: data['easyCount'] ?? 0,
         hardCount: data['hardCount'] ?? 0,
         failCount: data['failCount'] ?? 0,
+        skippedDays: data['skippedDays'] ?? 0,
       );
     }).toList();
   }
 
   @override
   Future<List<Flashcard>> generateFlashCards(
-    String topic,
+    String title,
     int count,
     bool useImages,
   ) async {
@@ -217,7 +216,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
       final promptText =
           '''
       You are a strict teacher. 
-      Generate exactly $count flashcards about "$topic".
+      Generate exactly $count flashcards about "$title".
       Return a JSON array where each object has "front" and "back" keys.
       ''';
 
@@ -341,7 +340,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
 
     // Generate new cards
     final newCards = await generateFlashCards(
-      deck.topic,
+      deck.title,
       deck.dailyCardCount,
       deck.useImages,
     );
@@ -388,39 +387,56 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
       }
     }
 
-    // Determine batch
-    final batch = firestore.batch();
+    // Use transaction to ensure we don't exceed scheduledDays (Race Condition Fix)
     final deckRef = firestore
         .collection('users')
         .doc(userId)
         .collection('decks')
         .doc(deck.id);
 
-    // Add new cards
-    for (final card in newCards) {
-      final cardRef = deckRef.collection('cards').doc();
-      final cardModel = FlashcardModel(
-        id: cardRef.id,
-        deckId: deck.id,
-        front: card.front,
-        back: card.back,
-        interval: 0,
-        repetitions: 0,
-        easeFactor: 2.5,
-        dueDate: DateTime.now(),
-        imageUrl: null, // As discussed, no card images
-      );
-      batch.set(cardRef, cardModel.toJson());
-    }
+    await firestore.runTransaction((transaction) async {
+      // 1. Read latest deck data
+      final deckSnapshot = await transaction.get(deckRef);
+      if (!deckSnapshot.exists) {
+        throw Exception("Deck not found");
+      }
 
-    // Update Deck stats
-    batch.update(deckRef, {
-      'cardCount': FieldValue.increment(newCards.length),
-      'daysGenerated': FieldValue.increment(1),
-      'lastGeneratedDate': FieldValue.serverTimestamp(),
+      final data = deckSnapshot.data();
+      final currentDaysGenerated = data?['daysGenerated'] ?? 0;
+      final currentScheduledDays = data?['scheduledDays'] ?? 0;
+
+      // 2. Validate condition again with fresh data
+      if (currentDaysGenerated >= currentScheduledDays) {
+        debugPrint(
+          "Transaction Aborted: Days generated ($currentDaysGenerated) reached scheduled ($currentScheduledDays).",
+        );
+        return; // Abort silently
+      }
+
+      // 3. Write new cards
+      for (final card in newCards) {
+        final cardRef = deckRef.collection('cards').doc();
+        final cardModel = FlashcardModel(
+          id: cardRef.id,
+          deckId: deck.id,
+          front: card.front,
+          back: card.back,
+          interval: 0,
+          repetitions: 0,
+          easeFactor: 2.5,
+          dueDate: DateTime.now(),
+          imageUrl: null, // As discussed in logic above, no card images
+        );
+        transaction.set(cardRef, cardModel.toJson());
+      }
+
+      // 4. Update Deck stats
+      transaction.update(deckRef, {
+        'cardCount': FieldValue.increment(newCards.length),
+        'daysGenerated': FieldValue.increment(1),
+        'lastGeneratedDate': FieldValue.serverTimestamp(),
+      });
     });
-
-    await batch.commit();
   }
 
   @override
@@ -440,6 +456,22 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
       'easyCount': FieldValue.increment(easyIncrement),
       'hardCount': FieldValue.increment(hardIncrement),
       'failCount': FieldValue.increment(failIncrement),
+    });
+  }
+
+  @override
+  Future<void> registerSkippedDay(String deckId, int daysSkipped) async {
+    final deckRef = firestore
+        .collection('users')
+        .doc(userId)
+        .collection('decks')
+        .doc(deckId);
+
+    // Atomically increment scheduledDays by daysSkipped to extend deadline
+    // And increment skippedDays counter
+    await deckRef.update({
+      'scheduledDays': FieldValue.increment(daysSkipped),
+      'skippedDays': FieldValue.increment(daysSkipped),
     });
   }
 }

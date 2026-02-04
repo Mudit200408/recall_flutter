@@ -9,6 +9,7 @@ class QuizCompletedPage extends StatelessWidget {
   final int easyCount;
   final int hardCount;
   final int failCount;
+  final bool isDeckDeleted;
 
   const QuizCompletedPage({
     super.key,
@@ -16,6 +17,7 @@ class QuizCompletedPage extends StatelessWidget {
     required this.easyCount,
     required this.hardCount,
     required this.failCount,
+    this.isDeckDeleted = false,
   });
 
   @override
@@ -152,7 +154,8 @@ class QuizCompletedPage extends StatelessWidget {
               ),
               child: AnimatedButton(
                 text: "BACK TO DECKS",
-                onTap: () => Navigator.pop(context),
+                onTap: () =>
+                    Navigator.pop(context, isDeckDeleted ? deck.id : null),
                 icon: Icons.arrow_forward,
                 iconSide: 'right',
               ),

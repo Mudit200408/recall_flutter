@@ -44,9 +44,26 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
           final lastGenerated = deck.lastGeneratedDate;
           if (lastGenerated != null) {
             final now = DateTime.now();
-            final difference = now.difference(lastGenerated).inHours;
+            final differenceInHours = now.difference(lastGenerated).inHours;
+
+            // Skipped Day Logic (> 48h means at least 1 day missed)
+            if (differenceInHours >= 48) {
+              // daysGenerated increments by 1 every 24h roughly.
+              // If 48h passed, we missed 1 trigger.
+              // If 72h passed, we missed 2 triggers.
+              // So missed = (hours / 24).floor() - 1?
+              // No, simpler:
+              // 24h = 0 missed (normal trigger)
+              // 48h = 1 missed
+              // 72h = 2 missed
+              final daysSkipped = (differenceInHours / 24).floor() - 1;
+              if (daysSkipped > 0) {
+                repository.registerSkippedDay(deck.id, daysSkipped);
+              }
+            }
+
             // Simple check: if more than 20 hours have passed since last generation
-            if (difference >= 20) {
+            if (differenceInHours >= 20) {
               repository.generateMoreCards(deck).then((_) {
                 if (!isClosed) {
                   add(LoadDecks());
@@ -79,7 +96,6 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
         cards,
         imageUrl: deckImageUrl,
         useImages: event.useImages,
-        topic: event.title, // Use title as topic
         scheduledDays: event.duration,
         dailyCardCount: event.count,
         easyCount: 0,

@@ -10,7 +10,7 @@ import 'package:recall/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/bloc/quiz/quiz_bloc.dart';
 import 'package:recall/features/recall/domain/services/image_generation_service.dart';
-
+import 'package:recall/core/network/connectivity_service.dart';
 
 final sl = GetIt.instance;
 
@@ -24,11 +24,10 @@ Future<void> init() async {
   sl.registerLazySingleton(() => AuthBloc(authRepository: sl()));
 
   sl.registerLazySingleton(() => NotificationService());
-  sl.registerLazySingleton(
-    () => ImageGenerationService(),
-  );
+  sl.registerLazySingleton(() => ImageGenerationService());
   sl.registerLazySingleton(
     () => QuizBloc(repository: sl(), notificationService: sl()),
   );
+  sl.registerLazySingleton(() => ConnectivityService());
   sl.registerLazySingleton(() => DeckBloc(repository: sl()));
 }

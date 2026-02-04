@@ -77,6 +77,7 @@ class QuizPage extends StatelessWidget {
                     easyCount: state.easyCount,
                     hardCount: state.hardCount,
                     failCount: state.failCount,
+                    isDeckDeleted: state.isDeckDeleted,
                   );
                 case QuizActive state:
                   return QuizContent(state: state);

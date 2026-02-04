@@ -9,7 +9,7 @@ abstract class FlashcardRepository {
   // 2: AI Magic
   // Returns a list of generated cards from a text source
   Future<List<Flashcard>> generateFlashCards(
-    String topic,
+    String title,
     int count,
     bool useImages,
   );
@@ -19,7 +19,6 @@ abstract class FlashcardRepository {
     List<Flashcard> cards, {
     String? imageUrl,
     bool useImages = false,
-    String topic = '',
     int scheduledDays = 0,
     int dailyCardCount = 0,
     int easyCount = 0,
@@ -39,4 +38,6 @@ abstract class FlashcardRepository {
     int hardIncrement = 0,
     int failIncrement = 0,
   });
+
+  Future<void> registerSkippedDay(String deckId, int daysSkipped);
 }

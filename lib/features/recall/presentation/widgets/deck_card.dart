@@ -174,18 +174,41 @@ class DeckCard extends StatelessWidget {
   }
 
   Widget _builProgressBar(String label, String value, {double progress = 0.0}) {
+    final bool isSkipped = deck.skippedDays > 0;
+    final color = isSkipped ? Colors.red : const Color(0xFFCCFF00);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label.toUpperCase(),
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (isSkipped)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+                child: const Text(
+                  "SKIPPED!",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+          ],
         ),
-
         const SizedBox(height: 4),
         Container(
           width: double.infinity,
@@ -198,7 +221,7 @@ class DeckCard extends StatelessWidget {
               LinearProgressIndicator(
                 value: progress,
                 backgroundColor: Colors.white,
-                color: const Color(0xFFCCFF00), // Neo-brutalist green
+                color: color, // Neo-brutalist green or Red
                 minHeight: 21,
               ),
               Text(

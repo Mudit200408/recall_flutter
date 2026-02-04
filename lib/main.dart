@@ -6,6 +6,8 @@ import 'package:recall/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:recall/features/auth/presentation/pages/login_page.dart';
 import 'package:recall/features/recall/data/repositories/flashcard_repository_impl.dart';
 import 'package:recall/features/recall/domain/repositories/flashcard_repository.dart';
+import 'package:recall/core/network/connectivity_cubit.dart';
+import 'package:recall/core/network/connectivity_service.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/pages/deck_list_page.dart';
 import 'package:recall/firebase_options.dart';
@@ -33,6 +35,11 @@ class MainApp extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (_) => di.sl<AuthBloc>()..add(AuthCheckRequested()),
+        ),
+        BlocProvider(
+          create: (_) => ConnectivityCubit(
+            connectivityService: di.sl<ConnectivityService>(),
+          ),
         ),
       ],
       child: BlocBuilder<AuthBloc, AuthState>(

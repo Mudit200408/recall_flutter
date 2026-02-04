@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:recall/core/network/connectivity_cubit.dart';
 import 'package:recall/core/notifications/notification_service.dart';
 import 'package:recall/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
@@ -7,6 +8,7 @@ import 'package:recall/features/recall/presentation/widgets/animated_button.dart
 import 'package:recall/features/recall/presentation/widgets/create_deck_dialog.dart';
 import 'package:recall/features/recall/presentation/widgets/deck_card.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
+import 'package:recall/features/recall/presentation/pages/offline_view.dart';
 import 'package:recall/features/recall/presentation/pages/quiz_page.dart';
 import 'package:recall/features/recall/presentation/pages/search_page.dart';
 import 'package:recall/injection_container.dart';
@@ -18,14 +20,34 @@ class DeckListPage extends StatefulWidget {
   State<DeckListPage> createState() => _DeckListPageState();
 }
 
-class _DeckListPageState extends State<DeckListPage> {
+class _DeckListPageState extends State<DeckListPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _deletionController;
+  late Animation<double> _deletionAnimation;
+  String? _animatingDeckId;
+
   @override
   void initState() {
     super.initState();
+    _deletionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _deletionAnimation = CurvedAnimation(
+      parent: _deletionController,
+      curve: Curves.easeOut,
+    );
+    _deletionController.value = 1.0; // Start fully visible
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       sl<NotificationService>().initialize(authState.user.uid);
     }
+  }
+
+  @override
+  void dispose() {
+    _deletionController.dispose();
+    super.dispose();
   }
 
   @override
@@ -108,45 +130,31 @@ class _DeckListPageState extends State<DeckListPage> {
               ),
             ),
           ),
-          BlocBuilder<DeckBloc, DeckState>(
-            builder: (context, state) {
-              if (state is DeckLoading) {
-                return const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              } else if (state is DeckLoaded) {
-                if (state.decks.isEmpty) {
-                  return SliverFillRemaining(child: _buildEmptyView());
-                }
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    return DeckCard(
-                      deck: state.decks[index],
-                      onTap: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => QuizPage(deck: state.decks[index]),
-                          ),
-                        );
-                        if (context.mounted) {
-                          context.read<DeckBloc>().add(LoadDecks());
-                        }
-                      },
-
-                      onDelete: () {
-                        _buildDeleteDialog(context, state, index);
-                      },
+          BlocBuilder<ConnectivityCubit, ConnectivityState>(
+            builder: (context, connectivityState) {
+              final isOffline = connectivityState is ConnectivityOffline;
+              return BlocBuilder<DeckBloc, DeckState>(
+                builder: (context, state) {
+                  if (state is DeckLoading) {
+                    return const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
                     );
-                  }, childCount: state.decks.length),
-                );
-              } else if (state is DeckError) {
-                return SliverFillRemaining(
-                  child: Center(child: Text(state.message)),
-                );
-              }
-              return const SliverFillRemaining(
-                child: Center(child: Text("Welcome to Recall")),
+                  } else if (state is DeckLoaded) {
+                    if (state.decks.isEmpty) {
+                      return SliverFillRemaining(child: _buildEmptyView());
+                    }
+                    return isOffline
+                        ? _buildOfflineView()
+                        : _buildDeckList(state);
+                  } else if (state is DeckError) {
+                    return SliverFillRemaining(
+                      child: Center(child: Text(state.message)),
+                    );
+                  }
+                  return const SliverFillRemaining(
+                    child: Center(child: Text("Welcome to Recall")),
+                  );
+                },
               );
             },
           ),
@@ -154,34 +162,101 @@ class _DeckListPageState extends State<DeckListPage> {
         ],
       ),
 
-      floatingActionButton: Row(
-        children: [
-          const Spacer(),
-          AnimatedButton(
-            text: "NEW DECK",
-            iconSide: "left",
-            icon: Icons.add,
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return CreateDeckDialog(
-                    onSubmit: (topic, count, useImages, duration) {
-                      context.read<DeckBloc>().add(
-                        CreateDeck(
-                          title: topic,
-                          count: count,
-                          useImages: useImages,
-                          duration: duration,
-                        ),
+      floatingActionButton: BlocBuilder<ConnectivityCubit, ConnectivityState>(
+        builder: (context, state) {
+          if (state is ConnectivityOffline) {
+            return const SizedBox.shrink();
+          }
+          return Row(
+            children: [
+              const Spacer(),
+              AnimatedButton(
+                text: "NEW DECK",
+                iconSide: "left",
+                icon: Icons.add,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return CreateDeckDialog(
+                        onSubmit: (topic, count, useImages, duration) {
+                          context.read<DeckBloc>().add(
+                            CreateDeck(
+                              title: topic,
+                              count: count,
+                              useImages: useImages,
+                              duration: duration,
+                            ),
+                          );
+                        },
                       );
                     },
                   );
                 },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDeckList(DeckLoaded state) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final deck = state.decks[index];
+        final isDeleting = deck.id == _animatingDeckId;
+
+        return SizeTransition(
+          sizeFactor: isDeleting
+              ? _deletionAnimation
+              : const AlwaysStoppedAnimation(1.0),
+          child: DeckCard(
+            deck: deck,
+            onTap: () async {
+              final deletedDeckId = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => QuizPage(deck: deck)),
               );
+
+              if (deletedDeckId != null && deletedDeckId is String) {
+                // Trigger animation
+                setState(() {
+                  _animatingDeckId = deletedDeckId;
+                });
+                await _deletionController.reverse();
+
+                // Then refresh data
+                if (mounted) {
+                  setState(() {
+                    _animatingDeckId = null;
+                    _deletionController.value = 1.0;
+                  });
+                  context.read<DeckBloc>().add(LoadDecks());
+                }
+              } else if (context.mounted) {
+                // Normal return, just refresh
+                context.read<DeckBloc>().add(LoadDecks());
+              }
+            },
+
+            onDelete: () {
+              _buildDeleteDialog(context, state, index);
             },
           ),
-        ],
+        );
+      }, childCount: state.decks.length),
+    );
+  }
+
+  Widget _buildOfflineView() {
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: OfflineView(
+        onRetry: () {
+          // Trigger a reload or connectivity check
+          context.read<DeckBloc>().add(LoadDecks());
+        },
       ),
     );
   }
@@ -198,6 +273,14 @@ class _DeckListPageState extends State<DeckListPage> {
             fontWeight: FontWeight.bold,
             color: Colors.black,
             fontFamily: 'ArchivoBlack',
+          ),
+        ),
+        const Text(
+          "CREATE A DECK TO START YOUR MISSION",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
           ),
         ),
       ],

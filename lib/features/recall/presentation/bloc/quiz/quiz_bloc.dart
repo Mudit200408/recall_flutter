@@ -111,14 +111,29 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         final tomorrow = DateTime.now().add(const Duration(days: 1));
 
         // Schedule Notification
-        // Schedule Notification
-        notificationService.scheduleStudyReminder(tomorrow);
+        // Check for immediate deletion criteria
+        bool isDeleted = false;
+        if (currentState.deck.daysGenerated >=
+            currentState.deck.scheduledDays) {
+          try {
+            await repository.deleteDeck(currentState.deck.id);
+            isDeleted = true;
+          } catch (e) {
+            // Log error but continue flow
+            // debugPrint("Failed to delete deck: $e");
+          }
+        } else {
+          // Only schedule reminder if NOT deleted
+          notificationService.scheduleStudyReminder(tomorrow);
+        }
+
         emit(
           QuizFinished(
             deck: currentState.deck,
             easyCount: easy,
             hardCount: hard,
             failCount: fail,
+            isDeckDeleted: isDeleted,
           ),
         );
       } else {

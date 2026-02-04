@@ -58,16 +58,24 @@ class QuizFinished extends QuizState {
   final int easyCount;
   final int hardCount;
   final int failCount;
+  final bool isDeckDeleted;
 
   const QuizFinished({
     required this.deck,
     required this.easyCount,
     required this.hardCount,
     required this.failCount,
+    this.isDeckDeleted = false,
   });
 
   @override
-  List<Object> get props => [deck, easyCount, hardCount, failCount];
+  List<Object> get props => [
+    deck,
+    easyCount,
+    hardCount,
+    failCount,
+    isDeckDeleted,
+  ];
 }
 
 class QuizError extends QuizState {
