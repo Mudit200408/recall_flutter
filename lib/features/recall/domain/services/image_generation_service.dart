@@ -26,19 +26,14 @@ class ImageGenerationService {
       final response = await _model.generateContent(content);
 
       // Check if the response contains inline data (image bytes)
-      // Gemini 2.5 Flash Image might return the image as InlineDataPart
+      // Gemini 2.5 Flash Image returns the image as InlineDataPart
       if (response.candidates.isNotEmpty) {
         final parts = response.candidates.first.content.parts;
         for (var part in parts) {
-          // We might need to cast or check type if public API differs,
-          // but traditionally Part can be TextPart or InlineDataPart.
-          // However, firebase_ai logic might differ slightly from google_generative_ai.
-          // Let's assume standard behavior or try to find bytes.
           if (part is InlineDataPart) {
             // If we get raw bytes, convert to base64 for our app's existing logic
             return 'data:${part.mimeType};base64,${base64Encode(part.bytes)}';
           }
-          // Sometimes it might be structured?
         }
       }
 

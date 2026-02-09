@@ -13,6 +13,9 @@ import 'package:recall/features/recall/presentation/pages/offline_view.dart';
 import 'package:recall/features/recall/presentation/pages/quiz_page.dart';
 import 'package:recall/features/recall/presentation/pages/search_page.dart';
 import 'package:recall/injection_container.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class DeckListPage extends StatefulWidget {
   const DeckListPage({super.key});
@@ -59,7 +62,7 @@ class _DeckListPageState extends State<DeckListPage>
         surfaceTintColor: Colors.transparent,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8.0),
+            padding: EdgeInsets.only(right: 8.0.scale(), bottom: 4.scale()),
             child: SquareButton(
               icon: Icons.search,
               color: Colors.black,
@@ -72,7 +75,7 @@ class _DeckListPageState extends State<DeckListPage>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: EdgeInsets.only(right: 16.0.scale(), bottom: 4.scale()),
             child: SquareButton(
               icon: Icons.logout,
               color: const Color.fromARGB(255, 255, 17, 0),
@@ -89,15 +92,15 @@ class _DeckListPageState extends State<DeckListPage>
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 12.0,
-                horizontal: 24,
+              padding: EdgeInsets.symmetric(
+                vertical: 12.0.scale(),
+                horizontal: 24.0.scale(),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "RECALL",
                     style: TextStyle(
                       fontSize: 52,
@@ -107,17 +110,17 @@ class _DeckListPageState extends State<DeckListPage>
                       fontFamily: "ArchivoBlack",
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.0.scale()),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.0.scale(),
+                      vertical: 4.0.scale(),
                     ),
                     decoration: BoxDecoration(
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text(
+                    child: Text(
                       "MASTER YOUR MIND",
                       style: TextStyle(
                         fontSize: 14,
@@ -133,6 +136,7 @@ class _DeckListPageState extends State<DeckListPage>
           ),
           BlocBuilder<ConnectivityCubit, ConnectivityState>(
             builder: (context, connectivityState) {
+              final isMobile = ResponsiveBreakpoints.of(context).isMobile;
               final isOffline = connectivityState is ConnectivityOffline;
               return BlocBuilder<DeckBloc, DeckState>(
                 builder: (context, state) {
@@ -146,7 +150,7 @@ class _DeckListPageState extends State<DeckListPage>
                     }
                     return isOffline
                         ? _buildOfflineView()
-                        : _buildDeckList(state);
+                        : _buildDeckList(state, isMobile);
                   } else if (state is DeckError) {
                     final message = state.message.toLowerCase();
                     if (message.contains('connection') ||
@@ -160,14 +164,14 @@ class _DeckListPageState extends State<DeckListPage>
                       child: Center(child: Text(state.message)),
                     );
                   }
-                  return const SliverFillRemaining(
+                  return SliverFillRemaining(
                     child: Center(child: Text("Welcome to Recall")),
                   );
                 },
               );
             },
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 30)),
+          SliverToBoxAdapter(child: SizedBox(height: 30.0.scale())),
         ],
       ),
 
@@ -210,9 +214,15 @@ class _DeckListPageState extends State<DeckListPage>
     );
   }
 
-  Widget _buildDeckList(DeckLoaded state) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((context, index) {
+  Widget _buildDeckList(DeckLoaded state, bool isMobile) {
+    return SliverGrid(
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 600,
+        mainAxisSpacing: 8.scale(),
+        crossAxisSpacing: 8.scale(),
+        childAspectRatio: isMobile ? 1.1 : 0.85,
+      ),
+      delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
         final deck = state.decks[index];
         final isDeleting = deck.id == _animatingDeckId;
 
@@ -248,7 +258,6 @@ class _DeckListPageState extends State<DeckListPage>
                 context.read<DeckBloc>().add(LoadDecks());
               }
             },
-
             onDelete: () {
               _buildDeleteDialog(context, state, index);
             },
@@ -275,7 +284,7 @@ class _DeckListPageState extends State<DeckListPage>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Image.asset('assets/images/question-mark.png', height: 300),
-        const Text(
+        Text(
           "NULL_DATA",
           style: TextStyle(
             fontSize: 32,
@@ -284,7 +293,7 @@ class _DeckListPageState extends State<DeckListPage>
             fontFamily: 'ArchivoBlack',
           ),
         ),
-        const Text(
+        Text(
           "CREATE A DECK TO START YOUR MISSION",
           style: TextStyle(
             fontSize: 16,
@@ -322,23 +331,23 @@ class _DeckListPageState extends State<DeckListPage>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: .start,
-            spacing: 8,
+            spacing: 8.scale(),
             children: [
-              const Text(
+              Text(
                 "DELETE DECK?",
                 style: TextStyle(
                   fontSize: 24,
                   fontVariations: [FontVariation.weight(900)],
                 ),
               ),
-              const Text(
+              Text(
                 "WARNING: This action cannot be undone.",
                 style: TextStyle(
                   fontSize: 16,
                   fontVariations: [FontVariation.weight(900)],
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.scale()),
               Row(
                 children: [
                   Expanded(
@@ -348,7 +357,7 @@ class _DeckListPageState extends State<DeckListPage>
                       onTap: () => Navigator.pop(context),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.scale()),
                   Expanded(
                     child: AnimatedButton(
                       text: "DELETE",

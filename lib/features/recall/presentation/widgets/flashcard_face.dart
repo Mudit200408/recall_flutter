@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class FlashcardFace extends StatelessWidget {
   final String text;
@@ -37,8 +38,8 @@ class FlashcardFace extends StatelessWidget {
             top: 12,
             left: 12,
             child: Container(
-              width: 24,
-              height: 24,
+              width: 24.scale(),
+              height: 24.scale(),
               decoration: const BoxDecoration(
                 border: Border(
                   top: BorderSide(color: Colors.black, width: 4),
@@ -52,8 +53,8 @@ class FlashcardFace extends StatelessWidget {
             bottom: 12,
             right: 12,
             child: Container(
-              width: 24,
-              height: 24,
+              width: 24.scale(),
+              height: 24.scale(),
               decoration: const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: Colors.black, width: 4),
@@ -69,7 +70,7 @@ class FlashcardFace extends StatelessWidget {
               opacity: 0.1, // Subtle
               child: Text(
                 label == "QUESTION" ? "Q_01" : "ANS_01",
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 120,
                   fontWeight: FontWeight.w900,
                   color: Colors.black,
@@ -99,14 +100,14 @@ class FlashcardFace extends StatelessWidget {
           ),
           // Your Content
           Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32.scale()),
             child: Center(
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.scale(),
+                      vertical: 6.scale(),
                     ),
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -115,25 +116,25 @@ class FlashcardFace extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.sd_card,
                           color: Colors.black,
-                          size: 24,
+                          size: 24.scale(),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 8.scale()),
                         Text(
                           '// INPUT_STREAM: ',
-                          style: const TextStyle(
-                            fontVariations: [FontVariation.weight(450)],
-                            fontSize: 16,
+                          style: TextStyle(
+                            fontVariations: [FontVariation.weight(400)],
+                            fontSize: 14,
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.scale()),
                         Text(
                           label.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontFamily: "ArchivoBlack",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontVariations: [FontVariation.weight(900)],
                           ),
                         ),
                       ],
@@ -143,9 +144,9 @@ class FlashcardFace extends StatelessWidget {
                   Text(
                     text,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontVariations: [FontVariation.weight(900)],
-                      fontSize: 30,
+                      fontSize: 24,
                       color: Colors.white,
                     ),
                   ),

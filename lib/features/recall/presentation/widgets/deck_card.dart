@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class DeckCard extends StatelessWidget {
   final Deck deck;
@@ -20,7 +21,10 @@ class DeckCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: EdgeInsets.symmetric(
+          horizontal: 16.scale(),
+          vertical: 8.scale(),
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: Colors.black, width: 3),
@@ -33,7 +37,7 @@ class DeckCard extends StatelessWidget {
           children: [
             // Header Image
             SizedBox(
-              height: 200,
+              height: 200.scale(),
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -54,11 +58,11 @@ class DeckCard extends StatelessWidget {
                   else
                     Container(
                       color: Colors.black,
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.gamepad,
                           color: Colors.white,
-                          size: 48,
+                          size: 48.scale(),
                         ),
                       ),
                     ),
@@ -68,7 +72,7 @@ class DeckCard extends StatelessWidget {
                     left: 0,
                     right: 0,
                     child: Container(
-                      height: 60,
+                      height: 60.scale(),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
@@ -84,25 +88,25 @@ class DeckCard extends StatelessWidget {
 
             // Content
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.scale()),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     deck.title.toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: 20.scale(),
                       fontVariations: [FontVariation.weight(900)],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.scale()),
 
                   Container(
                     width: double.infinity,
                     height: 1,
                     color: Colors.grey[300],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.scale()),
                   _builProgressBar(
                     "PROGRESS",
                     "${deck.daysGenerated}/${deck.scheduledDays} DAYS",
@@ -110,7 +114,7 @@ class DeckCard extends StatelessWidget {
                         deck.daysGenerated /
                         (deck.scheduledDays == 0 ? 1 : deck.scheduledDays),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.scale()),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -151,13 +155,13 @@ class DeckCard extends StatelessWidget {
         ),
         Text(
           value,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
         if (showBar) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4.scale()),
           Container(
-            width: 80,
-            height: 6,
+            width: 80.scale(),
+            height: 6.scale(),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.black, width: 1),
             ),
@@ -193,12 +197,15 @@ class DeckCard extends StatelessWidget {
             ),
             if (isSkipped)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 4.scale(),
+                  vertical: 2.scale(),
+                ),
                 decoration: BoxDecoration(
                   color: Colors.red,
                   borderRadius: BorderRadius.circular(2),
                 ),
-                child: const Text(
+                child: Text(
                   "SKIPPED!",
                   style: TextStyle(
                     fontSize: 10,
@@ -209,7 +216,7 @@ class DeckCard extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.scale()),
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
@@ -222,12 +229,12 @@ class DeckCard extends StatelessWidget {
                 value: progress,
                 backgroundColor: Colors.white,
                 color: color, // Neo-brutalist green or Red
-                minHeight: 21,
+                minHeight: 25.scale(),
               ),
               Text(
                 "${deck.daysGenerated}/${deck.scheduledDays} DAYS",
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: 14.scale(),
                   fontVariations: [FontVariation.weight(900)],
                   fontStyle: FontStyle.italic,
                   color: Colors.black,
@@ -243,8 +250,8 @@ class DeckCard extends StatelessWidget {
   Widget _buildErrorPlaceholder() {
     return Container(
       color: Colors.grey[900],
-      child: const Center(
-        child: Icon(Icons.broken_image, color: Colors.white, size: 40),
+      child: Center(
+        child: Icon(Icons.broken_image, color: Colors.white, size: 40.scale()),
       ),
     );
   }

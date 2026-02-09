@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class QuizCompletedPage extends StatelessWidget {
   final Deck deck;
@@ -23,147 +25,186 @@ class QuizCompletedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'MISSION\nACCOMPLISHED',
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              style: TextStyle(
-                fontSize: 38,
-                fontFamily: 'ArchivoBlack',
-                color: Colors.black,
-              ),
-            ),
-            const Spacer(),
-            Container(
-              margin: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.black, width: 3),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black,
-                    offset: const Offset(6, 6),
-                    blurRadius: 0,
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Header Image
-                  SizedBox(
-                    height: 400,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        if (deck.imageUrl != null)
-                          deck.deckImageUrl.startsWith('data:image')
-                              ? Image.memory(
-                                  base64Decode(
-                                    deck.deckImageUrl.split(',').last,
-                                  ),
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      _buildErrorPlaceholder(),
-                                )
-                              : Image.network(
-                                  deck.deckImageUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      _buildErrorPlaceholder(),
-                                )
-                        else
-                          Container(
-                            color: Colors.black,
-                            child: const Center(
-                              child: Icon(
-                                Icons.gamepad,
-                                color: Colors.white,
-                                size: 48,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        'MISSION\nACCOMPLISHED',
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        style: TextStyle(
+                          fontSize: 38,
+                          //fontFamily: 'ArchivoBlack',
+                          color: Colors.black,
+                          fontVariations: const [FontVariation('wght', 900)],
+                        ),
+                      ),
+                      const Spacer(),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 400.scale()),
+                        child: Container(
+                          margin: EdgeInsets.all(16.scale()),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.black, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black,
+                                offset: const Offset(6, 6),
+                                blurRadius: 0,
                               ),
-                            ),
+                            ],
                           ),
-                        // Overlay Gradient
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Colors.transparent, Colors.black87],
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Header Image
+                              SizedBox(
+                                height: 250.scale(),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    if (deck.imageUrl != null)
+                                      deck.deckImageUrl.startsWith('data:image')
+                                          ? Image.memory(
+                                              base64Decode(
+                                                deck.deckImageUrl
+                                                    .split(',')
+                                                    .last,
+                                              ),
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) =>
+                                                  _buildErrorPlaceholder(),
+                                            )
+                                          : Image.network(
+                                              deck.deckImageUrl,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) =>
+                                                  _buildErrorPlaceholder(),
+                                            )
+                                    else
+                                      Container(
+                                        color: Colors.black,
+                                        child: Center(
+                                          child: Icon(
+                                            Icons.gamepad,
+                                            color: Colors.white,
+                                            size: 48.scale(),
+                                          ),
+                                        ),
+                                      ),
+                                    // Overlay Gradient
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      child: Container(
+                                        height: 60.scale(),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black87,
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+
+                              // Content
+                              Padding(
+                                padding: EdgeInsets.all(16.scale()),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      deck.title.toUpperCase(),
+                                      style: TextStyle(
+                                        fontSize: 20.scale(),
+                                        fontVariations: [
+                                          FontVariation.weight(900),
+                                        ],
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8.scale()),
+
+                                    Container(
+                                      width: double.infinity,
+                                      height: 1,
+                                      color: Colors.grey[300],
+                                    ),
+                                    SizedBox(height: 16.scale()),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        _buildStatItem(
+                                          "EASY",
+                                          easyCount,
+                                          Colors.green,
+                                        ),
+                                        _buildStatItem(
+                                          "HARD",
+                                          hardCount,
+                                          Colors.orange,
+                                        ),
+                                        _buildStatItem(
+                                          "FAIL",
+                                          failCount,
+                                          Colors.red,
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8.scale()),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const Spacer(),
+                      Padding(
+                        padding: EdgeInsets.only(
+                          left: 16.0.scale(),
+                          right: 16.0.scale(),
+                          bottom: 10.scale(),
+                        ),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 400.scale()),
+                          child: AnimatedButton(
+                            text: "BACK TO DECKS",
+                            onTap: () => Navigator.pop(
+                              context,
+                              isDeckDeleted ? deck.id : null,
                             ),
+                            icon: Icons.arrow_forward,
+                            iconSide: 'right',
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
 
-                  // Content
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          deck.title.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontVariations: [FontVariation.weight(900)],
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-
-                        Container(
-                          width: double.infinity,
-                          height: 1,
-                          color: Colors.grey[300],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildStatItem("EASY", easyCount, Colors.green),
-                            _buildStatItem("HARD", hardCount, Colors.orange),
-                            _buildStatItem("FAIL", failCount, Colors.red),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                    ),
+                      const Spacer(),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                bottom: 10,
-              ),
-              child: AnimatedButton(
-                text: "BACK TO DECKS",
-                onTap: () =>
-                    Navigator.pop(context, isDeckDeleted ? deck.id : null),
-                icon: Icons.arrow_forward,
-                iconSide: 'right',
-              ),
-            ),
-
-            const Spacer(),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -171,15 +212,15 @@ class QuizCompletedPage extends StatelessWidget {
   Widget _buildErrorPlaceholder() {
     return Container(
       color: Colors.grey[900],
-      child: const Center(
-        child: Icon(Icons.broken_image, color: Colors.white, size: 40),
+      child: Center(
+        child: Icon(Icons.broken_image, color: Colors.white, size: 40.scale()),
       ),
     );
   }
 
   Widget _buildStatItem(String label, int count, Color color) {
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.scale()),
       decoration: BoxDecoration(
         color: color,
         border: Border.all(color: Colors.black, width: 3),

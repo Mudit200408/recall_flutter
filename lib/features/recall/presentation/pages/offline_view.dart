@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class OfflineView extends StatelessWidget {
   const OfflineView({super.key, required this.onRetry});
@@ -18,14 +19,14 @@ class OfflineView extends StatelessWidget {
             child: Center(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(24.scale()),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Robot Illustration Container
                       SizedBox(
-                        width: 256,
-                        height: 256,
+                        width: 256.scale(),
+                        height: 256.scale(),
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
@@ -47,7 +48,7 @@ class OfflineView extends StatelessWidget {
                             ),
                             // White foreground rect with SVG
                             Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: EdgeInsets.all(16.scale()),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 border: Border.all(
@@ -90,10 +91,10 @@ class OfflineView extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.scale()),
 
                       // Title
-                      const Text(
+                      Text(
                         "YOU ARE\nOFFLINE",
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -106,7 +107,7 @@ class OfflineView extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.scale()),
 
                       // Badge
                       Transform.rotate(
@@ -130,11 +131,11 @@ class OfflineView extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.scale()),
 
                       // Button
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 21),
+                        padding: EdgeInsets.symmetric(horizontal: 21.scale()),
                         child: AnimatedButton(
                           color: const Color(0xFFff2a9d),
                           text: 'RETRY',

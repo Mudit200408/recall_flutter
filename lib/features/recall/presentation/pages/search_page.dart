@@ -5,6 +5,8 @@ import 'package:recall/features/recall/presentation/pages/quiz_page.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
 import 'package:recall/features/recall/presentation/widgets/deck_card.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -25,14 +27,14 @@ class _SearchPageState extends State<SearchPage> {
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         leading: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(8.0.scale()),
           child: SquareButton(
             icon: Icons.arrow_back,
             onTap: () => Navigator.pop(context),
             color: Colors.black,
           ),
         ),
-        title: const Text(
+        title: Text(
           'SEARCH OBJECTIVES',
           style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
         ),
@@ -46,7 +48,7 @@ class _SearchPageState extends State<SearchPage> {
           Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0.scale()),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -57,11 +59,11 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   child: TextField(
                     autofocus: true,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                      fontSize: 18.scale(),
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'SEARCH DECKS...',
                       hintStyle: TextStyle(
                         color: Colors.grey,
@@ -93,7 +95,7 @@ class _SearchPageState extends State<SearchPage> {
                   }).toList();
 
                   if (filteredDecks.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
                         "NO DECKS FOUND",
                         style: TextStyle(
@@ -105,28 +107,41 @@ class _SearchPageState extends State<SearchPage> {
                     );
                   }
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredDecks.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: DeckCard(
-                          deck: filteredDecks[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    QuizPage(deck: filteredDecks[index]),
+                  final isMobile = ResponsiveBreakpoints.of(context).isMobile;
+                  return CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: EdgeInsets.all(16.scale()),
+                        sliver: SliverGrid(
+                          gridDelegate:
+                              SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 800,
+                                mainAxisSpacing: 8.scale(),
+                                crossAxisSpacing: 8.scale(),
+                                childAspectRatio: isMobile ? 1 : 0.8,
                               ),
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final deck = filteredDecks[index];
+                            return DeckCard(
+                              deck: deck,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => QuizPage(deck: deck),
+                                  ),
+                                );
+                              },
+                              onDelete: () =>
+                                  _buildDeleteDialog(context, state, index),
                             );
-                          },
-                          onDelete: () =>
-                              _buildDeleteDialog(context, state, index),
+                          }, childCount: filteredDecks.length),
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   );
                 }
                 return const SizedBox.shrink();
@@ -148,7 +163,7 @@ class _SearchPageState extends State<SearchPage> {
       builder: (context) => Dialog(
         backgroundColor: Colors.white,
         child: Container(
-          padding: EdgeInsets.all(12),
+          padding: EdgeInsets.all(12.scale()),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.black, width: 4),
             color: Colors.white,
@@ -163,24 +178,24 @@ class _SearchPageState extends State<SearchPage> {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: .start,
-            spacing: 8,
+            mainAxisAlignment: MainAxisAlignment.start,
+            spacing: 8.scale(),
             children: [
-              const Text(
+              Text(
                 "DELETE DECK?",
                 style: TextStyle(
                   fontSize: 24,
                   fontVariations: [FontVariation.weight(900)],
                 ),
               ),
-              const Text(
+              Text(
                 "WARNING: This action cannot be undone.",
                 style: TextStyle(
                   fontSize: 16,
                   fontVariations: [FontVariation.weight(900)],
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.scale()),
               Row(
                 children: [
                   Expanded(
@@ -190,7 +205,7 @@ class _SearchPageState extends State<SearchPage> {
                       onTap: () => Navigator.pop(context),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.scale()),
                   Expanded(
                     child: AnimatedButton(
                       text: "DELETE",

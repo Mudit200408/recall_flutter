@@ -14,6 +14,8 @@ import 'package:recall/features/recall/domain/entities/flashcard.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 import 'package:recall/injection_container.dart' as di;
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class QuizPage extends StatelessWidget {
   final Deck deck;
@@ -26,44 +28,6 @@ class QuizPage extends StatelessWidget {
           QuizBloc(repository: context.read(), notificationService: di.sl())
             ..add(StartQuiz(deck: deck)),
       child: Scaffold(
-        // appBar: AppBar(
-        //   automaticallyImplyLeading: false,
-        // leading: Container(
-        //   margin: EdgeInsets.all(12),
-        //   decoration: BoxDecoration(
-        //     color: Colors.white,
-        //     border: Border.all(color: Colors.black, width: 3),
-        //     boxShadow: [
-        //       BoxShadow(
-        //         color: Colors.black,
-        //         offset: const Offset(2, 2),
-        //         blurRadius: 0,
-        //       ),
-        //     ],
-        //   ),
-
-        //   child: IconButton(
-        //     icon: const Icon(Icons.arrow_back),
-        //     onPressed: () => Navigator.pop(context),
-        //     padding: EdgeInsets.zero,
-        //     splashColor: Colors.transparent,
-        //   ),
-        // ),
-        //   title: Hero(
-        //     tag: 'deck-title-${deck.id}', // Must match the tag from the list!
-        //     child: Material(
-        //       color: Colors.transparent,
-        //       child: Text(
-        //         deck.title.toUpperCase(),
-        //         style: const TextStyle(
-        //           fontSize: 20,
-        //           fontVariations: [FontVariation.weight(900)],
-        //           letterSpacing: 1.3,
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ),
         body: SafeArea(
           child: BlocBuilder<ConnectivityCubit, ConnectivityState>(
             builder: (context, connectivityState) {
@@ -104,13 +68,16 @@ class QuizPage extends StatelessWidget {
 
                       return Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(24.0),
+                          padding: EdgeInsets.all(24.scale()),
                           child: Container(
-                            constraints: const BoxConstraints(maxWidth: 400),
-                            padding: const EdgeInsets.all(24),
+                            constraints: BoxConstraints(maxWidth: 400.scale()),
+                            padding: EdgeInsets.all(24.scale()),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              border: Border.all(color: Colors.black, width: 4),
+                              border: Border.all(
+                                color: Colors.black,
+                                width: 4.scale(),
+                              ),
                               boxShadow: const [
                                 BoxShadow(
                                   color: Colors.black,
@@ -122,13 +89,13 @@ class QuizPage extends StatelessWidget {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.error_outline,
-                                  size: 64,
+                                  size: 64.scale(),
                                   color: Colors.red,
                                 ),
-                                const SizedBox(height: 16),
-                                const Text(
+                                SizedBox(height: 16.scale()),
+                                Text(
                                   "OOPS!",
                                   style: TextStyle(
                                     fontSize: 32,
@@ -136,17 +103,17 @@ class QuizPage extends StatelessWidget {
                                     color: Colors.black,
                                   ),
                                 ),
-                                const SizedBox(height: 12),
+                                SizedBox(height: 12.scale()),
                                 Text(
                                   state.message,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 16,
+                                  style: TextStyle(
+                                    fontSize: 16.scale(),
                                     fontWeight: FontWeight.bold,
                                     color: Colors.grey,
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(height: 24.scale()),
                                 AnimatedButton(
                                   text: "GO BACK",
                                   icon: Icons.arrow_back,
@@ -245,6 +212,7 @@ class _QuizContentState extends State<QuizContent>
   Widget build(BuildContext context) {
     // Current card is either the one in state, or if we are animating, the one we captured.
     final topCard = _animatingCard ?? widget.state.currentCard;
+    final isMobile = ResponsiveBreakpoints.of(context).isMobile;
 
     // Bottom card (Next) is the one in state IF we are currently animating the old one away.
     // Or if we are just viewing, the bottom card is the next one in the list.
@@ -258,136 +226,227 @@ class _QuizContentState extends State<QuizContent>
       bottomCard = widget.state.remainingCards[1];
     }
 
+    return isMobile
+        ? _buildMobileView(context, bottomCard, topCard)
+        : _buildTabletView(context, bottomCard, topCard);
+  }
+
+  Widget _buildTabletView(
+    BuildContext context,
+    Flashcard? bottomCard,
+    Flashcard topCard,
+  ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: .stretch,
-      spacing: 20,
       children: [
-        Row(
-          children: [
-            const SizedBox(width: 16),
-            SquareButton(
-              icon: Icons.close,
-              color: Colors.red,
-              onTap: () => Navigator.pop(context),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              widget.state.deck.title,
-              style: const TextStyle(
-                fontSize: 32,
-                fontVariations: [FontVariation.weight(900)],
-                letterSpacing: 1.3,
-              ),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        // Header Row with close button and title
+        _buildHeader(context),
+        SizedBox(height: 16.scale()),
+
+        // Progress Bar
+        _buildProgressBar(),
+        SizedBox(height: 24.scale()),
+
+        // Main Content: Card on left, Actions on right
+        Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black, width: 3),
-                ),
+              // Flashcard Stack
+              Flexible(
+                flex: 2,
                 child: Stack(
-                  alignment: AlignmentGeometry.center,
+                  alignment: Alignment.center,
                   children: [
-                    LinearProgressIndicator(
-                      value:
-                          (widget.state.totalCards -
-                              widget.state.remainingCards.length +
-                              1) /
-                          widget.state.totalCards,
-                      minHeight: 28,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFFCCFF00),
+                    // Bottom Card (The Next Card)
+                    if (bottomCard != null) _buildFlashcardFace(bottomCard),
+
+                    // Top Card (The Active Card)
+                    _buildFlipCard(context, topCard),
+                  ],
+                ),
+              ),
+
+              SizedBox(width: 28.scale()),
+
+              // Action Buttons (on the right side)
+              Flexible(
+                flex: 2,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (!widget.state.isFlipped)
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 250),
+                        child: _buildDecryptButton(context),
+                      )
+                    else
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RatingButton(
+                            label: "EASY",
+                            color: const Color.fromARGB(255, 90, 223, 97),
+                            rating: 5,
+                            assetName: 'assets/svg/easy.svg',
+                            onPressed: () =>
+                                _handleRating(5, const Offset(1.5, 0)),
+                          ),
+                          SizedBox(height: 16.scale()),
+                          RatingButton(
+                            label: "HARD",
+                            color: Colors.yellow,
+                            rating: 3,
+                            assetName: 'assets/svg/hard.svg',
+                            onPressed: () =>
+                                _handleRating(3, const Offset(0, -1.5)),
+                          ),
+                          SizedBox(height: 16.scale()),
+                          RatingButton(
+                            label: "FAIL",
+                            color: Colors.red,
+                            rating: 1,
+                            assetName: 'assets/svg/fail.svg',
+                            onPressed: () =>
+                                _handleRating(1, const Offset(-1.5, 0)),
+                          ),
+                        ],
                       ),
-                    ),
-                    Text(
-                      "${widget.state.totalCards - widget.state.remainingCards.length + 1} / ${widget.state.totalCards}",
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontVariations: [FontVariation.weight(900)],
-                        color: Colors.black,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
                   ],
                 ),
               ),
             ],
           ),
         ),
+        SizedBox(height: 16.scale()),
+      ],
+    );
+  }
+
+  Transform _buildFlashcardFace(Flashcard bottomCard) {
+    return Transform.scale(
+      scale: 0.95,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 400),
+        child: FlashcardFace(
+          text: bottomCard.front,
+          color: Colors.deepPurple,
+          label: "QUESTION",
+        ),
+      ),
+    );
+  }
+
+  Padding _buildHeader(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.scale()),
+      child: Row(
+        children: [
+          SquareButton(
+            icon: Icons.close,
+            color: Colors.red,
+            onTap: () => Navigator.pop(context),
+          ),
+          SizedBox(width: 16.scale()),
+          Expanded(
+            child: Text(
+              widget.state.deck.title,
+              style: TextStyle(
+                fontSize: 28.scale(),
+                fontVariations: [FontVariation.weight(900)],
+                letterSpacing: 1.3,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Padding _buildProgressBar() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.scale()),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 700),
+        child: Container(
+          height: 40.scale(),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black, width: 3),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              LinearProgressIndicator(
+                value:
+                    (widget.state.totalCards -
+                        widget.state.remainingCards.length +
+                        1) /
+                    widget.state.totalCards,
+                minHeight: 35.scale(),
+                backgroundColor: Colors.grey[200],
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFFCCFF00),
+                ),
+              ),
+              Text(
+                "${widget.state.totalCards - widget.state.remainingCards.length + 1} / ${widget.state.totalCards}",
+                style: TextStyle(
+                  fontSize: 18.scale(),
+                  fontVariations: [FontVariation.weight(900)],
+                  color: Colors.black,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Column _buildMobileView(
+    BuildContext context,
+    Flashcard? bottomCard,
+    Flashcard topCard,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 20,
+      children: [
+        _buildHeader(context),
+
+        _buildProgressBar(),
+
         Expanded(
           child: Stack(
             alignment: Alignment.center,
             children: [
               // Bottom Card (The Next Card)
-              if (bottomCard != null)
-                Transform.scale(
-                  scale: 0.95, // Slight scale effect for depth
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 24.0,
-                    ),
-                    child: FlashcardFace(
-                      text: bottomCard.front,
-                      color: Colors.deepPurple,
-                      label: "QUESTION",
-                    ),
-                  ),
-                ),
+              if (bottomCard != null) _buildFlashcardFace(bottomCard),
 
               // Top Card (The Active Card)
-              SlideTransition(
-                position: _animation,
-                child: GestureDetector(
-                  onTap: () => context.read<QuizBloc>().add(FlipCard()),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 24.0,
-                    ),
-                    child: FlipCardWidget(
-                      key: ValueKey(topCard.id),
-                      isFlipped: widget.state.isFlipped,
-                      front: FlashcardFace(
-                        text: topCard.front,
-                        color: Colors.deepPurple,
-                        label: "QUESTION",
-                      ),
-                      back: FlashcardFace(
-                        text: topCard.back,
-                        color: Colors.indigo,
-                        label: "ANSWER",
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              _buildFlipCard(context, topCard),
             ],
           ),
         ),
 
         if (!widget.state.isFlipped)
           Padding(
-            padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 10),
-            child: AnimatedButton(
-              text: "DECRYPT",
-              icon: Icons.lock_open,
-              onTap: () {
-                context.read<QuizBloc>().add(FlipCard());
-              },
-              iconSide: 'left',
+            padding: EdgeInsets.only(
+              left: 16.scale(),
+              right: 16.scale(),
+              bottom: 10.scale(),
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child: _buildDecryptButton(context),
             ),
           )
         else
           Row(
-            mainAxisAlignment: .spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               RatingButton(
                 label: "FAIL",
@@ -414,6 +473,43 @@ class _QuizContentState extends State<QuizContent>
             ],
           ),
       ],
+    );
+  }
+
+  AnimatedButton _buildDecryptButton(BuildContext context) {
+    return AnimatedButton(
+      text: "DECRYPT",
+      icon: Icons.lock_open,
+      onTap: () {
+        context.read<QuizBloc>().add(FlipCard());
+      },
+      iconSide: 'left',
+    );
+  }
+
+  SlideTransition _buildFlipCard(BuildContext context, Flashcard topCard) {
+    return SlideTransition(
+      position: _animation,
+      child: GestureDetector(
+        onTap: () => context.read<QuizBloc>().add(FlipCard()),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 400),
+          child: FlipCardWidget(
+            key: ValueKey(topCard.id),
+            isFlipped: widget.state.isFlipped,
+            front: FlashcardFace(
+              text: topCard.front,
+              color: Colors.deepPurple,
+              label: "QUESTION",
+            ),
+            back: FlashcardFace(
+              text: topCard.back,
+              color: Colors.indigo,
+              label: "ANSWER",
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

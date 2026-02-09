@@ -12,12 +12,21 @@ import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/pages/deck_list_page.dart';
 import 'package:recall/firebase_options.dart';
 import 'package:recall/core/widgets/loader.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await di.init();
+  ResponsiveScaler.init(
+    designWidth: 448,
+    minScale: 0.8,
+    maxScale: 1.2,
+    maxAccessibilityScale: 1.8,
+  );
+
   runApp(MainApp());
 }
 
@@ -28,6 +37,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ThemeData(
       scaffoldBackgroundColor: Colors.white,
+      primaryColor: Color(0xFFCCFF00),
       fontFamily: 'SpaceGrotesk',
       // colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
       useMaterial3: true,
@@ -43,33 +53,53 @@ class MainApp extends StatelessWidget {
           ),
         ),
       ],
-      child: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, state) {
-          if (state is AuthAuthenticated) {
-            return RepositoryProvider<FlashcardRepository>(
-              create: (context) => FlashcardRepositoryImpl(
-                firestore: di.sl(),
-                storage: di.sl(),
-                userId: state.user.uid,
-                httpClient: http.Client(),
-                imageService: di.sl(),
-              ),
-              child: BlocProvider(
-                create: (context) =>
-                    DeckBloc(repository: context.read<FlashcardRepository>())
-                      ..add(LoadDecks()),
-                child: MaterialApp(theme: theme, home: const DeckListPage()),
-              ),
-            );
-          }
+      child: ResponsiveBreakpoints.builder(
+        breakpoints: [
+          const Breakpoint(start: 0, end: 600, name: MOBILE),
+          const Breakpoint(start: 601, end: 1200, name: TABLET),
+          const Breakpoint(start: 1201, end: 1920, name: DESKTOP),
+        ],
+        child: MaterialApp(
+          theme: theme,
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            child = ResponsiveScaler.scale(context: context, child: child!);
 
-          return MaterialApp(
-            theme: theme,
-            home: state is AuthLoading
-                ? const Scaffold(body: Center(child: Loader()))
-                : const LoginPage(),
-          );
-        },
+            return BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                if (authState is AuthAuthenticated) {
+                  return RepositoryProvider<FlashcardRepository>(
+                    create: (context) => FlashcardRepositoryImpl(
+                      firestore: di.sl(),
+                      storage: di.sl(),
+                      userId: authState.user.uid,
+                      httpClient: http.Client(),
+                      imageService: di.sl(),
+                    ),
+                    child: BlocProvider(
+                      create: (context) => DeckBloc(
+                        repository: context.read<FlashcardRepository>(),
+                      )..add(LoadDecks()),
+                      child: child!,
+                    ),
+                  );
+                }
+                return child!;
+              },
+            );
+          },
+          home: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              if (state is AuthAuthenticated) {
+                return const DeckListPage();
+              }
+              if (state is AuthLoading) {
+                return const Scaffold(body: Center(child: Loader()));
+              }
+              return const LoginPage();
+            },
+          ),
+        ),
       ),
     );
   }

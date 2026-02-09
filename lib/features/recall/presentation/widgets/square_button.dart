@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class SquareButton extends StatefulWidget {
   final IconData icon;
@@ -35,8 +36,8 @@ class _SquareButtonState extends State<SquareButton> {
             ? Matrix4.translationValues(3, 3, 0)
             : Matrix4.identity(),
 
-        height: 45,
-        width: 45,
+        height: 45.scale(),
+        width: 45.scale(),
 
         decoration: BoxDecoration(
           color: Colors.white,

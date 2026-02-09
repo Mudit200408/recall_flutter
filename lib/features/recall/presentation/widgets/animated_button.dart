@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class AnimatedButton extends StatefulWidget {
   final String text;
@@ -40,7 +41,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
         transform: _isPressed
             ? Matrix4.translationValues(4, 4, 0)
             : Matrix4.identity(),
-        height: 64,
+        height: 64.scale(),
         decoration: BoxDecoration(
           color: widget.color ?? const Color(0xFFCCFF00),
           border: Border.all(color: Colors.black, width: 3),
@@ -53,7 +54,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
           children: [
             if (widget.icon != null && widget.iconSide == 'left')
               Icon(widget.icon!, color: Colors.black),
-            SizedBox(width: 12),
+            SizedBox(width: 12.scale()),
             Text(
               widget.text,
               style: TextStyle(
@@ -62,7 +63,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
                 color: widget.textColor ?? Colors.black,
               ),
             ),
-            SizedBox(width: 12),
+            SizedBox(width: 12.scale()),
             if (widget.icon != null && widget.iconSide == 'right')
               Icon(widget.icon!, color: Colors.black),
           ],

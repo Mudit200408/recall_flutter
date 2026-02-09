@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class CreateDeckDialog extends StatefulWidget {
   final Function(String topic, int count, bool useImages, int duration)
@@ -24,159 +25,167 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: blackColor, width: 4),
-          boxShadow: const [
-            BoxShadow(color: blackColor, offset: Offset(8, 8), blurRadius: 0),
-          ],
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: blackColor),
-                  child: const Icon(Icons.add, color: primaryColor, size: 24),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    "NEW MISSION",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      height: 1.0,
+      child: SingleChildScrollView(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: blackColor, width: 4),
+            boxShadow: const [
+              BoxShadow(color: blackColor, offset: Offset(8, 8), blurRadius: 0),
+            ],
+          ),
+          padding: EdgeInsets.all(24.scale()),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.scale()),
+                    decoration: BoxDecoration(color: blackColor),
+                    child: Icon(
+                      Icons.add,
+                      color: primaryColor,
+                      size: 24.scale(),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Topic Input
-            Text(
-              "OBJECTIVE (TOPIC)",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
+                  SizedBox(width: 12.scale()),
+                  Expanded(
+                    child: Text(
+                      "NEW MISSION",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[100],
-                hintText: "e.g. 'Cybersecurity Basics'",
-                hintStyle: TextStyle(
-                  color: Colors.grey[500],
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.normal,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: blackColor, width: 3),
-                  borderRadius: BorderRadius.zero,
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: blackColor, width: 3),
-                  borderRadius: BorderRadius.zero,
+              SizedBox(height: 24.scale()),
+
+              // Topic Input
+              Text(
+                "OBJECTIVE (TOPIC)",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
                 ),
               ),
-              onChanged: (value) => topic = value,
-            ),
-            const SizedBox(height: 20),
-
-            // Card Count Slider
-            _buildSliderParams(
-              context,
-              "INTEL VOLUME (CARDS)",
-              count,
-              3,
-              20,
-              (val) => setState(() => count = val),
-            ),
-            const SizedBox(height: 16),
-
-            // Duration Slider
-            _buildSliderParams(
-              context,
-              "DEADLINE (DAYS)",
-              duration,
-              1,
-              10,
-              (val) => setState(() => duration = val),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Image Toggle
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: blackColor, width: 3),
-                color: useImages ? const Color(0xFFE0E0E0) : Colors.white,
-              ),
-              child: SwitchListTile(
-                title: const Text(
-                  "VISUAL DATA",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.0,
+              SizedBox(height: 8.scale()),
+              TextField(
+                style: TextStyle(fontWeight: FontWeight.bold),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  hintText: "e.g. 'Cybersecurity Basics'",
+                  hintStyle: TextStyle(
+                    color: Colors.grey[500],
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.normal,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.scale(),
+                    vertical: 16.scale(),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: blackColor, width: 3),
+                    borderRadius: BorderRadius.zero,
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: blackColor, width: 3),
+                    borderRadius: BorderRadius.zero,
                   ),
                 ),
-                subtitle: const Text(
-                  "Enable AI generated imagery",
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-                activeThumbColor: blackColor,
-                activeTrackColor: primaryColor,
-                inactiveThumbColor: blackColor,
-                inactiveTrackColor: Colors.grey[300],
-                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                value: useImages,
-                onChanged: (value) => setState(() => useImages = value),
+                onChanged: (value) => topic = value,
               ),
-            ),
+              SizedBox(height: 20.scale()),
 
-            const SizedBox(height: 24),
+              // Card Count Slider
+              _buildSliderParams(
+                context,
+                "INTEL VOLUME (CARDS)",
+                count,
+                3,
+                20,
+                (val) => setState(() => count = val),
+              ),
+              SizedBox(height: 16.scale()),
 
-            // Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: AnimatedButton(
-                    text: "ABORT",
-                    onTap: () => Navigator.pop(context),
-                    color: Colors.white,
-                  ),
+              // Duration Slider
+              _buildSliderParams(
+                context,
+                "DEADLINE (DAYS)",
+                duration,
+                1,
+                10,
+                (val) => setState(() => duration = val),
+              ),
+
+              SizedBox(height: 20.scale()),
+
+              // Image Toggle
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: blackColor, width: 3),
+                  color: useImages ? const Color(0xFFE0E0E0) : Colors.white,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AnimatedButton(
-                    text: 'START',
-                    onTap: () {
-                      if (topic.isNotEmpty) {
-                        widget.onSubmit(topic, count, useImages, duration);
-                        Navigator.pop(context);
-                      }
-                    },
+                child: SwitchListTile(
+                  title: Text(
+                    "VISUAL DATA",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                    ),
                   ),
+                  subtitle: Text(
+                    "Enable AI generated imagery",
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  activeThumbColor: blackColor,
+                  activeTrackColor: primaryColor,
+                  inactiveThumbColor: blackColor,
+                  inactiveTrackColor: Colors.grey[300],
+                  trackOutlineColor: WidgetStateProperty.all(
+                    Colors.transparent,
+                  ),
+                  value: useImages,
+                  onChanged: (value) => setState(() => useImages = value),
                 ),
-              ],
-            ),
-          ],
+              ),
+
+              SizedBox(height: 24.scale()),
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: AnimatedButton(
+                      text: "ABORT",
+                      onTap: () => Navigator.pop(context),
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: 12.scale()),
+                  Expanded(
+                    child: AnimatedButton(
+                      text: 'START',
+                      onTap: () {
+                        if (topic.isNotEmpty) {
+                          widget.onSubmit(topic, count, useImages, duration);
+                          Navigator.pop(context);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -198,21 +207,24 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: EdgeInsets.symmetric(
+                horizontal: 8.scale(),
+                vertical: 2.scale(),
+              ),
               decoration: BoxDecoration(
                 color: blackColor,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 "$value",
-                style: const TextStyle(
+                style: TextStyle(
                   color: primaryColor,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'monospace',
@@ -221,7 +233,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.scale()),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: blackColor,
