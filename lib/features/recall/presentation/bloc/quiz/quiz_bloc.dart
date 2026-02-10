@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:recall/core/notifications/notification_service.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:recall/features/recall/domain/entities/flashcard.dart';
@@ -46,8 +47,12 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   }
 
   FutureOr<void> _onFlipCard(FlipCard event, Emitter<QuizState> emit) {
+    print(
+      'DEBUG: [QuizBloc] FlipCard event received. Current state: ${state.runtimeType}',
+    );
     if (state is QuizActive) {
       final currentState = state as QuizActive;
+      print('DEBUG: [QuizBloc] Emitting isFlipped: true');
       emit(
         QuizActive(
           remainingCards: currentState.remainingCards,
@@ -60,6 +65,10 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           failCount: currentState.failCount,
         ),
       );
+    } else {
+      print(
+        'DEBUG: [QuizBloc] Ignoring FlipCard in state: ${state.runtimeType}',
+      );
     }
   }
 
@@ -68,13 +77,11 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       final currentState = state as QuizActive;
       final currentCard = currentState.currentCard;
 
-      // 1: Run the algo
+      // 1: Run the algo (Sync)
+      print('DEBUG: [QuizBloc] RateCard event: ${event.rating}');
       final updateCard = _algo.calculateNextReview(currentCard, event.rating);
 
-      // 2: Save to DB
-      await repository.updateCardProgress(updateCard);
-
-      // 2.5: Update Stats
+      // 2: Update Stats (Sync)
       int easy = currentState.easyCount;
       int hard = currentState.hardCount;
       int fail = currentState.failCount;
@@ -94,38 +101,15 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         failIncrement = 1;
       }
 
-      // Update Deck Stats in Repo
-      await repository.updateDeckStats(
-        currentState.deck.id,
-        easyIncrement: easyIncrement,
-        hardIncrement: hardIncrement,
-        failIncrement: failIncrement,
-      );
-
-      // 3: Calculate the next state
+      // 3: Calculate the next state (Sync)
       final nextList = List<Flashcard>.from(currentState.remainingCards)
         ..removeAt(0);
 
+      // 4: EMIT NEW STATE IMMEDIATELY (Optimistic UI)
       if (nextList.isEmpty) {
-        // Calculate the next due date
-        final tomorrow = DateTime.now().add(const Duration(days: 1));
-
-        // Schedule Notification
-        // Check for immediate deletion criteria
-        bool isDeleted = false;
-        if (currentState.deck.daysGenerated >=
-            currentState.deck.scheduledDays) {
-          try {
-            await repository.deleteDeck(currentState.deck.id);
-            isDeleted = true;
-          } catch (e) {
-            // Log error but continue flow
-            // debugPrint("Failed to delete deck: $e");
-          }
-        } else {
-          // Only schedule reminder if NOT deleted
-          notificationService.scheduleStudyReminder(tomorrow);
-        }
+        // Calculate deletion status
+        final bool shouldDelete =
+            currentState.deck.daysGenerated >= currentState.deck.scheduledDays;
 
         emit(
           QuizFinished(
@@ -133,9 +117,36 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             easyCount: easy,
             hardCount: hard,
             failCount: fail,
-            isDeckDeleted: isDeleted,
+            isDeckDeleted: shouldDelete,
           ),
         );
+
+        // 5: Perform DB Operations (Async)
+        try {
+          await Future.wait([
+            repository.updateCardProgress(updateCard),
+            repository.updateDeckStats(
+              currentState.deck.id,
+              easyIncrement: easyIncrement,
+              hardIncrement: hardIncrement,
+              failIncrement: failIncrement,
+            ),
+          ]);
+
+          // Handle Deletion
+          if (shouldDelete) {
+            await repository.deleteDeck(currentState.deck.id);
+          } else {
+            // Only schedule reminder if NOT deleted
+            final tomorrow = DateTime.now().add(const Duration(days: 1));
+            notificationService.scheduleStudyReminder(tomorrow);
+          }
+        } catch (e) {
+          // If DB fails after we showed Finished, we might want to log it.
+          // Reverting state is tricky here as user thinks they are done.
+          // For now, we assume retry/sync mechanisms or just log.
+          print("Error saving quiz progress: $e");
+        }
       } else {
         emit(
           QuizActive(
@@ -149,6 +160,21 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             failCount: fail,
           ),
         );
+
+        // 5: Perform DB Operations (Async for intermediate cards)
+        try {
+          await Future.wait([
+            repository.updateCardProgress(updateCard),
+            repository.updateDeckStats(
+              currentState.deck.id,
+              easyIncrement: easyIncrement,
+              hardIncrement: hardIncrement,
+              failIncrement: failIncrement,
+            ),
+          ]);
+        } catch (e) {
+          debugPrint("Error saving card progress: $e");
+        }
       }
     }
   }

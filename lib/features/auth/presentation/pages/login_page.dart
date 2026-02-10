@@ -160,8 +160,8 @@ class LoginPage extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                const Text(
-                                  "BOOT",
+                                Text(
+                                  isOffline ? "OFFLINE" : "BOOT",
                                   style: TextStyle(
                                     fontFamily: 'ArchivoBlack',
                                     fontSize: 64,

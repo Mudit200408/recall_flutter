@@ -28,8 +28,8 @@ class FlashcardFace extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: Colors.black, width: 4),
-        boxShadow: const [BoxShadow(offset: Offset(6, 6))],
+        // border: Border.all(color: Colors.black, width: 2),
+        //boxShadow: const [BoxShadow(offset: Offset(6, 6))],
       ),
       child: Stack(
         children: [

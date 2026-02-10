@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:recall/core/network/connectivity_cubit.dart';
 import 'package:recall/core/widgets/loader.dart';
 import 'package:recall/features/recall/presentation/bloc/quiz/quiz_bloc.dart';
@@ -9,13 +11,13 @@ import 'package:recall/features/recall/presentation/pages/quiz_empty_page.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
 import 'package:recall/features/recall/presentation/widgets/flashcard_face.dart';
 import 'package:recall/features/recall/presentation/widgets/flip_card_widget.dart';
-import 'package:recall/features/recall/presentation/widgets/rating_button.dart';
 import 'package:recall/features/recall/domain/entities/flashcard.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 import 'package:recall/injection_container.dart' as di;
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:responsive_scaler/responsive_scaler.dart';
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 
 class QuizPage extends StatelessWidget {
   final Deck deck;
@@ -157,185 +159,46 @@ class QuizContent extends StatefulWidget {
   State<QuizContent> createState() => _QuizContentState();
 }
 
-class _QuizContentState extends State<QuizContent>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _animation;
-  Flashcard? _animatingCard;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _animation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset.zero,
-    ).animate(_controller);
-  }
-
-  @override
-  void didUpdateWidget(covariant QuizContent oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.state.currentCard != widget.state.currentCard) {
-      // New card arrived, reset animation instantly
-      _controller.value = 0;
-      _animatingCard = null;
-    }
-  }
+class _QuizContentState extends State<QuizContent> {
+  final CardSwiperController _swiperController = CardSwiperController();
 
   @override
   void dispose() {
-    _controller.dispose();
+    _swiperController.dispose();
     super.dispose();
   }
 
-  void _handleRating(int rating, Offset direction) {
-    if (_controller.isAnimating) return;
-
-    setState(() {
-      _animatingCard = widget.state.currentCard;
-      _animation = Tween<Offset>(
-        begin: Offset.zero,
-        end: direction,
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
-    });
-
-    _controller.forward().then((_) {
-      context.read<QuizBloc>().add(RateCard(rating: rating));
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Current card is either the one in state, or if we are animating, the one we captured.
-    final topCard = _animatingCard ?? widget.state.currentCard;
-    final isMobile = ResponsiveBreakpoints.of(context).isMobile;
-
-    // Bottom card (Next) is the one in state IF we are currently animating the old one away.
-    // Or if we are just viewing, the bottom card is the next one in the list.
-    // Wait, if we are animating 'currentCard' away, the 'state.currentCard' is still the same until Bloc updates.
-    // So 'topCard' is visually the one flying away.
-    // We need to show what's underneath.
-    // Underneath is the NEXT card in the list (remainingCards[1]).
-
-    Flashcard? bottomCard;
-    if (widget.state.remainingCards.length > 1) {
-      bottomCard = widget.state.remainingCards[1];
+  bool _handleSwipe(
+    int previousIndex,
+    int? currentIndex,
+    CardSwiperDirection direction,
+  ) {
+    print(
+      'DEBUG: [QuizPage] _handleSwipe called. isFlipped: ${widget.state.isFlipped}, Direction: $direction',
+    );
+    if (!widget.state.isFlipped) {
+      print("DEBUG: [QuizPage] Cannot swipe - not flipped");
+      return false;
     }
 
-    return isMobile
-        ? _buildMobileView(context, bottomCard, topCard)
-        : _buildTabletView(context, bottomCard, topCard);
-  }
-
-  Widget _buildTabletView(
-    BuildContext context,
-    Flashcard? bottomCard,
-    Flashcard topCard,
-  ) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Header Row with close button and title
-        _buildHeader(context),
-        SizedBox(height: 16.scale()),
-
-        // Progress Bar
-        _buildProgressBar(),
-        SizedBox(height: 24.scale()),
-
-        // Main Content: Card on left, Actions on right
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Flashcard Stack
-              Flexible(
-                flex: 2,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Bottom Card (The Next Card)
-                    if (bottomCard != null) _buildFlashcardFace(bottomCard),
-
-                    // Top Card (The Active Card)
-                    _buildFlipCard(context, topCard),
-                  ],
-                ),
-              ),
-
-              SizedBox(width: 28.scale()),
-
-              // Action Buttons (on the right side)
-              Flexible(
-                flex: 2,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (!widget.state.isFlipped)
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 250),
-                        child: _buildDecryptButton(context),
-                      )
-                    else
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RatingButton(
-                            label: "EASY",
-                            color: const Color.fromARGB(255, 90, 223, 97),
-                            rating: 5,
-                            assetName: 'assets/svg/easy.svg',
-                            onPressed: () =>
-                                _handleRating(5, const Offset(1.5, 0)),
-                          ),
-                          SizedBox(height: 16.scale()),
-                          RatingButton(
-                            label: "HARD",
-                            color: Colors.yellow,
-                            rating: 3,
-                            assetName: 'assets/svg/hard.svg',
-                            onPressed: () =>
-                                _handleRating(3, const Offset(0, -1.5)),
-                          ),
-                          SizedBox(height: 16.scale()),
-                          RatingButton(
-                            label: "FAIL",
-                            color: Colors.red,
-                            rating: 1,
-                            assetName: 'assets/svg/fail.svg',
-                            onPressed: () =>
-                                _handleRating(1, const Offset(-1.5, 0)),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 16.scale()),
-      ],
-    );
-  }
-
-  Transform _buildFlashcardFace(Flashcard bottomCard) {
-    return Transform.scale(
-      scale: 0.95,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 400),
-        child: FlashcardFace(
-          text: bottomCard.front,
-          color: Colors.deepPurple,
-          label: "QUESTION",
-        ),
-      ),
-    );
+    if (direction == CardSwiperDirection.right) {
+      final isLastCard = widget.state.remainingCards.length == 1;
+      Future.delayed(Duration(milliseconds: isLastCard ? 15 : 300), () {
+        if (mounted) {
+          HapticFeedback.lightImpact();
+          context.read<QuizBloc>().add(RateCard(rating: 5)); // Know it
+        }
+      });
+    } else if (direction == CardSwiperDirection.left) {
+      final isLastCard = widget.state.remainingCards.length == 1;
+      Future.delayed(Duration(milliseconds: isLastCard ? 15 : 300), () {
+        if (mounted) {
+          HapticFeedback.lightImpact();
+          context.read<QuizBloc>().add(RateCard(rating: 3)); // Review
+        }
+      });
+    }
+    return true;
   }
 
   Padding _buildHeader(BuildContext context) {
@@ -406,110 +269,330 @@ class _QuizContentState extends State<QuizContent>
     );
   }
 
-  Column _buildMobileView(
+  Widget _buildMobileView(
     BuildContext context,
-    Flashcard? bottomCard,
+    List<Flashcard> remainingCards,
     Flashcard topCard,
+    bool isMobile,
   ) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 20,
-      children: [
-        _buildHeader(context),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildHeader(context),
+            SizedBox(height: 16.scale()),
 
-        _buildProgressBar(),
+            _buildProgressBar(),
+            SizedBox(height: 16.scale()),
 
-        Expanded(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Bottom Card (The Next Card)
-              if (bottomCard != null) _buildFlashcardFace(bottomCard),
+            _buildCard(remainingCards, isMobile),
 
-              // Top Card (The Active Card)
-              _buildFlipCard(context, topCard),
-            ],
-          ),
-        ),
-
-        if (!widget.state.isFlipped)
-          Padding(
-            padding: EdgeInsets.only(
-              left: 16.scale(),
-              right: 16.scale(),
-              bottom: 10.scale(),
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 500),
-              child: _buildDecryptButton(context),
-            ),
-          )
-        else
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              RatingButton(
-                label: "FAIL",
-                color: Colors.red,
-                rating: 1,
-                assetName: 'assets/svg/fail.svg',
-                onPressed: () =>
-                    _handleRating(1, const Offset(-1.5, 0)), // Right
+            // Swipe hints
+            if (widget.state.isFlipped)
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.scale(),
+                  vertical: 12.scale(),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.arrow_back,
+                          color: Colors.orange,
+                          size: 20.scale(),
+                        ),
+                        SizedBox(width: 4.scale()),
+                        Text(
+                          "REVIEW",
+                          style: TextStyle(
+                            fontSize: 12.scale(),
+                            fontVariations: [FontVariation.weight(700)],
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          "KNOW IT",
+                          style: TextStyle(
+                            fontSize: 12.scale(),
+                            fontVariations: [FontVariation.weight(700)],
+                            color: Colors.green,
+                          ),
+                        ),
+                        SizedBox(width: 4.scale()),
+                        Icon(
+                          Icons.arrow_forward,
+                          color: Colors.green,
+                          size: 20.scale(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            else
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.scale()),
+                child: Text(
+                  "TAP TO REVEAL",
+                  style: TextStyle(
+                    fontSize: 12.scale(),
+                    fontVariations: [FontVariation.weight(700)],
+                    color: Colors.grey,
+                  ),
+                ),
               ),
-              RatingButton(
-                label: "HARD",
-                color: Colors.yellow,
-                rating: 3,
-                assetName: 'assets/svg/hard.svg',
-                onPressed: () => _handleRating(3, const Offset(0, -1.5)), // Top
-              ),
-              RatingButton(
-                label: "EASY",
-                color: const Color.fromARGB(255, 90, 223, 97),
-                rating: 5,
-                assetName: 'assets/svg/easy.svg',
-                onPressed: () => _handleRating(5, const Offset(1.5, 0)), // Left
-              ),
-            ],
-          ),
-      ],
-    );
-  }
-
-  AnimatedButton _buildDecryptButton(BuildContext context) {
-    return AnimatedButton(
-      text: "DECRYPT",
-      icon: Icons.lock_open,
-      onTap: () {
-        context.read<QuizBloc>().add(FlipCard());
-      },
-      iconSide: 'left',
-    );
-  }
-
-  SlideTransition _buildFlipCard(BuildContext context, Flashcard topCard) {
-    return SlideTransition(
-      position: _animation,
-      child: GestureDetector(
-        onTap: () => context.read<QuizBloc>().add(FlipCard()),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 400),
-          child: FlipCardWidget(
-            key: ValueKey(topCard.id),
-            isFlipped: widget.state.isFlipped,
-            front: FlashcardFace(
-              text: topCard.front,
-              color: Colors.deepPurple,
-              label: "QUESTION",
-            ),
-            back: FlashcardFace(
-              text: topCard.back,
-              color: Colors.indigo,
-              label: "ANSWER",
-            ),
-          ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCard(List<Flashcard> remainingCards, bool isMobile) {
+    return Expanded(
+      child: Stack(
+        children: [
+          Center(
+            child: CardSwiper(
+              key: ValueKey(
+                "${remainingCards.length}_${widget.state.isFlipped}",
+              ), // Rebuild on flip to update disabled swipe state
+              controller: _swiperController,
+              cardsCount: remainingCards.length,
+              numberOfCardsDisplayed: remainingCards.length.clamp(1, 3),
+              backCardOffset: isMobile ? Offset(0, 45) : Offset(30, 38),
+              scale: 0.9,
+              padding: EdgeInsets.all(24.scale()),
+              allowedSwipeDirection: widget.state.isFlipped
+                  ? const AllowedSwipeDirection.only(left: true, right: true)
+                  : const AllowedSwipeDirection.none(),
+              onSwipe: widget.state.isFlipped ? _handleSwipe : null,
+              cardBuilder:
+                  (
+                    context,
+                    index,
+                    horizontalThresholdPercentage,
+                    verticalThresholdPercentage,
+                  ) {
+                    final card = remainingCards[index];
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                if (!widget.state.isFlipped) {
+                                  HapticFeedback.lightImpact();
+                                  context.read<QuizBloc>().add(FlipCard());
+                                }
+                              },
+                              // PATCH: Explicitly consume drag gestures when not flipped
+                              // to prevent CardSwiper from receiving them.
+                              onHorizontalDragUpdate: !widget.state.isFlipped
+                                  ? (_) {}
+                                  : null,
+                              onVerticalDragUpdate: !widget.state.isFlipped
+                                  ? (_) {}
+                                  : null,
+                              onHorizontalDragStart: !widget.state.isFlipped
+                                  ? (_) {}
+                                  : null,
+                              onVerticalDragStart: !widget.state.isFlipped
+                                  ? (_) {}
+                                  : null,
+                              child: FlipCardWidget(
+                                key: ValueKey(card.id),
+                                isFlipped: widget.state.isFlipped && index == 0,
+                                front: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.black,
+                                      width: 4.0,
+                                    ),
+                                    color: Colors.white,
+                                  ),
+                                  child: ClipRRect(
+                                    child: FlashcardFace(
+                                      text: card.front,
+                                      color: Colors.deepPurple,
+                                      label: "QUESTION",
+                                    ),
+                                  ),
+                                ),
+                                back: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.black,
+                                      width: 4.0,
+                                    ),
+                                    color: Colors.white,
+                                  ),
+                                  child: ClipRRect(
+                                    child: FlashcardFace(
+                                      text: card.back,
+                                      color: Colors.indigo,
+                                      label: "ANSWER",
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Right swipe overlay (Know it - Green)
+                            if (widget.state.isFlipped &&
+                                horizontalThresholdPercentage > 0)
+                              Positioned.fill(
+                                child: IgnorePointer(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withValues(
+                                        alpha:
+                                            (horizontalThresholdPercentage /
+                                                    100)
+                                                .abs()
+                                                .clamp(0.0, 0.7),
+                                      ),
+                                      border: Border.all(
+                                        color: Colors.transparent,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Opacity(
+                                        opacity:
+                                            (horizontalThresholdPercentage /
+                                                    100)
+                                                .abs()
+                                                .clamp(0.0, 1.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/svg/easy.svg',
+                                              height: 64.scale(),
+                                              width: 64.scale(),
+                                              colorFilter: ColorFilter.mode(
+                                                Colors.white,
+                                                BlendMode.srcIn,
+                                              ),
+                                            ),
+                                            SizedBox(height: 8.scale()),
+                                            Text(
+                                              "NAILED IT",
+                                              style: TextStyle(
+                                                fontSize: 24.scale(),
+                                                fontVariations: [
+                                                  FontVariation.weight(900),
+                                                ],
+                                                color: Colors.white,
+                                                letterSpacing: 2,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                            // Left swipe overlay (Review - Orange)
+                            if (widget.state.isFlipped &&
+                                horizontalThresholdPercentage < 0)
+                              Positioned.fill(
+                                child: IgnorePointer(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.withValues(
+                                        alpha:
+                                            (horizontalThresholdPercentage /
+                                                    100)
+                                                .abs()
+                                                .clamp(0.0, 0.7),
+                                      ),
+                                      border: Border.all(
+                                        color: Colors.transparent,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Opacity(
+                                        opacity:
+                                            (horizontalThresholdPercentage /
+                                                    100)
+                                                .abs()
+                                                .clamp(0.0, 1.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/svg/hard.svg',
+                                              height: 64.scale(),
+                                              width: 64.scale(),
+                                              colorFilter: ColorFilter.mode(
+                                                Colors.white,
+                                                BlendMode.srcIn,
+                                              ),
+                                            ),
+                                            SizedBox(height: 8.scale()),
+                                            Text(
+                                              "REVIEW",
+                                              style: TextStyle(
+                                                fontSize: 24.scale(),
+                                                fontVariations: [
+                                                  FontVariation.weight(900),
+                                                ],
+                                                color: Colors.white,
+                                                letterSpacing: 2,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = ResponsiveBreakpoints.of(context).isMobile;
+    if (widget.state.remainingCards.isEmpty && widget.state.totalCards > 0) {
+      // Quiz completed logic handled by parent or different state
+      return const SizedBox.shrink();
+    }
+
+    // Safety check for empty cards
+    if (widget.state.remainingCards.isEmpty) return const SizedBox.shrink();
+
+    final remainingCards = widget.state.remainingCards;
+    // topCard is remainingCards[0]
+
+    return _buildMobileView(
+      context,
+      remainingCards,
+      remainingCards.first,
+      isMobile,
     );
   }
 }

@@ -1,10 +1,12 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
 
 import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:responsive_scaler/responsive_scaler.dart';
 
-class QuizEmptyPage extends StatelessWidget {
+class QuizEmptyPage extends StatefulWidget {
   final Deck deck;
   const QuizEmptyPage({super.key, required this.deck});
 
@@ -12,6 +14,65 @@ class QuizEmptyPage extends StatelessWidget {
   static const Color primaryColor = Color(0xFFCCFF00);
   static const Color blackColor = Colors.black;
   static const Color backgroundColor = Colors.white;
+
+  @override
+  State<QuizEmptyPage> createState() => _QuizEmptyPageState();
+}
+
+class _QuizEmptyPageState extends State<QuizEmptyPage> {
+  late Timer _timer;
+  Duration _timeLeft = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _calculateTimeLeft();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _calculateTimeLeft();
+    });
+  }
+
+  void _calculateTimeLeft() {
+    final now = DateTime.now();
+    // Assuming cards reset daily based on lastGeneratedDate.
+    // If not available, we assume 24 hours from now as a fallback or end of day?
+    // Let's assume the reset happens at midnight or 24h after generation.
+    // Given spaced repetition often works on day boundaries, let's target next midnight if generated today,
+    // or simply 24 hours after last generation.
+    // For simplicity and common app behavior: Target next midnight.
+    // Or simpler: lastGeneratedDate + 24 hours.
+
+    // UPDATE: The DeckBloc generates new cards after 20 hours, so we align the timer to that.
+    final lastGen = widget.deck.lastGeneratedDate ?? DateTime.now();
+    final target = lastGen.add(const Duration(hours: 20));
+
+    final difference = target.difference(now);
+
+    if (difference.isNegative) {
+      // Should be ready now? But if it's empty, maybe backend hasn't updated or synced.
+      // We'll show 00:00:00 or reload prompt.
+      setState(() {
+        _timeLeft = Duration.zero;
+      });
+    } else {
+      setState(() {
+        _timeLeft = difference;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +93,13 @@ class QuizEmptyPage extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      border: Border.all(color: blackColor, width: 4),
+                      border: Border.all(
+                        color: QuizEmptyPage.blackColor,
+                        width: 4,
+                      ),
                       boxShadow: const [
                         BoxShadow(
-                          color: blackColor,
+                          color: QuizEmptyPage.blackColor,
                           offset: Offset(8, 8),
                           blurRadius: 0,
                         ),
@@ -58,7 +122,10 @@ class QuizEmptyPage extends StatelessWidget {
                                 ],
                               ),
                               border: Border(
-                                bottom: BorderSide(color: blackColor, width: 4),
+                                bottom: BorderSide(
+                                  color: QuizEmptyPage.blackColor,
+                                  width: 4,
+                                ),
                               ),
                             ),
                             child: Stack(
@@ -80,14 +147,14 @@ class QuizEmptyPage extends StatelessWidget {
                                       vertical: 4.scale(),
                                     ),
                                     decoration: BoxDecoration(
-                                      color: primaryColor,
+                                      color: QuizEmptyPage.primaryColor,
                                       border: Border.all(
-                                        color: blackColor,
+                                        color: QuizEmptyPage.blackColor,
                                         width: 3,
                                       ),
                                       boxShadow: const [
                                         BoxShadow(
-                                          color: blackColor,
+                                          color: QuizEmptyPage.blackColor,
                                           offset: Offset(4, 4),
                                         ),
                                       ],
@@ -130,14 +197,27 @@ class QuizEmptyPage extends StatelessWidget {
                                   ),
                                 ),
                                 SizedBox(height: 20.scale()),
-                                Text(
-                                  'COME BACK LATER...',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey.shade600,
-                                    letterSpacing: 1.2,
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16.scale(),
+                                    vertical: 8.scale(),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'NEXT DECK IN: ${_formatDuration(_timeLeft)}',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: QuizEmptyPage.primaryColor,
+                                      letterSpacing: 1.2,
+                                      fontFeatures: [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
@@ -158,15 +238,14 @@ class QuizEmptyPage extends StatelessWidget {
                           spacing: 8.scale(),
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _buildStatBadge('FAIL', deck.failCount, Colors.red),
                             _buildStatBadge(
-                              'HARD',
-                              deck.hardCount,
+                              'REVIEW',
+                              widget.deck.hardCount,
                               Colors.orange,
                             ),
                             _buildStatBadge(
-                              'EASY',
-                              deck.easyCount,
+                              'NAILED',
+                              widget.deck.easyCount,
                               Colors.green,
                             ),
                           ],
@@ -197,38 +276,44 @@ class QuizEmptyPage extends StatelessWidget {
   }
 
   Widget _buildStatBadge(String label, int value, Color color) {
-    return Container(
-      width: 80.scale(),
-      padding: EdgeInsets.symmetric(vertical: 12.scale()),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: blackColor, width: 3),
-        boxShadow: [
-          BoxShadow(color: blackColor, offset: Offset(4, 4), blurRadius: 0),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            value.toString(),
-            style: TextStyle(
-              fontSize: 24,
-              fontVariations: [FontVariation.weight(900)],
-              color: color,
-              height: 1.0,
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: 100.scale()),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.scale()),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: QuizEmptyPage.blackColor, width: 3),
+          boxShadow: [
+            BoxShadow(
+              color: QuizEmptyPage.blackColor,
+              offset: Offset(4, 4),
+              blurRadius: 0,
             ),
-          ),
-          SizedBox(height: 4.scale()),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontVariations: [FontVariation.weight(900)],
-              color: blackColor,
-              letterSpacing: 1.0,
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              value.toString(),
+              style: TextStyle(
+                fontSize: 24,
+                fontVariations: [FontVariation.weight(900)],
+                color: color,
+                height: 1.0,
+              ),
             ),
-          ),
-        ],
+            SizedBox(height: 4.scale()),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontVariations: [FontVariation.weight(900)],
+                color: color,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

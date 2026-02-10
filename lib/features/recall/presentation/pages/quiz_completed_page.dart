@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
-import 'package:responsive_framework/responsive_framework.dart';
 import 'package:responsive_scaler/responsive_scaler.dart';
 
 class QuizCompletedPage extends StatelessWidget {
@@ -151,19 +150,14 @@ class QuizCompletedPage extends StatelessWidget {
                                           MainAxisAlignment.spaceAround,
                                       children: [
                                         _buildStatItem(
-                                          "EASY",
+                                          "KNEW IT",
                                           easyCount,
                                           Colors.green,
                                         ),
                                         _buildStatItem(
-                                          "HARD",
-                                          hardCount,
+                                          "REVIEW",
+                                          hardCount + failCount,
                                           Colors.orange,
-                                        ),
-                                        _buildStatItem(
-                                          "FAIL",
-                                          failCount,
-                                          Colors.red,
                                         ),
                                       ],
                                     ),

@@ -34,7 +34,7 @@ class _FlipCardWidgetState extends State<FlipCardWidget>
     );
 
     if (widget.isFlipped) {
-      _controller.value = 1.0;
+      _controller.forward();
     }
   }
 

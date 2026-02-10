@@ -280,28 +280,30 @@ class _DeckListPageState extends State<DeckListPage>
   }
 
   Widget _buildEmptyView() => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset('assets/images/question-mark.png', height: 300),
-        Text(
-          "NULL_DATA",
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-            fontFamily: 'ArchivoBlack',
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset('assets/images/question-mark.png', height: 300),
+          Text(
+            "NULL_DATA",
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              fontFamily: 'ArchivoBlack',
+            ),
           ),
-        ),
-        Text(
-          "CREATE A DECK TO START YOUR MISSION",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black,
+          Text(
+            "CREATE A DECK TO START YOUR MISSION",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.black,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 

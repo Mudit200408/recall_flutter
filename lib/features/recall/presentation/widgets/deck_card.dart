@@ -118,7 +118,8 @@ class DeckCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildStat("SIZE", "${deck.cardCount} CARDS"),
+                      _buildStat("NEXT", "${deck.dailyCardCount} CARDS"),
+                      _buildStat("PLAYED", "${deck.cardCount} CARDS"),
 
                       SquareButton(
                         icon: Icons.delete_outline,

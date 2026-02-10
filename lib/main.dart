@@ -39,6 +39,20 @@ class MainApp extends StatelessWidget {
       scaffoldBackgroundColor: Colors.white,
       primaryColor: Color(0xFFCCFF00),
       fontFamily: 'SpaceGrotesk',
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: Color.fromARGB(
+          255,
+          184,
+          230,
+          0,
+        ), // Color of the blinking cursor
+        selectionColor: Color(
+          0xFFCCFF00,
+        ).withValues(alpha: 0.3), // Color of highlighted text
+        selectionHandleColor: Color(
+          0xFFCCFF00,
+        ), // Color of the "bubbles" at the ends of a selection
+      ),
       // colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
       useMaterial3: true,
     );
