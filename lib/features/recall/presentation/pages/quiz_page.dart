@@ -161,6 +161,7 @@ class QuizContent extends StatefulWidget {
 
 class _QuizContentState extends State<QuizContent> {
   final CardSwiperController _swiperController = CardSwiperController();
+  bool _isSwiping = false;
 
   @override
   void dispose() {
@@ -181,10 +182,16 @@ class _QuizContentState extends State<QuizContent> {
       return false;
     }
 
+    // Immediately mark swiping to prevent background card from getting isFlipped
+    setState(() {
+      _isSwiping = true;
+    });
+
     if (direction == CardSwiperDirection.right) {
       final isLastCard = widget.state.remainingCards.length == 1;
       Future.delayed(Duration(milliseconds: isLastCard ? 15 : 300), () {
         if (mounted) {
+          _isSwiping = false;
           HapticFeedback.lightImpact();
           context.read<QuizBloc>().add(RateCard(rating: 5)); // Know it
         }
@@ -193,6 +200,7 @@ class _QuizContentState extends State<QuizContent> {
       final isLastCard = widget.state.remainingCards.length == 1;
       Future.delayed(Duration(milliseconds: isLastCard ? 15 : 300), () {
         if (mounted) {
+          _isSwiping = false;
           HapticFeedback.lightImpact();
           context.read<QuizBloc>().add(RateCard(rating: 3)); // Review
         }
@@ -413,7 +421,10 @@ class _QuizContentState extends State<QuizContent> {
                                   : null,
                               child: FlipCardWidget(
                                 key: ValueKey(card.id),
-                                isFlipped: widget.state.isFlipped && index == 0,
+                                isFlipped:
+                                    widget.state.isFlipped &&
+                                    index == 0 &&
+                                    !_isSwiping,
                                 front: Container(
                                   decoration: BoxDecoration(
                                     border: Border.all(

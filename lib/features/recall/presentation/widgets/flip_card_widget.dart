@@ -44,8 +44,6 @@ class _FlipCardWidgetState extends State<FlipCardWidget>
     if (widget.isFlipped != oldWidget.isFlipped) {
       if (widget.isFlipped) {
         _controller.forward();
-      } else {
-        _controller.reverse();
       }
     }
   }
