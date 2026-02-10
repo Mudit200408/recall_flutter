@@ -47,12 +47,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   }
 
   FutureOr<void> _onFlipCard(FlipCard event, Emitter<QuizState> emit) {
-    print(
-      'DEBUG: [QuizBloc] FlipCard event received. Current state: ${state.runtimeType}',
-    );
     if (state is QuizActive) {
       final currentState = state as QuizActive;
-      print('DEBUG: [QuizBloc] Emitting isFlipped: true');
       emit(
         QuizActive(
           remainingCards: currentState.remainingCards,
@@ -65,10 +61,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           failCount: currentState.failCount,
         ),
       );
-    } else {
-      print(
-        'DEBUG: [QuizBloc] Ignoring FlipCard in state: ${state.runtimeType}',
-      );
     }
   }
 
@@ -78,7 +70,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       final currentCard = currentState.currentCard;
 
       // 1: Run the algo (Sync)
-      print('DEBUG: [QuizBloc] RateCard event: ${event.rating}');
       final updateCard = _algo.calculateNextReview(currentCard, event.rating);
 
       // 2: Update Stats (Sync)
@@ -139,13 +130,16 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           } else {
             // Only schedule reminder if NOT deleted
             final tomorrow = DateTime.now().add(const Duration(days: 1));
-            notificationService.scheduleStudyReminder(tomorrow);
+            notificationService.scheduleStudyReminder(
+              tomorrow,
+              deckTitle: currentState.deck.title,
+            );
           }
         } catch (e) {
           // If DB fails after we showed Finished, we might want to log it.
           // Reverting state is tricky here as user thinks they are done.
           // For now, we assume retry/sync mechanisms or just log.
-          print("Error saving quiz progress: $e");
+          debugPrint("Error saving quiz progress: $e");
         }
       } else {
         emit(

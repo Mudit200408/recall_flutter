@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -23,12 +25,32 @@ class NotificationService {
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       debugPrint("Notification Permission Granted");
 
-      // 2: Get the device tokem
-      String? token = await _messaging.getToken();
+      // 2: Get the device token (with APNS retry for iOS)
+      if (Platform.isIOS) {
+        // On iOS, wait for the APNS token before requesting FCM token.
+        // This can fail on simulators where APNS isn't supported — that's OK.
+        try {
+          String? apnsToken = await _messaging.getAPNSToken();
+          if (apnsToken == null) {
+            for (int i = 0; i < 3; i++) {
+              await Future.delayed(const Duration(seconds: 2));
+              apnsToken = await _messaging.getAPNSToken();
+              if (apnsToken != null) break;
+            }
+          }
+        } catch (e) {
+          debugPrint("APNS token not available (expected on simulator): $e");
+        }
+      }
 
-      if (token != null) {
-        debugPrint("FCM token: $token");
-        await _saveToken(userId, token);
+      try {
+        String? token = await _messaging.getToken();
+        if (token != null) {
+          debugPrint("FCM token: $token");
+          await _saveToken(userId, token);
+        }
+      } catch (e) {
+        debugPrint("Error getting FCM token: $e");
       }
 
       // Initialize Local Notifications
@@ -64,17 +86,26 @@ class NotificationService {
     }
   }
 
-  Future<void> scheduleStudyReminder(DateTime dueDate) async {
-    // Determine the scheduled time (eg 9 am on the due date)
-    // for testing use 10 sec but in production use the dueDate
-
-    // If the due date is in the past/today, schedule for 5 sec later
+  Future<void> scheduleStudyReminder(
+    DateTime dueDate, {
+    String? deckTitle,
+  }) async {
     var scheduledDate = tz.TZDateTime.from(dueDate, tz.local);
 
+    final title = deckTitle != null
+        ? '🃏 New cards for "$deckTitle"!'
+        : 'Study Reminder';
+    final body = deckTitle != null
+        ? 'Your next batch is ready. Recall it now!!'
+        : 'Time to review your flashcards!';
+
+    // Use deckTitle hashCode for unique ID so notifications don't overwrite each other
+    final notificationId = deckTitle?.hashCode.abs() ?? 0;
+
     await _localPlugin.zonedSchedule(
-      id: 0,
-      title: 'Study Reminder',
-      body: 'Time to review your flashcards!',
+      id: notificationId,
+      title: title,
+      body: body,
       scheduledDate: scheduledDate,
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -88,7 +119,7 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
 
-    debugPrint("Scheduled reminder for: $scheduledDate");
+    debugPrint("Scheduled reminder for: $scheduledDate (deck: $deckTitle)");
   }
 
   //4: Save Token to Firestore

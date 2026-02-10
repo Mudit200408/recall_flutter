@@ -174,11 +174,8 @@ class _QuizContentState extends State<QuizContent> {
     int? currentIndex,
     CardSwiperDirection direction,
   ) {
-    print(
-      'DEBUG: [QuizPage] _handleSwipe called. isFlipped: ${widget.state.isFlipped}, Direction: $direction',
-    );
+
     if (!widget.state.isFlipped) {
-      print("DEBUG: [QuizPage] Cannot swipe - not flipped");
       return false;
     }
 

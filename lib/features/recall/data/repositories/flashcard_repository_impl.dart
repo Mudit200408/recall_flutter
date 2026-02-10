@@ -202,7 +202,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
     try {
       // Use Firebase AI for text generation
       final model = FirebaseAI.googleAI().generativeModel(
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-flash-preview',
         generationConfig: GenerationConfig(
           responseMimeType: 'application/json',
           responseSchema: Schema.array(
