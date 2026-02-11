@@ -256,7 +256,7 @@ class LoginPage extends StatelessWidget {
                                       Container(
                                         height: 2,
                                         width: double.infinity,
-                                        color: Colors.red.withOpacity(0.3),
+                                        color: Colors.red.withValues(alpha: 0.3),
                                       ),
                                   ],
                                 ),
@@ -399,7 +399,7 @@ class _GridBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.05)
+      ..color = color.withValues(alpha: 0.05)
       ..strokeWidth = 1;
 
     const double spacing = 20.0;

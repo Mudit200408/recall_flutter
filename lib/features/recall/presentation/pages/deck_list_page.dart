@@ -220,7 +220,7 @@ class _DeckListPageState extends State<DeckListPage>
         maxCrossAxisExtent: 600,
         mainAxisSpacing: 8.scale(),
         crossAxisSpacing: 8.scale(),
-        childAspectRatio: isMobile ? 1.1 : 0.85,
+        childAspectRatio: isMobile ? 1.09 : 0.84,
       ),
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
         final deck = state.decks[index];
@@ -246,7 +246,7 @@ class _DeckListPageState extends State<DeckListPage>
                 await _deletionController.reverse();
 
                 // Then refresh data
-                if (mounted) {
+                if (context.mounted) {
                   setState(() {
                     _animatingDeckId = null;
                     _deletionController.value = 1.0;

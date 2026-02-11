@@ -122,7 +122,7 @@ class _ScanlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withOpacity(0.05)
+      ..color = Colors.black.withValues(alpha:0.05)
       ..strokeWidth = 1;
 
     for (double y = 0; y < size.height; y += 4) {

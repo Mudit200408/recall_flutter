@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
+import 'package:recall/features/recall/presentation/widgets/progress_bar.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 import 'package:responsive_scaler/responsive_scaler.dart';
 
@@ -46,14 +47,12 @@ class DeckCard extends StatelessWidget {
                         ? Image.memory(
                             base64Decode(deck.deckImageUrl.split(',').last),
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _buildErrorPlaceholder(),
+                            errorBuilder: (_, _, _) => _buildErrorPlaceholder(),
                           )
                         : Image.network(
                             deck.deckImageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _buildErrorPlaceholder(),
+                            errorBuilder: (_, _, _) => _buildErrorPlaceholder(),
                           )
                   else
                     Container(
@@ -196,6 +195,15 @@ class DeckCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            Text(
+              "${deck.daysGenerated}/${deck.scheduledDays} DAYS",
+              style: TextStyle(
+                fontSize: 12.scale(),
+                fontVariations: [FontVariation.weight(900)],
+                fontStyle: FontStyle.italic,
+                color: Colors.black,
+              ),
+            ),
             if (isSkipped)
               Container(
                 padding: EdgeInsets.symmetric(
@@ -223,26 +231,7 @@ class DeckCard extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(color: Colors.black, width: 2),
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.white,
-                color: color, // Neo-brutalist green or Red
-                minHeight: 25.scale(),
-              ),
-              Text(
-                "${deck.daysGenerated}/${deck.scheduledDays} DAYS",
-                style: TextStyle(
-                  fontSize: 14.scale(),
-                  fontVariations: [FontVariation.weight(900)],
-                  fontStyle: FontStyle.italic,
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          ),
+          child: ProgressBar(progress: progress, color: color),
         ),
       ],
     );

@@ -13,6 +13,7 @@ import 'package:recall/features/recall/presentation/widgets/flashcard_face.dart'
 import 'package:recall/features/recall/presentation/widgets/flip_card_widget.dart';
 import 'package:recall/features/recall/domain/entities/flashcard.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
+import 'package:recall/features/recall/presentation/widgets/progress_bar.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 import 'package:recall/injection_container.dart' as di;
 import 'package:responsive_framework/responsive_framework.dart';
@@ -174,7 +175,6 @@ class _QuizContentState extends State<QuizContent> {
     int? currentIndex,
     CardSwiperDirection direction,
   ) {
-
     if (!widget.state.isFlipped) {
       return false;
     }
@@ -233,42 +233,48 @@ class _QuizContentState extends State<QuizContent> {
     );
   }
 
-  Padding _buildProgressBar() {
+  Widget _buildProgressBar() {
+    final int current =
+        widget.state.totalCards - widget.state.remainingCards.length + 1;
+    final int total = widget.state.totalCards;
+    final double progress = current / total;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.scale()),
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 700),
-        child: Container(
-          height: 40.scale(),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black, width: 3),
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              LinearProgressIndicator(
-                value:
-                    (widget.state.totalCards -
-                        widget.state.remainingCards.length +
-                        1) /
-                    widget.state.totalCards,
-                minHeight: 35.scale(),
-                backgroundColor: Colors.grey[200],
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color(0xFFCCFF00),
-                ),
+        constraints: const BoxConstraints(maxWidth: 700),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header row: "PROGRESS" label + fraction counter
+            Padding(
+              padding: EdgeInsets.only(bottom: 6.scale()),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "PROGRESS",
+                    style: TextStyle(
+                      fontSize: 14.scale(),
+                      fontVariations: const [FontVariation.weight(900)],
+                      color: Colors.black,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  Text(
+                    "$current/$total",
+                    style: TextStyle(
+                      fontSize: 14.scale(),
+                      fontVariations: const [FontVariation.weight(900)],
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                "${widget.state.totalCards - widget.state.remainingCards.length + 1} / ${widget.state.totalCards}",
-                style: TextStyle(
-                  fontSize: 18.scale(),
-                  fontVariations: [FontVariation.weight(900)],
-                  color: Colors.black,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
-          ),
+            ),
+            // The progress bar itself
+            ProgressBar(progress: progress),
+          ],
         ),
       ),
     );
@@ -293,76 +299,111 @@ class _QuizContentState extends State<QuizContent> {
             _buildProgressBar(),
             SizedBox(height: 16.scale()),
 
-            _buildCard(remainingCards, isMobile),
+            _buildCard(remainingCards, isMobile, maxCardWidth: 400),
 
             // Swipe hints
-            if (widget.state.isFlipped)
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 16.scale(),
-                  vertical: 12.scale(),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.arrow_back,
-                          color: Colors.orange,
-                          size: 20.scale(),
-                        ),
-                        SizedBox(width: 4.scale()),
-                        Text(
-                          "REVIEW",
-                          style: TextStyle(
-                            fontSize: 12.scale(),
-                            fontVariations: [FontVariation.weight(700)],
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          "KNOW IT",
-                          style: TextStyle(
-                            fontSize: 12.scale(),
-                            fontVariations: [FontVariation.weight(700)],
-                            color: Colors.green,
-                          ),
-                        ),
-                        SizedBox(width: 4.scale()),
-                        Icon(
-                          Icons.arrow_forward,
-                          color: Colors.green,
-                          size: 20.scale(),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              )
-            else
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.scale()),
-                child: Text(
-                  "TAP TO REVEAL",
-                  style: TextStyle(
-                    fontSize: 12.scale(),
-                    fontVariations: [FontVariation.weight(700)],
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
+            _buildSwipeHints(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCard(List<Flashcard> remainingCards, bool isMobile) {
+  Widget _buildSwipeHints() {
+    if (widget.state.isFlipped) {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.scale(),
+          vertical: 12.scale(),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.arrow_back, color: Colors.orange, size: 20.scale()),
+                SizedBox(width: 4.scale()),
+                Text(
+                  "REVIEW",
+                  style: TextStyle(
+                    fontSize: 12.scale(),
+                    fontVariations: [FontVariation.weight(700)],
+                    color: Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  "KNOW IT",
+                  style: TextStyle(
+                    fontSize: 12.scale(),
+                    fontVariations: [FontVariation.weight(700)],
+                    color: Colors.green,
+                  ),
+                ),
+                SizedBox(width: 4.scale()),
+                Icon(
+                  Icons.arrow_forward,
+                  color: Colors.green,
+                  size: 20.scale(),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.scale()),
+        child: Text(
+          "TAP TO DECRYPT",
+          style: TextStyle(
+            fontSize: 12.scale(),
+            fontVariations: [FontVariation.weight(700)],
+            color: Colors.grey,
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildTabletView(
+    BuildContext context,
+    List<Flashcard> remainingCards,
+    Flashcard topCard,
+    bool isMobile,
+  ) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: 8.scale()),
+            _buildHeader(context),
+            SizedBox(height: 16.scale()),
+
+            _buildProgressBar(),
+            SizedBox(height: 16.scale()),
+
+            // Card takes all remaining vertical space
+            _buildCard(remainingCards, isMobile, maxCardWidth: 700),
+
+            // Swipe hints
+            _buildSwipeHints(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(
+    List<Flashcard> remainingCards,
+    bool isMobile, {
+    double maxCardWidth = 400,
+  }) {
     return Expanded(
       child: Stack(
         children: [
@@ -374,7 +415,7 @@ class _QuizContentState extends State<QuizContent> {
               controller: _swiperController,
               cardsCount: remainingCards.length,
               numberOfCardsDisplayed: remainingCards.length.clamp(1, 3),
-              backCardOffset: isMobile ? Offset(0, 45) : Offset(30, 38),
+              backCardOffset: isMobile ? Offset(0, 45) : Offset(48, 38),
               scale: 0.9,
               padding: EdgeInsets.all(24.scale()),
               allowedSwipeDirection: widget.state.isFlipped
@@ -391,7 +432,7 @@ class _QuizContentState extends State<QuizContent> {
                     final card = remainingCards[index];
                     return Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 400),
+                        constraints: BoxConstraints(maxWidth: maxCardWidth),
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
@@ -596,11 +637,18 @@ class _QuizContentState extends State<QuizContent> {
     final remainingCards = widget.state.remainingCards;
     // topCard is remainingCards[0]
 
-    return _buildMobileView(
-      context,
-      remainingCards,
-      remainingCards.first,
-      isMobile,
-    );
+    return isMobile
+        ? _buildMobileView(
+            context,
+            remainingCards,
+            remainingCards.first,
+            isMobile,
+          )
+        : _buildTabletView(
+            context,
+            remainingCards,
+            remainingCards.first,
+            isMobile,
+          );
   }
 }

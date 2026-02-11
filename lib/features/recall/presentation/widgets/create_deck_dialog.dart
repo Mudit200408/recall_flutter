@@ -239,7 +239,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
             activeTrackColor: blackColor,
             inactiveTrackColor: Colors.grey[300],
             thumbColor: primaryColor,
-            overlayColor: primaryColor.withOpacity(0.2),
+            overlayColor: primaryColor.withValues(alpha:0.2),
             trackHeight: 6,
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
             overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),

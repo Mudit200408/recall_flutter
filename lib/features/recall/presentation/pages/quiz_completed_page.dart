@@ -78,13 +78,13 @@ class QuizCompletedPage extends StatelessWidget {
                                                     .last,
                                               ),
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) =>
+                                              errorBuilder: (_, _, _) =>
                                                   _buildErrorPlaceholder(),
                                             )
                                           : Image.network(
                                               deck.deckImageUrl,
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) =>
+                                              errorBuilder: (_, _, _) =>
                                                   _buildErrorPlaceholder(),
                                             )
                                     else

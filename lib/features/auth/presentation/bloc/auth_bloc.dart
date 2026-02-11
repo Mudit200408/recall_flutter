@@ -32,7 +32,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    print("EMITTING AUTH LOADING");
     emit(AuthLoading());
     try {
       final user = await authRepository.signInWithGoogle();
