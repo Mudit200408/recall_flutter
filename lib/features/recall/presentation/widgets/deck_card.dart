@@ -87,25 +87,25 @@ class DeckCard extends StatelessWidget {
 
             // Content
             Padding(
-              padding: EdgeInsets.all(16.scale()),
+              padding: EdgeInsets.all(16.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     deck.title.toUpperCase(),
                     style: TextStyle(
-                      fontSize: 20.scale(),
+                      fontSize: 24,
                       fontVariations: [FontVariation.weight(900)],
                     ),
                   ),
-                  SizedBox(height: 8.scale()),
+                  SizedBox(height: 8.w),
 
                   Container(
                     width: double.infinity,
                     height: 1,
                     color: Colors.grey[300],
                   ),
-                  SizedBox(height: 8.scale()),
+                  SizedBox(height: 8.w),
                   _builProgressBar(
                     "PROGRESS",
                     "${deck.daysGenerated}/${deck.scheduledDays} DAYS",
@@ -113,7 +113,7 @@ class DeckCard extends StatelessWidget {
                         deck.daysGenerated /
                         (deck.scheduledDays == 0 ? 1 : deck.scheduledDays),
                   ),
-                  SizedBox(height: 8.scale()),
+                  SizedBox(height: 8.w),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -148,7 +148,7 @@ class DeckCard extends StatelessWidget {
         Text(
           label.toUpperCase(),
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 12,
             color: Colors.grey[600],
             fontWeight: FontWeight.bold,
           ),
@@ -190,7 +190,7 @@ class DeckCard extends StatelessWidget {
             Text(
               label.toUpperCase(),
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 12,
                 color: Colors.grey[600],
                 fontWeight: FontWeight.bold,
               ),
@@ -198,7 +198,7 @@ class DeckCard extends StatelessWidget {
             Text(
               "${deck.daysGenerated}/${deck.scheduledDays} DAYS",
               style: TextStyle(
-                fontSize: 12.scale(),
+                fontSize: 14,
                 fontVariations: [FontVariation.weight(900)],
                 fontStyle: FontStyle.italic,
                 color: Colors.black,
@@ -206,10 +206,7 @@ class DeckCard extends StatelessWidget {
             ),
             if (isSkipped)
               Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 4.scale(),
-                  vertical: 2.scale(),
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 4.r, vertical: 2.r),
                 decoration: BoxDecoration(
                   color: Colors.red,
                   borderRadius: BorderRadius.circular(2),

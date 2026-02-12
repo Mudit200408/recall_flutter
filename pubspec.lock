@@ -579,10 +579,9 @@ packages:
   responsive_scaler:
     dependency: "direct main"
     description:
-      name: responsive_scaler
-      sha256: "215930927663387a54a0603cbe9ecc7b074347bffe0795d2c188bace0ec7a437"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../responsive_scaler"
+      relative: true
+    source: path
     version: "0.1.0"
   sky_engine:
     dependency: transitive

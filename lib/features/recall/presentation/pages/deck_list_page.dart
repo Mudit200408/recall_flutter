@@ -220,7 +220,9 @@ class _DeckListPageState extends State<DeckListPage>
         maxCrossAxisExtent: 600,
         mainAxisSpacing: 8.scale(),
         crossAxisSpacing: 8.scale(),
-        childAspectRatio: isMobile ? 1.09 : 0.84,
+        childAspectRatio: isMobile
+            ? 0.98.rc(minValue: .96, maxValue: 0.99)
+            : 0.65,
       ),
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
         final deck = state.decks[index];

@@ -22,16 +22,9 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseAppCheck.instance.activate(
     providerAndroid: AndroidDebugProvider(),
-    providerApple: AppleDebugProvider()
+    providerApple: AppleDebugProvider(),
   );
   await di.init();
-  ResponsiveScaler.init(
-    designWidth: 448,
-    minScale: 0.8,
-    maxScale: 1.2,
-    maxAccessibilityScale: 1.8,
-  );
-
   runApp(MainApp());
 }
 
@@ -72,51 +65,54 @@ class MainApp extends StatelessWidget {
           ),
         ),
       ],
-      child: ResponsiveBreakpoints.builder(
-        breakpoints: [
-          const Breakpoint(start: 0, end: 600, name: MOBILE),
-          const Breakpoint(start: 601, end: 1200, name: TABLET),
-          const Breakpoint(start: 1201, end: 1920, name: DESKTOP),
-        ],
-        child: MaterialApp(
-          theme: theme,
-          debugShowCheckedModeBanner: false,
-          builder: (context, child) {
-            child = ResponsiveScaler.scale(context: context, child: child!);
-
-            return BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, authState) {
-                if (authState is AuthAuthenticated) {
-                  return RepositoryProvider<FlashcardRepository>(
-                    create: (context) => FlashcardRepositoryImpl(
-                      firestore: di.sl(),
-                      storage: di.sl(),
-                      userId: authState.user.uid,
-                      httpClient: http.Client(),
-                      imageService: di.sl(),
-                    ),
-                    child: BlocProvider(
-                      create: (context) => DeckBloc(
-                        repository: context.read<FlashcardRepository>(),
-                      )..add(LoadDecks()),
-                      child: child!,
-                    ),
-                  );
-                }
-                return child!;
-              },
-            );
-          },
-          home: BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              if (state is AuthAuthenticated) {
-                return const DeckListPage();
-              }
-              if (state is AuthLoading) {
-                return const Scaffold(body: Center(child: Loader()));
-              }
-              return const LoginPage();
+      // FIX 1: Wrap everything with ResponsiveScaler at the root level
+      child: ResponsiveScaler(
+        designWidth: 412,
+        designHeight: 997,
+        minScale: 0.8,
+        maxScale: 1.6,
+        child: ResponsiveBreakpoints.builder(
+          breakpoints: [
+            const Breakpoint(start: 0, end: 600, name: MOBILE),
+            const Breakpoint(start: 601, end: 1200, name: TABLET),
+            const Breakpoint(start: 1201, end: 1920, name: DESKTOP),
+          ],
+          child: MaterialApp(
+            theme: theme,
+            debugShowCheckedModeBanner: false,
+            // FIX 2: Only use the builder for logic that depends on Context/Auth
+            builder: (context, child) {
+              return BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  if (authState is AuthAuthenticated) {
+                    return RepositoryProvider<FlashcardRepository>(
+                      create: (context) => FlashcardRepositoryImpl(
+                        firestore: di.sl(),
+                        storage: di.sl(),
+                        userId: authState.user.uid,
+                        httpClient: http.Client(),
+                        imageService: di.sl(),
+                      ),
+                      child: BlocProvider(
+                        create: (context) => DeckBloc(
+                          repository: context.read<FlashcardRepository>(),
+                        )..add(LoadDecks()),
+                        child: child!,
+                      ),
+                    );
+                  }
+                  return child!;
+                },
+              );
             },
+            home: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                if (state is AuthAuthenticated) return const DeckListPage();
+                if (state is AuthLoading)
+                  return const Scaffold(body: Center(child: Loader()));
+                return const LoginPage();
+              },
+            ),
           ),
         ),
       ),
