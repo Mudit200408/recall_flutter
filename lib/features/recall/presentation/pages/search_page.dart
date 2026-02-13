@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/pages/quiz_page.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
 import 'package:recall/features/recall/presentation/widgets/deck_card.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
-import 'package:responsive_framework/responsive_framework.dart';
+
 import 'package:responsive_scaler/responsive_scaler.dart';
 
 class SearchPage extends StatefulWidget {
@@ -59,10 +60,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   child: TextField(
                     autofocus: true,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18.scale(),
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     decoration: InputDecoration(
                       hintText: 'SEARCH DECKS...',
                       hintStyle: TextStyle(
@@ -70,7 +68,7 @@ class _SearchPageState extends State<SearchPage> {
                         fontWeight: FontWeight.bold,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.all(16),
+                      contentPadding: EdgeInsets.all(16.r),
                       suffixIcon: Icon(Icons.search, color: Colors.black),
                     ),
                     onChanged: (value) {
@@ -106,42 +104,82 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                     );
                   }
+                  final width = MediaQuery.sizeOf(context).width;
+                  final int crossAxisCount = (width / 600).ceil();
+                  final int rowCount = (filteredDecks.length / crossAxisCount)
+                      .ceil();
 
-                  final isMobile = ResponsiveBreakpoints.of(context).isMobile;
-                  return CustomScrollView(
-                    slivers: [
-                      SliverPadding(
-                        padding: EdgeInsets.all(16.scale()),
-                        sliver: SliverGrid(
-                          gridDelegate:
-                              SliverGridDelegateWithMaxCrossAxisExtent(
-                                maxCrossAxisExtent: 800,
-                                mainAxisSpacing: 8.scale(),
-                                crossAxisSpacing: 8.scale(),
-                                childAspectRatio: isMobile ? 1 : 0.8,
-                              ),
-                          delegate: SliverChildBuilderDelegate((
-                            context,
-                            index,
-                          ) {
-                            final deck = filteredDecks[index];
-                            return DeckCard(
-                              deck: deck,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => QuizPage(deck: deck),
+                  return ListView.builder(
+                    padding: EdgeInsets.all(16.r),
+                    itemCount: rowCount,
+                    itemBuilder: (context, rowIndex) {
+                      final int startIndex = rowIndex * crossAxisCount;
+                      final int endIndex =
+                          (startIndex + crossAxisCount < filteredDecks.length)
+                          ? startIndex + crossAxisCount
+                          : filteredDecks.length;
+                      final rowDecks = filteredDecks.sublist(
+                        startIndex,
+                        endIndex,
+                      );
+
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 8.r),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              ...rowDecks.map((deck) {
+                                final isLast =
+                                    rowDecks.indexOf(deck) ==
+                                    crossAxisCount - 1;
+                                return Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      right: isLast ? 0 : 8.r,
+                                    ),
+                                    child: DeckCard(
+                                      deck: deck,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                QuizPage(deck: deck),
+                                          ),
+                                        );
+                                      },
+                                      onDelete: () => _buildDeleteDialog(
+                                        context,
+                                        state,
+                                        state.decks.indexOf(deck),
+                                      ),
+                                    ),
                                   ),
                                 );
-                              },
-                              onDelete: () =>
-                                  _buildDeleteDialog(context, state, index),
-                            );
-                          }, childCount: filteredDecks.length),
+                              }),
+                              if (rowDecks.length < crossAxisCount)
+                                ...List.generate(
+                                  crossAxisCount - rowDecks.length,
+                                  (i) {
+                                    final isLast =
+                                        (rowDecks.length + i) ==
+                                        crossAxisCount - 1;
+                                    return Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(
+                                          right: isLast ? 0 : 8.r,
+                                        ),
+                                        child: const SizedBox(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   );
                 }
                 return const SizedBox.shrink();

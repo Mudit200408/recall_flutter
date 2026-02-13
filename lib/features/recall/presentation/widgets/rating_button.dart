@@ -59,12 +59,12 @@ class _RatingButtonState extends State<RatingButton> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SvgPicture.asset(widget.assetName, height: 32, width: 32),
-              SizedBox(height: 8.scale()),
+              SvgPicture.asset(widget.assetName, height: 32.r, width: 32.r),
+              SizedBox(height: 8.h),
               Text(
                 widget.label,
                 style: TextStyle(
-                  fontSize: 16.scale(),
+                  fontSize: 16,
                   fontVariations: [FontVariation.weight(900)],
                   letterSpacing: 1.2,
                 ),

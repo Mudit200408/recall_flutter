@@ -34,7 +34,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               BoxShadow(color: blackColor, offset: Offset(8, 8), blurRadius: 0),
             ],
           ),
-          padding: EdgeInsets.all(24.scale()),
+          padding: EdgeInsets.all(24.r),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -43,15 +43,15 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(8.scale()),
+                    padding: EdgeInsets.all(8.r),
                     decoration: BoxDecoration(color: blackColor),
                     child: Icon(
                       Icons.add,
                       color: primaryColor,
-                      size: 24.scale(),
+                      size: 24.r,
                     ),
                   ),
-                  SizedBox(width: 12.scale()),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
                       "NEW MISSION",
@@ -65,7 +65,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                   ),
                 ],
               ),
-              SizedBox(height: 24.scale()),
+              SizedBox(height: 24.h),
 
               // Topic Input
               Text(
@@ -103,7 +103,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                 ),
                 onChanged: (value) => topic = value,
               ),
-              SizedBox(height: 20.scale()),
+              SizedBox(height: 20.h),
 
               // Card Count Slider
               _buildSliderParams(
@@ -114,7 +114,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                 20,
                 (val) => setState(() => count = val),
               ),
-              SizedBox(height: 16.scale()),
+              SizedBox(height: 16.h),
 
               // Duration Slider
               _buildSliderParams(
@@ -126,7 +126,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                 (val) => setState(() => duration = val),
               ),
 
-              SizedBox(height: 20.scale()),
+              SizedBox(height: 20.h),
 
               // Image Toggle
               Container(
@@ -158,7 +158,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                 ),
               ),
 
-              SizedBox(height: 24.scale()),
+              SizedBox(height: 24.h),
 
               // Action Buttons
               Row(
@@ -170,7 +170,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(width: 12.scale()),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: AnimatedButton(
                       text: 'START',
@@ -215,12 +215,12 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
             ),
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: 8.scale(),
-                vertical: 2.scale(),
+                horizontal: 8.r,
+                vertical: 2.r,
               ),
               decoration: BoxDecoration(
                 color: blackColor,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.r),
               ),
               child: Text(
                 "$value",
@@ -233,7 +233,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
             ),
           ],
         ),
-        SizedBox(height: 4.scale()),
+        SizedBox(height: 4.h),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: blackColor,

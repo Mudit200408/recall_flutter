@@ -10,7 +10,7 @@ class ProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 32.scale(),
+      height: 32.h,
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.black, width: 3),

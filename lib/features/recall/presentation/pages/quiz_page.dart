@@ -286,24 +286,28 @@ class _QuizContentState extends State<QuizContent> {
     Flashcard topCard,
     bool isMobile,
   ) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildHeader(context),
-            SizedBox(height: 16.scale()),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildHeader(context),
+              SizedBox(height: 16.scale()),
 
-            _buildProgressBar(),
-            SizedBox(height: 16.scale()),
+              _buildProgressBar(),
+              SizedBox(height: 16.scale()),
 
-            _buildCard(remainingCards, isMobile, maxCardWidth: 400),
+              _buildCard(remainingCards, isMobile, maxCardWidth: 400),
 
-            // Swipe hints
-            _buildSwipeHints(),
-          ],
+              // Swipe hints
+              _buildSwipeHints(),
+              SizedBox(height: 32.scale()), // Bottom padding for scroll
+            ],
+          ),
         ),
       ),
     );
@@ -312,21 +316,18 @@ class _QuizContentState extends State<QuizContent> {
   Widget _buildSwipeHints() {
     if (widget.state.isFlipped) {
       return Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 16.scale(),
-          vertical: 12.scale(),
-        ),
+        padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 26.r),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
-                Icon(Icons.arrow_back, color: Colors.orange, size: 20.scale()),
-                SizedBox(width: 4.scale()),
+                Icon(Icons.arrow_back, color: Colors.orange, size: 20.r),
+                SizedBox(width: 4.w),
                 Text(
                   "REVIEW",
                   style: TextStyle(
-                    fontSize: 12.scale(),
+                    fontSize: 12,
                     fontVariations: [FontVariation.weight(700)],
                     color: Colors.orange,
                   ),
@@ -338,17 +339,13 @@ class _QuizContentState extends State<QuizContent> {
                 Text(
                   "KNOW IT",
                   style: TextStyle(
-                    fontSize: 12.scale(),
+                    fontSize: 12,
                     fontVariations: [FontVariation.weight(700)],
                     color: Colors.green,
                   ),
                 ),
-                SizedBox(width: 4.scale()),
-                Icon(
-                  Icons.arrow_forward,
-                  color: Colors.green,
-                  size: 20.scale(),
-                ),
+                SizedBox(width: 4.w),
+                Icon(Icons.arrow_forward, color: Colors.green, size: 20.r),
               ],
             ),
           ],
@@ -356,11 +353,11 @@ class _QuizContentState extends State<QuizContent> {
       );
     } else {
       return Padding(
-        padding: EdgeInsets.symmetric(vertical: 12.scale()),
+        padding: EdgeInsets.symmetric(vertical: 26.r),
         child: Text(
           "TAP TO DECRYPT",
           style: TextStyle(
-            fontSize: 12.scale(),
+            fontSize: 12,
             fontVariations: [FontVariation.weight(700)],
             color: Colors.grey,
           ),
@@ -375,25 +372,29 @@ class _QuizContentState extends State<QuizContent> {
     Flashcard topCard,
     bool isMobile,
   ) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 8.scale()),
-            _buildHeader(context),
-            SizedBox(height: 16.scale()),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 8.scale()),
+              _buildHeader(context),
+              SizedBox(height: 16.scale()),
 
-            _buildProgressBar(),
-            SizedBox(height: 16.scale()),
+              _buildProgressBar(),
+              SizedBox(height: 16.scale()),
 
-            // Card takes all remaining vertical space
-            _buildCard(remainingCards, isMobile, maxCardWidth: 700),
+              // Card takes all remaining vertical space
+              _buildCard(remainingCards, isMobile, maxCardWidth: 700),
 
-            // Swipe hints
-            _buildSwipeHints(),
-          ],
+              // Swipe hints
+              _buildSwipeHints(),
+              SizedBox(height: 32.scale()), // Bottom padding
+            ],
+          ),
         ),
       ),
     );
@@ -404,223 +405,289 @@ class _QuizContentState extends State<QuizContent> {
     bool isMobile, {
     double maxCardWidth = 400,
   }) {
-    return Expanded(
+    // Calculate a dynamic height or use a constraint?
+    // CardSwiper needs a height. If we want it to grow, we can try giving it a large height
+    // but that breaks shorter cards.
+    // Instead, we use AspectRatio or LayoutBuilder if needed.
+    // BUT, simply removing Expanded makes it non-flexible.
+    // Let's rely on a Container with a minimum height to ensure it's visible,
+    // and let the content push it if the CardSwiper supports it.
+    // However, typical CardSwiper implementations might need a finite height.
+    // Let's try giving it a height based on screen size as a baseline (e.g. 60% of screen)
+    // but allow scrolling if content overflows?
+    // Wait, the user wants the card to be TALLER than screen if needed.
+    // So we need an unconstrained height.
+    final screenHeight = MediaQuery.sizeOf(context).height;
+
+    return Container(
+      // Use a minimum height so short cards don't look collapsed
+      constraints: BoxConstraints(minHeight: screenHeight * 0.5),
       child: Stack(
         children: [
           Center(
-            child: CardSwiper(
-              key: ValueKey(
-                "${remainingCards.length}_${widget.state.isFlipped}",
-              ), // Rebuild on flip to update disabled swipe state
-              controller: _swiperController,
-              cardsCount: remainingCards.length,
-              numberOfCardsDisplayed: remainingCards.length.clamp(1, 3),
-              backCardOffset: isMobile ? Offset(0, 45) : Offset(48, 38),
-              scale: 0.9,
-              padding: EdgeInsets.all(24.scale()),
-              allowedSwipeDirection: widget.state.isFlipped
-                  ? const AllowedSwipeDirection.only(left: true, right: true)
-                  : const AllowedSwipeDirection.none(),
-              onSwipe: widget.state.isFlipped ? _handleSwipe : null,
-              cardBuilder:
-                  (
-                    context,
-                    index,
-                    horizontalThresholdPercentage,
-                    verticalThresholdPercentage,
-                  ) {
-                    final card = remainingCards[index];
-                    return Center(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: maxCardWidth),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                if (!widget.state.isFlipped) {
-                                  HapticFeedback.lightImpact();
-                                  context.read<QuizBloc>().add(FlipCard());
-                                }
-                              },
-                              // PATCH: Explicitly consume drag gestures when not flipped
-                              // to prevent CardSwiper from receiving them.
-                              onHorizontalDragUpdate: !widget.state.isFlipped
-                                  ? (_) {}
-                                  : null,
-                              onVerticalDragUpdate: !widget.state.isFlipped
-                                  ? (_) {}
-                                  : null,
-                              onHorizontalDragStart: !widget.state.isFlipped
-                                  ? (_) {}
-                                  : null,
-                              onVerticalDragStart: !widget.state.isFlipped
-                                  ? (_) {}
-                                  : null,
-                              child: FlipCardWidget(
-                                key: ValueKey(card.id),
-                                isFlipped:
-                                    widget.state.isFlipped &&
-                                    index == 0 &&
-                                    !_isSwiping,
-                                front: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 4.0,
-                                    ),
-                                    color: Colors.white,
-                                  ),
-                                  child: ClipRRect(
-                                    child: FlashcardFace(
-                                      text: card.front,
-                                      color: Colors.deepPurple,
-                                      label: "QUESTION",
-                                    ),
-                                  ),
-                                ),
-                                back: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 4.0,
-                                    ),
-                                    color: Colors.white,
-                                  ),
-                                  child: ClipRRect(
-                                    child: FlashcardFace(
-                                      text: card.back,
-                                      color: Colors.indigo,
-                                      label: "ANSWER",
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Right swipe overlay (Know it - Green)
-                            if (widget.state.isFlipped &&
-                                horizontalThresholdPercentage > 0)
-                              Positioned.fill(
-                                child: IgnorePointer(
-                                  child: Container(
+            child: SizedBox(
+              // Hack: CardSwiper requires height. If we want dynamic height,
+              // we might have to measure content or give a very large height that fits in scroll view?
+              // Actually, flutter_card_swiper takes the parent's size.
+              // If parent is unconstrained (in a Column in a ScrollView), it errors.
+              // So we MUST give a height.
+              // Users request: "make the entire page scrollable and the flash can u become as long as required".
+              // The only way to do this with CardSwiper is if we calculate the height of the current card's text.
+              // Since we can't easily measure text before rendering, let's use a fixed large height
+              // that is scrollable? No, too much whitespace.
+              //
+              // ALTERNATIVE: Use a LayoutBuilder to get width, then estimate height?
+              // Let's try setting a Fixed height that is large enough (e.g. 600) but that defeats the purpose.
+              //
+              // Strategy: Use a very tall container for now? No.
+              //
+              // Check if `remainingCards` content is long.
+              // Simplified Approach for this iteration:
+              // Give it a height of `screenHeight * 0.75` for now.
+              // If text is longer, it will clip?
+              // The user SPECIFICALLY asked to avoid internal scrolling.
+              //
+              // Let's try to infer height from text length of top card.
+              height: _calculateCardHeight(
+                remainingCards.first.front,
+                remainingCards.first.back,
+                screenHeight,
+              ),
+              child: CardSwiper(
+                key: ValueKey(
+                  "${remainingCards.length}_${widget.state.isFlipped}",
+                ), // Rebuild on flip to update disabled swipe state
+                controller: _swiperController,
+                cardsCount: remainingCards.length,
+                numberOfCardsDisplayed: remainingCards.length.clamp(1, 3),
+                backCardOffset: isMobile ? Offset(0, 45) : Offset(48, 38),
+                scale: 0.9,
+                padding: EdgeInsets.all(24.scale()),
+                allowedSwipeDirection: widget.state.isFlipped
+                    ? const AllowedSwipeDirection.only(left: true, right: true)
+                    : const AllowedSwipeDirection.none(),
+                onSwipe: widget.state.isFlipped ? _handleSwipe : null,
+                cardBuilder:
+                    (
+                      context,
+                      index,
+                      horizontalThresholdPercentage,
+                      verticalThresholdPercentage,
+                    ) {
+                      final card = remainingCards[index];
+                      return Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: maxCardWidth),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  if (!widget.state.isFlipped) {
+                                    HapticFeedback.lightImpact();
+                                    context.read<QuizBloc>().add(FlipCard());
+                                  }
+                                },
+                                // PATCH: Explicitly consume drag gestures when not flipped
+                                // to prevent CardSwiper from receiving them.
+                                onHorizontalDragUpdate: !widget.state.isFlipped
+                                    ? (_) {}
+                                    : null,
+                                onVerticalDragUpdate: !widget.state.isFlipped
+                                    ? (_) {}
+                                    : null,
+                                onHorizontalDragStart: !widget.state.isFlipped
+                                    ? (_) {}
+                                    : null,
+                                onVerticalDragStart: !widget.state.isFlipped
+                                    ? (_) {}
+                                    : null,
+                                child: FlipCardWidget(
+                                  key: ValueKey(card.id),
+                                  isFlipped:
+                                      widget.state.isFlipped &&
+                                      index == 0 &&
+                                      !_isSwiping,
+                                  front: Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.green.withValues(
-                                        alpha:
-                                            (horizontalThresholdPercentage /
-                                                    100)
-                                                .abs()
-                                                .clamp(0.0, 0.7),
-                                      ),
                                       border: Border.all(
-                                        color: Colors.transparent,
+                                        color: Colors.black,
+                                        width: 4.0,
+                                      ),
+                                      color: Colors.white,
+                                    ),
+                                    child: ClipRRect(
+                                      child: FlashcardFace(
+                                        text: card.front,
+                                        color: Colors.deepPurple,
+                                        label: "QUESTION",
                                       ),
                                     ),
-                                    child: Center(
-                                      child: Opacity(
-                                        opacity:
-                                            (horizontalThresholdPercentage /
-                                                    100)
-                                                .abs()
-                                                .clamp(0.0, 1.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            SvgPicture.asset(
-                                              'assets/svg/easy.svg',
-                                              height: 64.scale(),
-                                              width: 64.scale(),
-                                              colorFilter: ColorFilter.mode(
-                                                Colors.white,
-                                                BlendMode.srcIn,
-                                              ),
-                                            ),
-                                            SizedBox(height: 8.scale()),
-                                            Text(
-                                              "NAILED IT",
-                                              style: TextStyle(
-                                                fontSize: 24.scale(),
-                                                fontVariations: [
-                                                  FontVariation.weight(900),
-                                                ],
-                                                color: Colors.white,
-                                                letterSpacing: 2,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                  ),
+                                  back: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.black,
+                                        width: 4.0,
+                                      ),
+                                      color: Colors.white,
+                                    ),
+                                    child: ClipRRect(
+                                      child: FlashcardFace(
+                                        text: card.back,
+                                        color: Colors.indigo,
+                                        label: "ANSWER",
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
 
-                            // Left swipe overlay (Review - Orange)
-                            if (widget.state.isFlipped &&
-                                horizontalThresholdPercentage < 0)
-                              Positioned.fill(
-                                child: IgnorePointer(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.orange.withValues(
-                                        alpha:
-                                            (horizontalThresholdPercentage /
-                                                    100)
-                                                .abs()
-                                                .clamp(0.0, 0.7),
+                              // Right swipe overlay (Know it - Green)
+                              if (widget.state.isFlipped &&
+                                  horizontalThresholdPercentage > 0)
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withValues(
+                                          alpha:
+                                              (horizontalThresholdPercentage /
+                                                      100)
+                                                  .abs()
+                                                  .clamp(0.0, 0.7),
+                                        ),
+                                        border: Border.all(
+                                          color: Colors.transparent,
+                                        ),
                                       ),
-                                      border: Border.all(
-                                        color: Colors.transparent,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Opacity(
-                                        opacity:
-                                            (horizontalThresholdPercentage /
-                                                    100)
-                                                .abs()
-                                                .clamp(0.0, 1.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            SvgPicture.asset(
-                                              'assets/svg/hard.svg',
-                                              height: 64.scale(),
-                                              width: 64.scale(),
-                                              colorFilter: ColorFilter.mode(
-                                                Colors.white,
-                                                BlendMode.srcIn,
+                                      child: Center(
+                                        child: Opacity(
+                                          opacity:
+                                              (horizontalThresholdPercentage /
+                                                      100)
+                                                  .abs()
+                                                  .clamp(0.0, 1.0),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SvgPicture.asset(
+                                                'assets/svg/easy.svg',
+                                                height: 64.r,
+                                                width: 64.r,
+                                                colorFilter: ColorFilter.mode(
+                                                  Colors.white,
+                                                  BlendMode.srcIn,
+                                                ),
                                               ),
-                                            ),
-                                            SizedBox(height: 8.scale()),
-                                            Text(
-                                              "REVIEW",
-                                              style: TextStyle(
-                                                fontSize: 24.scale(),
-                                                fontVariations: [
-                                                  FontVariation.weight(900),
-                                                ],
-                                                color: Colors.white,
-                                                letterSpacing: 2,
+                                              SizedBox(height: 8.h),
+                                              Text(
+                                                "NAILED IT",
+                                                style: TextStyle(
+                                                  fontSize: 24,
+                                                  fontVariations: [
+                                                    FontVariation.weight(900),
+                                                  ],
+                                                  color: Colors.white,
+                                                  letterSpacing: 2,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                          ],
+
+                              // Left swipe overlay (Review - Orange)
+                              if (widget.state.isFlipped &&
+                                  horizontalThresholdPercentage < 0)
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.withValues(
+                                          alpha:
+                                              (horizontalThresholdPercentage /
+                                                      100)
+                                                  .abs()
+                                                  .clamp(0.0, 0.7),
+                                        ),
+                                        border: Border.all(
+                                          color: Colors.transparent,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Opacity(
+                                          opacity:
+                                              (horizontalThresholdPercentage /
+                                                      100)
+                                                  .abs()
+                                                  .clamp(0.0, 1.0),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SvgPicture.asset(
+                                                'assets/svg/hard.svg',
+                                                height: 64.h,
+                                                width: 64.w,
+                                                colorFilter: ColorFilter.mode(
+                                                  Colors.white,
+                                                  BlendMode.srcIn,
+                                                ),
+                                              ),
+                                              SizedBox(height: 8.h),
+                                              Text(
+                                                "REVIEW",
+                                                style: TextStyle(
+                                                  fontSize: 24,
+                                                  fontVariations: [
+                                                    FontVariation.weight(900),
+                                                  ],
+                                                  color: Colors.white,
+                                                  letterSpacing: 2,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  double _calculateCardHeight(String front, String back, double screenHeight) {
+    // Rough estimation logic
+    // Base height for UI chrome (Header, prompt, spacing) ~ 200px
+    // Font size 18, check length
+    final text = widget.state.isFlipped ? back : front;
+    // Avg chars per line ~ 30 for mobile width (safe estimate)
+    // 18px height * 1.2 spacing = 21.6px per line
+
+    final estLines = (text.length / 30).ceil();
+    final textHeight = estLines * 28.0; // Increased line height buffer to 28
+
+    final totalHeight =
+        350 +
+        textHeight; // Increased base buffer to 350 (header + footer + prompt)
+
+    // Ensure at least screen height usage (minus header/progress)
+    final minHeight = screenHeight * 0.6;
+
+    return totalHeight > minHeight ? totalHeight : minHeight;
   }
 
   @override

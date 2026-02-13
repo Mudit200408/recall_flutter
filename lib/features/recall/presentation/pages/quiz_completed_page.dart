@@ -123,21 +123,21 @@ class QuizCompletedPage extends StatelessWidget {
 
                               // Content
                               Padding(
-                                padding: EdgeInsets.all(16.scale()),
+                                padding: EdgeInsets.all(16.r),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       deck.title.toUpperCase(),
                                       style: TextStyle(
-                                        fontSize: 20.scale(),
+                                        fontSize: 20,
                                         fontVariations: [
                                           FontVariation.weight(900),
                                         ],
                                         letterSpacing: 1.2,
                                       ),
                                     ),
-                                    SizedBox(height: 8.scale()),
+                                    SizedBox(height: 8.h),
 
                                     Container(
                                       width: double.infinity,
@@ -161,7 +161,7 @@ class QuizCompletedPage extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                    SizedBox(height: 8.scale()),
+                                    SizedBox(height: 8.h),
                                   ],
                                 ),
                               ),
@@ -173,12 +173,12 @@ class QuizCompletedPage extends StatelessWidget {
                       const Spacer(),
                       Padding(
                         padding: EdgeInsets.only(
-                          left: 16.0.scale(),
-                          right: 16.0.scale(),
-                          bottom: 10.scale(),
+                          left: 16.0.r,
+                          right: 16.0.r,
+                          bottom: 10.r,
                         ),
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 400.scale()),
+                          constraints: BoxConstraints(maxWidth: 400.w),
                           child: AnimatedButton(
                             text: "BACK TO DECKS",
                             onTap: () => Navigator.pop(
@@ -207,14 +207,14 @@ class QuizCompletedPage extends StatelessWidget {
     return Container(
       color: Colors.grey[900],
       child: Center(
-        child: Icon(Icons.broken_image, color: Colors.white, size: 40.scale()),
+        child: Icon(Icons.broken_image, color: Colors.white, size: 40.r),
       ),
     );
   }
 
   Widget _buildStatItem(String label, int count, Color color) {
     return Container(
-      padding: EdgeInsets.all(12.scale()),
+      padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
         color: color,
         border: Border.all(color: Colors.black, width: 3),

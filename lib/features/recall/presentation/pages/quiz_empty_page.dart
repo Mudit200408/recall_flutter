@@ -80,156 +80,173 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
-            // This physics makes it feel more solid if the content is small
+            // 1. AlwaysScrollable ensures you can bounce/scroll even if content fits exactly
             physics: const AlwaysScrollableScrollPhysics(),
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                // Force the child to be at least the height of the screen
-                minHeight: constraints.maxHeight,
-              ),
-              child: IntrinsicHeight(
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 24.0.scale(),
-                      vertical: 40.0.scale(), // Add vertical padding for breathing room
-                    ),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: 400.scale(),
+              // 2. This forces the scroll view to be AT LEAST the size of the screen
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                // 3. This centers the card if it fits, but lets it expand if it doesn't
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.0.r,
+                    vertical: 40.0.r,
+                  ),
+                  child: Container(
+                    // 4. Set a max width for tablets, but let height be dynamic
+                    constraints: BoxConstraints(maxWidth: 400.r),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        color: QuizEmptyPage.blackColor,
+                        width: 4,
                       ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                            color: QuizEmptyPage.blackColor,
-                            width: 4,
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: QuizEmptyPage.blackColor,
-                              offset: Offset(8, 8),
-                              blurRadius: 0,
-                            ),
-                          ],
+                      boxShadow: const [
+                        BoxShadow(
+                          color: QuizEmptyPage.blackColor,
+                          offset: Offset(8, 8),
+                          blurRadius: 0,
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Top Grid Section
-                            Container(
-                              height: 220.scale(), // Use a fixed height for the header
-                              width: double.infinity,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Color.fromARGB(255, 95, 92, 92),
-                                    Color(0xFF2A2A2A),
-                                  ],
-                                ),
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: QuizEmptyPage.blackColor,
-                                    width: 4,
-                                  ),
-                                ),
-                              ),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/checks-bg.png',
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                    const SizedBox.shrink(),
-                                  ),
-                                  Positioned(
-                                    top: 16.scale(),
-                                    left: 16.scale(),
-                                    child: _buildNeoBadge('EMPTY CARDS'),
-                                  ),
-                                  Icon(
-                                    Icons.quiz_outlined,
-                                    size: 100.scale(),
-                                    color: Colors.white24,
-                                  ),
-                                ],
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min, // Shrink-wrap the height
+                      children: [
+                        // --- HEADER SECTION ---
+                        Container(
+                          // REMOVED fixed height: 220.h
+                          // Use minHeight to keep aspect ratio but allow growth
+                          constraints: BoxConstraints(minHeight: 200.h),
+                          width: double.infinity,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color.fromARGB(255, 95, 92, 92),
+                                Color(0xFF2A2A2A),
+                              ],
+                            ),
+                            border: Border(
+                              bottom: BorderSide(
+                                color: QuizEmptyPage.blackColor,
+                                width: 4,
                               ),
                             ),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned.fill(
+                                child: Image.asset(
+                                  'assets/images/checks-bg.png',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stack) =>
+                                      const SizedBox.shrink(),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 40.r),
+                                child: Icon(
+                                  Icons.quiz_outlined,
+                                  size: 100.r,
+                                  color: Colors.white24,
+                                ),
+                              ),
+                              Positioned(
+                                top: 16.r,
+                                left: 16.r,
+                                child: _buildNeoBadge('EMPTY CARDS'),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                            // Content Section
-                            Padding(
-                              padding: EdgeInsets.all(24.0.scale()),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'NO FLASHCARDS\nAVAILABLE',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 32.scale(),
-                                      fontWeight: FontWeight.w900,
-                                      height: 0.9,
-                                      letterSpacing: -1.0,
-                                    ),
-                                  ),
-                                  SizedBox(height: 20.scale()),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16.scale(),
-                                      vertical: 10.scale(),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      'NEXT DECK IN: ${_formatDuration(_timeLeft)}',
-                                      style: TextStyle(
-                                        fontSize: 15.scale(),
-                                        fontWeight: FontWeight.bold,
-                                        color: QuizEmptyPage.primaryColor,
-                                        fontFeatures: const [FontFeature.tabularFigures()],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 32.scale()),
-                                  Text(
-                                    "Stats from Previous Quiz:",
-                                    style: TextStyle(
-                                      fontSize: 16.scale(),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 16.scale()),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      _buildStatBadge('REVIEW', widget.deck.hardCount, Colors.orange),
-                                      SizedBox(width: 12.scale()),
-                                      _buildStatBadge('NAILED', widget.deck.easyCount, Colors.green),
+                        // --- CONTENT SECTION ---
+                        Padding(
+                          padding: EdgeInsets.all(24.0.r),
+                          child: Column(
+                            children: [
+                              Text(
+                                'NO FLASHCARDS\nAVAILABLE',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  height: 0.9,
+                                  letterSpacing: -1.0,
+                                ),
+                              ),
+                              SizedBox(height: 20.scale()),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16.scale(),
+                                  vertical: 10.scale(),
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'NEXT DECK IN: ${_formatDuration(_timeLeft)}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: QuizEmptyPage.primaryColor,
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures(),
                                     ],
                                   ),
+                                ),
+                              ),
+                              SizedBox(height: 32.scale()),
+                              Text(
+                                "Stats from Previous Quiz:",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 16.scale()),
+                              // WRAP prevents overflow if badges get too wide
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                spacing: 12.scale(),
+                                runSpacing: 12.scale(),
+                                children: [
+                                  _buildStatBadge(
+                                    'REVIEW',
+                                    widget.deck.hardCount,
+                                    Colors.orange,
+                                  ),
+                                  _buildStatBadge(
+                                    'NAILED',
+                                    widget.deck.easyCount,
+                                    Colors.green,
+                                  ),
                                 ],
                               ),
-                            ),
-
-                            // Bottom Button
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(16.scale(), 0, 16.scale(), 24.scale()),
-                              child: AnimatedButton(
-                                text: 'GO BACK TO HOME',
-                                icon: Icons.keyboard_return,
-                                iconSide: 'left',
-                                onTap: () => Navigator.pop(context),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+
+                        // --- BUTTON SECTION ---
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            16.scale(),
+                            0,
+                            16.scale(),
+                            24.scale(),
+                          ),
+                          child: AnimatedButton(
+                            text: 'GO TO HOME',
+                            icon: Icons.keyboard_return,
+                            iconSide: 'left',
+                            onTap: () => Navigator.pop(context),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -243,21 +260,26 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
 
   Widget _buildNeoBadge(String label) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.scale(), vertical: 4.scale()),
+      padding: EdgeInsets.symmetric(horizontal: 10.r, vertical: 4.r),
       decoration: BoxDecoration(
         color: QuizEmptyPage.primaryColor,
         border: Border.all(color: QuizEmptyPage.blackColor, width: 2),
-        boxShadow: const [BoxShadow(color: QuizEmptyPage.blackColor, offset: Offset(3, 3))],
+        boxShadow: const [
+          BoxShadow(color: QuizEmptyPage.blackColor, offset: Offset(3, 3)),
+        ],
       ),
-      child: Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.scale())),
+      child: Text(
+        label,
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+      ),
     );
   }
 
   Widget _buildStatBadge(String label, int value, Color color) {
     return ConstrainedBox(
-      constraints: BoxConstraints(minWidth: 100.scale()),
+      constraints: BoxConstraints(minWidth: 100.w),
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.scale()),
+        padding: EdgeInsets.symmetric(vertical: 12.r),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: QuizEmptyPage.blackColor, width: 3),
@@ -280,7 +302,7 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
                 height: 1.0,
               ),
             ),
-            SizedBox(height: 4.scale()),
+            SizedBox(height: 4.h),
             Text(
               label,
               style: TextStyle(

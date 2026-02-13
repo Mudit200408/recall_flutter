@@ -215,55 +215,94 @@ class _DeckListPageState extends State<DeckListPage>
   }
 
   Widget _buildDeckList(DeckLoaded state, bool isMobile) {
-    return SliverGrid(
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 600,
-        mainAxisSpacing: 8.r,
-        crossAxisSpacing: 8.r,
-        childAspectRatio: isMobile ? 1.09 : 0.84,
-      ),
+    // Calculate columns based on width (maxCrossAxisExtent logic equivalent)
+    final width = MediaQuery.sizeOf(context).width;
+    final int crossAxisCount = (width / 600).ceil();
+    final int rowCount = (state.decks.length / crossAxisCount).ceil();
+
+    return SliverList(
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
-        final deck = state.decks[index];
-        final isDeleting = deck.id == _animatingDeckId;
+        final int startIndex = index * crossAxisCount;
+        final int endIndex = (startIndex + crossAxisCount < state.decks.length)
+            ? startIndex + crossAxisCount
+            : state.decks.length;
 
-        return SizeTransition(
-          sizeFactor: isDeleting
-              ? _deletionAnimation
-              : const AlwaysStoppedAnimation(1.0),
-          child: DeckCard(
-            deck: deck,
-            onTap: () async {
-              final deletedDeckId = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => QuizPage(deck: deck)),
-              );
+        final rowDecks = state.decks.sublist(startIndex, endIndex);
 
-              if (deletedDeckId != null && deletedDeckId is String) {
-                // Trigger animation
-                setState(() {
-                  _animatingDeckId = deletedDeckId;
-                });
-                await _deletionController.reverse();
+        return Padding(
+          padding: EdgeInsets.only(bottom: 8.r),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ...rowDecks.map((deck) {
+                  final int deckIndex = state.decks.indexOf(deck);
+                  final isDeleting = deck.id == _animatingDeckId;
 
-                // Then refresh data
-                if (context.mounted) {
-                  setState(() {
-                    _animatingDeckId = null;
-                    _deletionController.value = 1.0;
-                  });
-                  context.read<DeckBloc>().add(LoadDecks());
-                }
-              } else if (context.mounted) {
-                // Normal return, just refresh
-                context.read<DeckBloc>().add(LoadDecks());
-              }
-            },
-            onDelete: () {
-              _buildDeleteDialog(context, state, index);
-            },
+                  // Add spacing between items (except the last one in the row)
+                  final isLastSlot =
+                      rowDecks.indexOf(deck) == crossAxisCount - 1;
+
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: isLastSlot ? 0 : 8.r),
+                      child: SizeTransition(
+                        sizeFactor: isDeleting
+                            ? _deletionAnimation
+                            : const AlwaysStoppedAnimation(1.0),
+                        child: DeckCard(
+                          deck: deck,
+                          onTap: () async {
+                            final deletedDeckId = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => QuizPage(deck: deck),
+                              ),
+                            );
+
+                            if (deletedDeckId != null &&
+                                deletedDeckId is String) {
+                              setState(() {
+                                _animatingDeckId = deletedDeckId;
+                              });
+                              await _deletionController.reverse();
+
+                              if (context.mounted) {
+                                setState(() {
+                                  _animatingDeckId = null;
+                                  _deletionController.value = 1.0;
+                                });
+                                context.read<DeckBloc>().add(LoadDecks());
+                              }
+                            } else if (context.mounted) {
+                              context.read<DeckBloc>().add(LoadDecks());
+                            }
+                          },
+                          onDelete: () {
+                            _buildDeleteDialog(context, state, deckIndex);
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+                // Fill remaining space with empty widgets to maintain alignment
+                if (rowDecks.length < crossAxisCount)
+                  ...List.generate(crossAxisCount - rowDecks.length, (index) {
+                    final isLastSlot =
+                        (rowDecks.length + index) == crossAxisCount - 1;
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: isLastSlot ? 0 : 8.r),
+                        child: const SizedBox(),
+                      ),
+                    );
+                  }),
+              ],
+            ),
           ),
         );
-      }, childCount: state.decks.length),
+      }, childCount: rowCount),
     );
   }
 

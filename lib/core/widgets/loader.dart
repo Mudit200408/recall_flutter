@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:responsive_scaler/responsive_scaler.dart';
 
 class Loader extends StatelessWidget {
   const Loader({super.key});
@@ -8,8 +9,8 @@ class Loader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SizedBox(
-        width: 100,
-        height: 100,
+        width: 100.r,
+        height: 100.r,
         child: Lottie.asset('assets/lottie/loading.json', fit: BoxFit.contain),
       ),
     );
