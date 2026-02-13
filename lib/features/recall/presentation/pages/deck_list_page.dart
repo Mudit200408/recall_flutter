@@ -218,8 +218,8 @@ class _DeckListPageState extends State<DeckListPage>
     return SliverGrid(
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 600,
-        mainAxisSpacing: 8.scale(),
-        crossAxisSpacing: 8.scale(),
+        mainAxisSpacing: 8.r,
+        crossAxisSpacing: 8.r,
         childAspectRatio: isMobile ? 1.09 : 0.84,
       ),
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
@@ -359,7 +359,7 @@ class _DeckListPageState extends State<DeckListPage>
                       onTap: () => Navigator.pop(context),
                     ),
                   ),
-                  SizedBox(width: 12.scale()),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: AnimatedButton(
                       text: "DELETE",

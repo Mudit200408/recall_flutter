@@ -139,7 +139,7 @@ class FlashcardFace extends StatelessWidget {
                                   text.toUpperCase(),
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 18.scale(),
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w900,
                                     height: 1.2,
                                     letterSpacing: 1.0,

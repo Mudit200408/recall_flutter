@@ -41,7 +41,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
         transform: _isPressed
             ? Matrix4.translationValues(4, 4, 0)
             : Matrix4.identity(),
-        height: 64.scale(),
+        height: 64.h,
         decoration: BoxDecoration(
           color: widget.color ?? const Color(0xFFCCFF00),
           border: Border.all(color: Colors.black, width: 3),
@@ -54,7 +54,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
           children: [
             if (widget.icon != null && widget.iconSide == 'left')
               Icon(widget.icon!, color: Colors.black),
-            SizedBox(width: 12.scale()),
+            SizedBox(width: 12.w),
             Text(
               widget.text,
               style: TextStyle(
@@ -63,7 +63,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
                 color: widget.textColor ?? Colors.black,
               ),
             ),
-            SizedBox(width: 12.scale()),
+            SizedBox(width: 12.w),
             if (widget.icon != null && widget.iconSide == 'right')
               Icon(widget.icon!, color: Colors.black),
           ],

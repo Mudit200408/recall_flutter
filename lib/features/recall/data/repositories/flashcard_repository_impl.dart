@@ -467,11 +467,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
         .collection('decks')
         .doc(deckId);
 
-    // Atomically increment scheduledDays by daysSkipped to extend deadline
-    // And increment skippedDays counter
-    await deckRef.update({
-      'scheduledDays': FieldValue.increment(daysSkipped),
-      'skippedDays': FieldValue.increment(daysSkipped),
-    });
+    // Only increment skippedDays counter, do NOT extend deadline (scheduledDays)
+    await deckRef.update({'skippedDays': FieldValue.increment(daysSkipped)});
   }
 }

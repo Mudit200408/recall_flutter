@@ -22,14 +22,14 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseAppCheck.instance.activate(
     providerAndroid: AndroidDebugProvider(),
-    providerApple: AppleDebugProvider()
+    providerApple: AppleDebugProvider(),
   );
   await di.init();
   ResponsiveScaler.init(
     designWidth: 448,
+    designHeight: 937,
     minScale: 0.8,
     maxScale: 1.2,
-    maxAccessibilityScale: 1.8,
   );
 
   runApp(MainApp());
