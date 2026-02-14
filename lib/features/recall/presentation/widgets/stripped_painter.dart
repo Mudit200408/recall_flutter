@@ -24,8 +24,8 @@ class StripedProgressPainter extends CustomPainter {
       ..color = const Color(0xFF1A1A1A)
       ..style = PaintingStyle.fill;
 
-    const double stripeWidth = 10;
-    const double stripeSpacing = 21;
+    const double stripeWidth = 14;
+    const double stripeSpacing = 28;
     final double h = size.height;
     final double totalSpan = size.width + h * 2;
 

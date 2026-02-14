@@ -54,7 +54,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
           children: [
             if (widget.icon != null && widget.iconSide == 'left')
               Icon(widget.icon!, color: Colors.black),
-            SizedBox(width: 12.r),
+            SizedBox(width: 8.r),
             Text(
               widget.text,
               style: TextStyle(
@@ -64,7 +64,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
               ),
             ),
 
-            SizedBox(width: 12.r),
+            SizedBox(width: 8.r),
             if (widget.icon != null && widget.iconSide == 'right')
               Icon(widget.icon!, color: Colors.black),
           ],

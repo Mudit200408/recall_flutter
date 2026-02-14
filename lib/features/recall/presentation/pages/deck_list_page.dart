@@ -24,34 +24,14 @@ class DeckListPage extends StatefulWidget {
   State<DeckListPage> createState() => _DeckListPageState();
 }
 
-class _DeckListPageState extends State<DeckListPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _deletionController;
-  late Animation<double> _deletionAnimation;
-  String? _animatingDeckId;
-
+class _DeckListPageState extends State<DeckListPage> {
   @override
   void initState() {
     super.initState();
-    _deletionController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _deletionAnimation = CurvedAnimation(
-      parent: _deletionController,
-      curve: Curves.easeOut,
-    );
-    _deletionController.value = 1.0; // Start fully visible
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       sl<NotificationService>().initialize(authState.user.uid);
     }
-  }
-
-  @override
-  void dispose() {
-    _deletionController.dispose();
-    super.dispose();
   }
 
   @override
@@ -171,7 +151,7 @@ class _DeckListPageState extends State<DeckListPage>
               );
             },
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 30.0.scale())),
+          SliverToBoxAdapter(child: SizedBox(height: 60.0.scale())),
         ],
       ),
 
@@ -237,8 +217,6 @@ class _DeckListPageState extends State<DeckListPage>
               children: [
                 ...rowDecks.map((deck) {
                   final int deckIndex = state.decks.indexOf(deck);
-                  final isDeleting = deck.id == _animatingDeckId;
-
                   // Add spacing between items (except the last one in the row)
                   final isLastSlot =
                       rowDecks.indexOf(deck) == crossAxisCount - 1;
@@ -246,42 +224,22 @@ class _DeckListPageState extends State<DeckListPage>
                   return Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(right: isLastSlot ? 0 : 8.r),
-                      child: SizeTransition(
-                        sizeFactor: isDeleting
-                            ? _deletionAnimation
-                            : const AlwaysStoppedAnimation(1.0),
-                        child: DeckCard(
-                          deck: deck,
-                          onTap: () async {
-                            final deletedDeckId = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => QuizPage(deck: deck),
-                              ),
-                            );
-
-                            if (deletedDeckId != null &&
-                                deletedDeckId is String) {
-                              setState(() {
-                                _animatingDeckId = deletedDeckId;
-                              });
-                              await _deletionController.reverse();
-
-                              if (context.mounted) {
-                                setState(() {
-                                  _animatingDeckId = null;
-                                  _deletionController.value = 1.0;
-                                });
-                                context.read<DeckBloc>().add(LoadDecks());
-                              }
-                            } else if (context.mounted) {
-                              context.read<DeckBloc>().add(LoadDecks());
-                            }
-                          },
-                          onDelete: () {
-                            _buildDeleteDialog(context, state, deckIndex);
-                          },
-                        ),
+                      child: DeckCard(
+                        deck: deck,
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => QuizPage(deck: deck),
+                            ),
+                          );
+                          if (context.mounted) {
+                            context.read<DeckBloc>().add(LoadDecks());
+                          }
+                        },
+                        onDelete: () {
+                          _buildDeleteDialog(context, state, deckIndex);
+                        },
                       ),
                     ),
                   );

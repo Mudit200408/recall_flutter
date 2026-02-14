@@ -17,6 +17,7 @@ class FlashcardFace extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
+      constraints: BoxConstraints(minHeight: 300.r),
       // Main Card Chassis
       decoration: BoxDecoration(
         color: const Color(0xFFF5F8F6),
