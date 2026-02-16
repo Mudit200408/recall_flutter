@@ -177,7 +177,9 @@ class _MainAppState extends State<MainApp> {
 
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Scaffold(body: Center(child: Loader()));
+                      return const Scaffold(
+                        body: Center(child: Loader(isGuest: true)),
+                      );
                     }
                     final activeModelId = snapshot.data;
 
@@ -189,7 +191,9 @@ class _MainAppState extends State<MainApp> {
                 );
               }
               if (state is AuthLoading) {
-                return const Scaffold(body: Center(child: Loader()));
+                return const Scaffold(
+                  body: Center(child: Loader(isGuest: false)),
+                );
               }
               return const LoginPage();
             },

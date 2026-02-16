@@ -41,7 +41,7 @@ class QuizPage extends StatelessWidget {
                 builder: (context, state) {
                   switch (state) {
                     case QuizLoading _:
-                      return const Center(child: Loader());
+                      return Center(child: Loader(isGuest: isGuest));
 
                     case QuizEmpty state:
                       return QuizEmptyPage(deck: state.deck, isGuest: isGuest);
@@ -74,15 +74,15 @@ class QuizPage extends StatelessWidget {
 
                       return Center(
                         child: Padding(
-                          padding: EdgeInsets.all(24.scale()),
+                          padding: EdgeInsets.all(24.r),
                           child: Container(
-                            constraints: BoxConstraints(maxWidth: 400.scale()),
-                            padding: EdgeInsets.all(24.scale()),
+                            constraints: BoxConstraints(maxWidth: 400.w),
+                            padding: EdgeInsets.all(24.r),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               border: Border.all(
                                 color: Colors.black,
-                                width: 4.scale(),
+                                width: 4.r,
                               ),
                               boxShadow: const [
                                 BoxShadow(
@@ -97,10 +97,10 @@ class QuizPage extends StatelessWidget {
                               children: [
                                 Icon(
                                   Icons.error_outline,
-                                  size: 64.scale(),
+                                  size: 64.r,
                                   color: Colors.red,
                                 ),
-                                SizedBox(height: 16.scale()),
+                                SizedBox(height: 16.h),
                                 Text(
                                   "OOPS!",
                                   style: TextStyle(
@@ -109,17 +109,17 @@ class QuizPage extends StatelessWidget {
                                     color: Colors.black,
                                   ),
                                 ),
-                                SizedBox(height: 12.scale()),
+                                SizedBox(height: 12.h),
                                 Text(
                                   state.message,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 16.scale(),
+                                    fontSize: 16.r,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.grey,
                                   ),
                                 ),
-                                SizedBox(height: 24.scale()),
+                                SizedBox(height: 24.h),
                                 AnimatedButton(
                                   text: "GO BACK",
                                   icon: Icons.arrow_back,
@@ -213,7 +213,7 @@ class _QuizContentState extends State<QuizContent> {
 
   Padding _buildHeader(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.scale()),
+      padding: EdgeInsets.symmetric(horizontal: 16.r),
       child: Row(
         children: [
           SquareButton(
@@ -221,12 +221,12 @@ class _QuizContentState extends State<QuizContent> {
             color: Colors.red,
             onTap: () => Navigator.pop(context),
           ),
-          SizedBox(width: 16.scale()),
+          SizedBox(width: 16.w),
           Expanded(
             child: Text(
               widget.state.deck.title,
               style: TextStyle(
-                fontSize: 28.scale(),
+                fontSize: 28.r,
                 fontVariations: [FontVariation.weight(900)],
                 letterSpacing: 1.3,
               ),
@@ -245,7 +245,7 @@ class _QuizContentState extends State<QuizContent> {
     final double progress = current / total;
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.scale()),
+      padding: EdgeInsets.symmetric(horizontal: 16.r),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 700),
         child: Column(
@@ -253,14 +253,14 @@ class _QuizContentState extends State<QuizContent> {
           children: [
             // Header row: "PROGRESS" label + fraction counter
             Padding(
-              padding: EdgeInsets.only(bottom: 6.scale()),
+              padding: EdgeInsets.only(bottom: 6.r),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "PROGRESS",
                     style: TextStyle(
-                      fontSize: 14.scale(),
+                      fontSize: 14.r,
                       fontVariations: const [FontVariation.weight(900)],
                       color: Colors.black,
                       letterSpacing: 1.2,
@@ -269,7 +269,7 @@ class _QuizContentState extends State<QuizContent> {
                   Text(
                     "$current/$total",
                     style: TextStyle(
-                      fontSize: 14.scale(),
+                      fontSize: 14.r,
                       fontVariations: const [FontVariation.weight(900)],
                       color: Colors.black,
                     ),
@@ -301,16 +301,16 @@ class _QuizContentState extends State<QuizContent> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _buildHeader(context),
-              SizedBox(height: 16.scale()),
+              SizedBox(height: 16.h),
 
               _buildProgressBar(),
-              SizedBox(height: 16.scale()),
+              SizedBox(height: 16.h),
 
               _buildCard(remainingCards, isMobile, maxCardWidth: 400),
 
               // Swipe hints
               _buildSwipeHints(),
-              SizedBox(height: 32.scale()), // Bottom padding for scroll
+              SizedBox(height: 32.h), // Bottom padding for scroll
             ],
           ),
         ),
@@ -385,19 +385,19 @@ class _QuizContentState extends State<QuizContent> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 8.scale()),
+              SizedBox(height: 8.h),
               _buildHeader(context),
-              SizedBox(height: 16.scale()),
+              SizedBox(height: 16.h),
 
               _buildProgressBar(),
-              SizedBox(height: 16.scale()),
+              SizedBox(height: 16.h),
 
               // Card takes all remaining vertical space
               _buildCard(remainingCards, isMobile, maxCardWidth: 700),
 
               // Swipe hints
               _buildSwipeHints(),
-              SizedBox(height: 32.scale()), // Bottom padding
+              SizedBox(height: 32.h), // Bottom padding
             ],
           ),
         ),
@@ -467,7 +467,7 @@ class _QuizContentState extends State<QuizContent> {
                 numberOfCardsDisplayed: remainingCards.length.clamp(1, 3),
                 backCardOffset: isMobile ? Offset(0, 45) : Offset(48, 38),
                 scale: 0.9,
-                padding: EdgeInsets.all(24.scale()),
+                padding: EdgeInsets.all(24.r),
                 allowedSwipeDirection: widget.state.isFlipped
                     ? const AllowedSwipeDirection.only(left: true, right: true)
                     : const AllowedSwipeDirection.none(),

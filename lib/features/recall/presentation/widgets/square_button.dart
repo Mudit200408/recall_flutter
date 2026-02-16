@@ -36,8 +36,8 @@ class _SquareButtonState extends State<SquareButton> {
             ? Matrix4.translationValues(3, 3, 0)
             : Matrix4.identity(),
 
-        height: 45.scale(),
-        width: 45.scale(),
+        height: 45.h,
+        width: 45.w,
 
         decoration: BoxDecoration(
           color: Colors.white,

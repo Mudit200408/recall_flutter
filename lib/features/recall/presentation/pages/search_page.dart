@@ -29,7 +29,7 @@ class _SearchPageState extends State<SearchPage> {
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         leading: Padding(
-          padding: EdgeInsets.all(8.0.scale()),
+          padding: EdgeInsets.all(8.0.r),
           child: SquareButton(
             icon: Icons.arrow_back,
             onTap: () => Navigator.pop(context),
@@ -50,7 +50,7 @@ class _SearchPageState extends State<SearchPage> {
           Column(
             children: [
               Padding(
-                padding: EdgeInsets.all(16.0.scale()),
+                padding: EdgeInsets.all(16.0.r),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -146,8 +146,10 @@ class _SearchPageState extends State<SearchPage> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (_) =>
-                                                QuizPage(deck: deck, isGuest: widget.isGuest),
+                                            builder: (_) => QuizPage(
+                                              deck: deck,
+                                              isGuest: widget.isGuest,
+                                            ),
                                           ),
                                         );
                                       },
@@ -203,7 +205,7 @@ class _SearchPageState extends State<SearchPage> {
       builder: (context) => Dialog(
         backgroundColor: Colors.white,
         child: Container(
-          padding: EdgeInsets.all(12.scale()),
+          padding: EdgeInsets.all(12.r),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.black, width: 4),
             color: Colors.white,
@@ -219,7 +221,7 @@ class _SearchPageState extends State<SearchPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
-            spacing: 8.scale(),
+            spacing: 8.r,
             children: [
               Text(
                 "DELETE DECK?",
@@ -235,7 +237,7 @@ class _SearchPageState extends State<SearchPage> {
                   fontVariations: [FontVariation.weight(900)],
                 ),
               ),
-              SizedBox(height: 12.scale()),
+              SizedBox(height: 12.h),
               Row(
                 children: [
                   Expanded(
@@ -246,7 +248,7 @@ class _SearchPageState extends State<SearchPage> {
                       isGuest: widget.isGuest,
                     ),
                   ),
-                  SizedBox(width: 12.scale()),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: AnimatedButton(
                       text: "DELETE",

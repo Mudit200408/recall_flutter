@@ -36,13 +36,13 @@ class _RatingButtonState extends State<RatingButton> {
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
       child: ConstrainedBox(
-        constraints: BoxConstraints(minWidth: 100.scale()),
+        constraints: BoxConstraints(minWidth: 100.w),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 80),
           transform: _isPressed
               ? Matrix4.translationValues(4, 4, 0)
               : Matrix4.identity(),
-          padding: EdgeInsets.all(18.scale()),
+          padding: EdgeInsets.all(18.r),
           decoration: BoxDecoration(
             color: widget.color,
             border: Border.all(color: Colors.black, width: 3),

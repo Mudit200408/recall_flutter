@@ -25,10 +25,7 @@ class DeckCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: EdgeInsets.symmetric(
-          horizontal: 16.scale(),
-          vertical: 8.scale(),
-        ),
+        margin: EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: Colors.black, width: 3),
@@ -42,7 +39,7 @@ class DeckCard extends StatelessWidget {
             // Header Image
             if (deck.imageUrl != null)
               SizedBox(
-                height: 200.scale(),
+                height: 200.h,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -133,10 +130,10 @@ class DeckCard extends StatelessWidget {
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
         if (showBar) ...[
-          SizedBox(height: 4.scale()),
+          SizedBox(height: 4.h),
           Container(
-            width: 80.scale(),
-            height: 6.scale(),
+            width: 80.w,
+            height: 6.h,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.black, width: 1),
             ),
@@ -197,13 +194,17 @@ class DeckCard extends StatelessWidget {
               ),
           ],
         ),
-        SizedBox(height: 4.scale()),
+        SizedBox(height: 4.h),
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
             border: Border.all(color: Colors.black, width: 2),
           ),
-          child: ProgressBar(progress: progress, color: color, isGuest: isGuest),
+          child: ProgressBar(
+            progress: progress,
+            color: color,
+            isGuest: isGuest,
+          ),
         ),
       ],
     );
@@ -213,7 +214,7 @@ class DeckCard extends StatelessWidget {
     return Container(
       color: Colors.grey[900],
       child: Center(
-        child: Icon(Icons.broken_image, color: Colors.white, size: 40.scale()),
+        child: Icon(Icons.broken_image, color: Colors.white, size: 40.r),
       ),
     );
   }

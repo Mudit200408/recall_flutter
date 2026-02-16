@@ -43,8 +43,8 @@ class LoginPage extends StatelessWidget {
                         child: IntrinsicHeight(
                           child: Padding(
                             padding: EdgeInsets.symmetric(
-                              horizontal: 24.0.scale(),
-                              vertical: 16.0.scale(),
+                              horizontal: 24.0.r,
+                              vertical: 16.0.r,
                             ),
 
                             child: Column(
@@ -67,31 +67,31 @@ class LoginPage extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 48.scale()),
+                                SizedBox(height: 48.h),
 
                                 // NET.VER Header
                                 Row(
                                   children: [
                                     Container(
-                                      width: 12.scale(),
-                                      height: 12.scale(),
+                                      width: 12.w,
+                                      height: 12.h,
                                       color: const Color(
                                         0xFF666666,
                                       ), // Muted green/grey
                                     ),
-                                    SizedBox(width: 8.scale()),
+                                    SizedBox(width: 8.w),
                                     Text(
                                       "NET.VER.2.04",
                                       style: TextStyle(
                                         fontFamily: 'SpaceGrotesk',
-                                        fontSize: 14.scale(),
+                                        fontSize: 14.r,
                                         color: const Color(0xFFAAAAAA),
                                         letterSpacing: 2,
                                       ),
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 16.scale()),
+                                SizedBox(height: 16.h),
 
                                 // RECALL Title
                                 Text(
@@ -111,7 +111,7 @@ class LoginPage extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 8.scale()),
+                                SizedBox(height: 8.h),
 
                                 //SYSTEM BOOT
                                 Stack(
@@ -228,33 +228,33 @@ class LoginPage extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: 8.h),
 
                                 // Divider line with progress bar
                                 Stack(
                                   children: [
                                     Container(
-                                      height: 2,
+                                      height: 2.r,
                                       width: double.infinity,
                                       color: const Color(0xFF222222),
                                     ),
                                     if (!isOffline) ...[
                                       Container(
-                                        height: 2,
+                                        height: 2.r,
                                         width: 100, // Partial progress
                                         color: const Color(0xFF333300),
                                       ),
                                       Align(
                                         alignment: Alignment.center,
                                         child: Container(
-                                          height: 2,
+                                          height: 2.r,
                                           width: 100,
                                           color: const Color(0xFF445500),
                                         ),
                                       ),
                                     ] else
                                       Container(
-                                        height: 2,
+                                        height: 2.r,
                                         width: double.infinity,
                                         color: Colors.red.withValues(
                                           alpha: 0.3,
@@ -268,15 +268,17 @@ class LoginPage extends StatelessWidget {
                                 BlocBuilder<AuthBloc, AuthState>(
                                   builder: (context, state) {
                                     if (state is AuthLoading) {
-                                      return const Center(child: Loader());
+                                      return const Center(
+                                        child: Loader(isGuest: false),
+                                      );
                                     }
                                     return Opacity(
                                       opacity: isOffline ? 0.5 : 1.0,
                                       child: CyberpunkButton(
                                         text: "SIGN IN WITH GOOGLE",
-                                        icon: const Icon(
+                                        icon: Icon(
                                           Icons.g_mobiledata,
-                                          size: 32,
+                                          size: 32.r,
                                           color: Colors.black,
                                         ),
                                         onTap: isOffline
@@ -287,7 +289,7 @@ class LoginPage extends StatelessWidget {
                                                 );
                                               },
                                         width: double.infinity,
-                                        height: 72,
+                                        height: 72.h,
                                       ),
                                     );
                                   },
@@ -296,9 +298,9 @@ class LoginPage extends StatelessWidget {
                                 // Place this below the "SIGN IN WITH GOOGLE" button
                                 CyberpunkButton(
                                   text: "USE LOCAL AI MODEL",
-                                  icon: const Icon(
+                                  icon: Icon(
                                     Icons.psychology,
-                                    size: 32,
+                                    size: 32.r,
                                     color: Colors.black,
                                   ),
                                   color: const Color.fromARGB(255, 0, 255, 225),
@@ -311,12 +313,12 @@ class LoginPage extends StatelessWidget {
                                   height: 72,
                                 ),
 
-                                SizedBox(height: 64.scale()),
+                                SizedBox(height: 64.h),
                                 Container(
                                   height: 1,
                                   color: const Color(0xFF222222),
                                 ),
-                                SizedBox(height: 16.scale()),
+                                SizedBox(height: 16.h),
 
                                 // Footer
                                 Row(
@@ -348,7 +350,7 @@ class LoginPage extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 4.scale()),
+                                SizedBox(height: 4.h),
                                 Text(
                                   isOffline
                                       ? "OFFLINE // UNSTABLE"
@@ -375,7 +377,7 @@ class LoginPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 16.scale()),
+                                SizedBox(height: 16.h),
 
                                 // Bottom Corners
                                 Row(
@@ -451,8 +453,8 @@ class _CornerMarker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 24.scale(),
-      height: 24.scale(),
+      width: 24.w,
+      height: 24.h,
       decoration: BoxDecoration(
         border: Border(
           top: isTop ? BorderSide(color: color, width: 2) : BorderSide.none,

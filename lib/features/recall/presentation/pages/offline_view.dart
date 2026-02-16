@@ -19,14 +19,14 @@ class OfflineView extends StatelessWidget {
             child: Center(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: EdgeInsets.all(24.scale()),
+                  padding: EdgeInsets.all(24.r),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Robot Illustration Container
                       SizedBox(
-                        width: 256.scale(),
-                        height: 256.scale(),
+                        width: 256.w,
+                        height: 256.h,
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
@@ -48,7 +48,7 @@ class OfflineView extends StatelessWidget {
                             ),
                             // White foreground rect with SVG
                             Container(
-                              padding: EdgeInsets.all(16.scale()),
+                              padding: EdgeInsets.all(16.r),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 border: Border.all(
@@ -91,7 +91,7 @@ class OfflineView extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: 32.scale()),
+                      SizedBox(height: 32.h),
 
                       // Title
                       Text(
@@ -107,7 +107,7 @@ class OfflineView extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: 16.scale()),
+                      SizedBox(height: 16.h),
 
                       // Badge
                       Transform.rotate(
@@ -131,11 +131,11 @@ class OfflineView extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: 32.scale()),
+                      SizedBox(height: 32.h),
 
                       // Button
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 21.scale()),
+                        padding: EdgeInsets.symmetric(horizontal: 21.r),
                         child: AnimatedButton(
                           color: const Color(0xFFff2a9d),
                           text: 'RETRY',

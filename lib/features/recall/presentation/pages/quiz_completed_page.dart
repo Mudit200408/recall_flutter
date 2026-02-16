@@ -11,7 +11,7 @@ class QuizCompletedPage extends StatelessWidget {
   final int hardCount;
   final int failCount;
   final bool isDeckDeleted;
-  final bool isGuest; 
+  final bool isGuest;
 
   const QuizCompletedPage({
     super.key,
@@ -116,7 +116,7 @@ class QuizCompletedPage extends StatelessWidget {
                                       height: 1,
                                       color: Colors.grey[300],
                                     ),
-                                    SizedBox(height: 16.scale()),
+                                    SizedBox(height: 16.h),
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceAround,

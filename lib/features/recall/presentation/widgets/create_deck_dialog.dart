@@ -82,7 +82,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                   letterSpacing: 1.0,
                 ),
               ),
-              SizedBox(height: 8.scale()),
+              SizedBox(height: 8.r),
               TextField(
                 style: TextStyle(fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
@@ -95,8 +95,8 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                     fontWeight: FontWeight.normal,
                   ),
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.scale(),
-                    vertical: 16.scale(),
+                    horizontal: 16.r,
+                    vertical: 16.r,
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: blackColor, width: 3),

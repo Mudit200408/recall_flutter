@@ -142,8 +142,8 @@ class _DeckListPageState extends State<DeckListPage> {
               return BlocBuilder<DeckBloc, DeckState>(
                 builder: (context, state) {
                   if (state is DeckLoading) {
-                    return const SliverFillRemaining(
-                      child: Center(child: Loader()),
+                    return SliverFillRemaining(
+                      child: Center(child: Loader(isGuest: widget.isGuest)),
                     );
                   } else if (state is DeckLoaded) {
                     if (state.decks.isEmpty) {
@@ -166,12 +166,14 @@ class _DeckListPageState extends State<DeckListPage> {
                       child: Center(child: Text(state.message)),
                     );
                   }
-                  return SliverFillRemaining(child: Center(child: Loader()));
+                  return SliverFillRemaining(
+                    child: Center(child: Loader(isGuest: widget.isGuest)),
+                  );
                 },
               );
             },
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 60.0.scale())),
+          SliverToBoxAdapter(child: SizedBox(height: 60.0.h)),
         ],
       ),
 
@@ -354,7 +356,7 @@ class _DeckListPageState extends State<DeckListPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: .start,
-            spacing: 8.scale(),
+            spacing: 8.r,
             children: [
               Text(
                 "DELETE DECK?",
@@ -370,7 +372,7 @@ class _DeckListPageState extends State<DeckListPage> {
                   fontVariations: [FontVariation.weight(900)],
                 ),
               ),
-              SizedBox(height: 12.scale()),
+              SizedBox(height: 12.h),
               Row(
                 children: [
                   Expanded(

@@ -181,11 +181,11 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
                                   letterSpacing: -1.0,
                                 ),
                               ),
-                              SizedBox(height: 20.scale()),
+                              SizedBox(height: 20.h),
                               Container(
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: 16.scale(),
-                                  vertical: 10.scale(),
+                                  horizontal: 16.r,
+                                  vertical: 10.r,
                                 ),
                                 decoration: BoxDecoration(
                                   color: Colors.black,
@@ -204,7 +204,7 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 32.scale()),
+                              SizedBox(height: 32.h),
                               Text(
                                 "Stats from Previous Quiz:",
                                 style: TextStyle(
@@ -212,12 +212,12 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(height: 16.scale()),
+                              SizedBox(height: 16.h),
                               // WRAP prevents overflow if badges get too wide
                               Wrap(
                                 alignment: WrapAlignment.center,
-                                spacing: 12.scale(),
-                                runSpacing: 12.scale(),
+                                spacing: 12.r,
+                                runSpacing: 12.r,
                                 children: [
                                   _buildStatBadge(
                                     'REVIEW',
@@ -237,12 +237,7 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
 
                         // --- BUTTON SECTION ---
                         Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            16.scale(),
-                            0,
-                            16.scale(),
-                            24.scale(),
-                          ),
+                          padding: EdgeInsets.fromLTRB(16.r, 0, 16.r, 24.r),
                           child: AnimatedButton(
                             text: 'GO TO HOME',
                             icon: Icons.keyboard_return,
