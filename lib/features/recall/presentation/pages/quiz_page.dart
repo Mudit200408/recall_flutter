@@ -21,8 +21,9 @@ import 'package:responsive_scaler/responsive_scaler.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 
 class QuizPage extends StatelessWidget {
+  final bool isGuest;
   final Deck deck;
-  const QuizPage({super.key, required this.deck});
+  const QuizPage({super.key, required this.deck, required this.isGuest});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,7 @@ class QuizPage extends StatelessWidget {
                       return const Center(child: Loader());
 
                     case QuizEmpty state:
-                      return QuizEmptyPage(deck: state.deck);
+                      return QuizEmptyPage(deck: state.deck, isGuest: isGuest);
 
                     case QuizFinished state:
                       return QuizCompletedPage(
@@ -52,16 +53,18 @@ class QuizPage extends StatelessWidget {
                         hardCount: state.hardCount,
                         failCount: state.failCount,
                         isDeckDeleted: state.isDeckDeleted,
+                        isGuest: isGuest,
                       );
 
                     case QuizError state:
                       final message = state.message.toLowerCase();
-                      if (message.contains('connection') ||
-                          message.contains('network') ||
-                          message.contains('socket') ||
-                          message.contains('offline') ||
-                          message.contains('clientexception') ||
-                          isOffline == true) {
+                      if (!isGuest &&
+                          (message.contains('connection') ||
+                              message.contains('network') ||
+                              message.contains('socket') ||
+                              message.contains('offline') ||
+                              message.contains('clientexception') ||
+                              isOffline == true)) {
                         return OfflineView(
                           onRetry: () {
                             context.read<QuizBloc>().add(StartQuiz(deck: deck));
@@ -122,6 +125,7 @@ class QuizPage extends StatelessWidget {
                                   icon: Icons.arrow_back,
                                   onTap: () => Navigator.pop(context),
                                   iconSide: 'left',
+                                  isGuest: isGuest,
                                 ),
                               ],
                             ),
@@ -130,7 +134,7 @@ class QuizPage extends StatelessWidget {
                       );
 
                     case QuizActive state:
-                      return isOffline
+                      return (isOffline && !isGuest)
                           ? OfflineView(
                               onRetry: () {
                                 context.read<QuizBloc>().add(
@@ -138,7 +142,7 @@ class QuizPage extends StatelessWidget {
                                 );
                               },
                             )
-                          : QuizContent(state: state);
+                          : QuizContent(state: state, isGuest: isGuest);
                     case _:
                       return SizedBox.shrink();
                   }
@@ -153,8 +157,9 @@ class QuizPage extends StatelessWidget {
 }
 
 class QuizContent extends StatefulWidget {
+  final bool isGuest;
   final QuizActive state;
-  const QuizContent({super.key, required this.state});
+  const QuizContent({super.key, required this.state, required this.isGuest});
 
   @override
   State<QuizContent> createState() => _QuizContentState();
@@ -273,7 +278,7 @@ class _QuizContentState extends State<QuizContent> {
               ),
             ),
             // The progress bar itself
-            ProgressBar(progress: progress),
+            ProgressBar(progress: progress, isGuest: widget.isGuest),
           ],
         ),
       ),

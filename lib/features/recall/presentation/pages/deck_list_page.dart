@@ -12,13 +12,15 @@ import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 import 'package:recall/features/recall/presentation/pages/offline_view.dart';
 import 'package:recall/features/recall/presentation/pages/quiz_page.dart';
 import 'package:recall/features/recall/presentation/pages/search_page.dart';
+import 'package:recall/features/recall/presentation/pages/model_selection_page.dart';
 import 'package:recall/injection_container.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
 import 'package:responsive_scaler/responsive_scaler.dart';
 
 class DeckListPage extends StatefulWidget {
-  const DeckListPage({super.key});
+  final bool isGuest;
+  const DeckListPage({super.key, required this.isGuest});
 
   @override
   State<DeckListPage> createState() => _DeckListPageState();
@@ -42,20 +44,39 @@ class _DeckListPageState extends State<DeckListPage> {
         surfaceTintColor: Colors.transparent,
         actions: [
           Padding(
-            padding: EdgeInsets.only(right: 8.0.scale(), bottom: 4.scale()),
+            padding: EdgeInsets.only(right: 8.0.r, bottom: 4.r),
             child: SquareButton(
               icon: Icons.search,
               color: Colors.black,
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const SearchPage()),
+                  MaterialPageRoute(
+                    builder: (_) => SearchPage(isGuest: widget.isGuest),
+                  ),
                 );
               },
             ),
           ),
+          if (context.read<AuthBloc>().state is AuthGuest)
+            Padding(
+              padding: EdgeInsets.only(right: 8.0.r, bottom: 4.r),
+              child: SquareButton(
+                icon: Icons.psychology,
+                color: Colors.black,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          const ModelSelectionPage(isSettingsMode: true),
+                    ),
+                  );
+                },
+              ),
+            ),
           Padding(
-            padding: EdgeInsets.only(right: 16.0.scale(), bottom: 4.scale()),
+            padding: EdgeInsets.only(right: 16.0.r, bottom: 4.r),
             child: SquareButton(
               icon: Icons.logout,
               color: const Color.fromARGB(255, 255, 17, 0),
@@ -73,8 +94,8 @@ class _DeckListPageState extends State<DeckListPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(
-                vertical: 12.0.scale(),
-                horizontal: 24.0.scale(),
+                vertical: 12.0.r,
+                horizontal: 24.0.r,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -90,11 +111,11 @@ class _DeckListPageState extends State<DeckListPage> {
                       fontFamily: "ArchivoBlack",
                     ),
                   ),
-                  SizedBox(height: 8.0.scale()),
+                  SizedBox(height: 8.0.h),
                   Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: 12.0.scale(),
-                      vertical: 4.0.scale(),
+                      horizontal: 12.0.r,
+                      vertical: 4.0.r,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.black,
@@ -128,25 +149,24 @@ class _DeckListPageState extends State<DeckListPage> {
                     if (state.decks.isEmpty) {
                       return SliverFillRemaining(child: _buildEmptyView());
                     }
-                    return isOffline
+                    return isOffline && !widget.isGuest
                         ? _buildOfflineView()
                         : _buildDeckList(state, isMobile);
                   } else if (state is DeckError) {
                     final message = state.message.toLowerCase();
-                    if (message.contains('connection') ||
-                        message.contains('network') ||
-                        message.contains('socket') ||
-                        message.contains('offline') ||
-                        message.contains('clientexception')) {
+                    if (!widget.isGuest &&
+                        (message.contains('connection') ||
+                            message.contains('network') ||
+                            message.contains('socket') ||
+                            message.contains('offline') ||
+                            message.contains('clientexception'))) {
                       return _buildOfflineView();
                     }
                     return SliverFillRemaining(
                       child: Center(child: Text(state.message)),
                     );
                   }
-                  return SliverFillRemaining(
-                    child: Center(child: Text("Welcome to Recall")),
-                  );
+                  return SliverFillRemaining(child: Center(child: Loader()));
                 },
               );
             },
@@ -157,7 +177,7 @@ class _DeckListPageState extends State<DeckListPage> {
 
       floatingActionButton: BlocBuilder<ConnectivityCubit, ConnectivityState>(
         builder: (context, state) {
-          if (state is ConnectivityOffline) {
+          if (state is ConnectivityOffline && !widget.isGuest) {
             return const SizedBox.shrink();
           }
           return Row(
@@ -167,11 +187,13 @@ class _DeckListPageState extends State<DeckListPage> {
                 text: "NEW DECK",
                 iconSide: "left",
                 icon: Icons.add,
+                isGuest: widget.isGuest,
                 onTap: () {
                   showDialog(
                     context: context,
                     builder: (context) {
                       return CreateDeckDialog(
+                        isGuest: context.read<AuthBloc>().state is AuthGuest,
                         onSubmit: (topic, count, useImages, duration) {
                           context.read<DeckBloc>().add(
                             CreateDeck(
@@ -225,12 +247,14 @@ class _DeckListPageState extends State<DeckListPage> {
                     child: Padding(
                       padding: EdgeInsets.only(right: isLastSlot ? 0 : 8.r),
                       child: DeckCard(
+                        isGuest: widget.isGuest,
                         deck: deck,
                         onTap: () async {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => QuizPage(deck: deck),
+                              builder: (_) =>
+                                  QuizPage(deck: deck, isGuest: widget.isGuest),
                             ),
                           );
                           if (context.mounted) {
@@ -354,6 +378,7 @@ class _DeckListPageState extends State<DeckListPage> {
                       text: "CANCEL",
                       color: Colors.white,
                       onTap: () => Navigator.pop(context),
+                      isGuest: widget.isGuest,
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -362,6 +387,7 @@ class _DeckListPageState extends State<DeckListPage> {
                       text: "DELETE",
                       textColor: Colors.white,
                       color: Colors.red,
+                      isGuest: widget.isGuest,
                       onTap: () {
                         context.read<DeckBloc>().add(
                           DeleteDeck(deckId: state.decks[index].id),

@@ -11,6 +11,7 @@ class QuizCompletedPage extends StatelessWidget {
   final int hardCount;
   final int failCount;
   final bool isDeckDeleted;
+  final bool isGuest; 
 
   const QuizCompletedPage({
     super.key,
@@ -19,6 +20,7 @@ class QuizCompletedPage extends StatelessWidget {
     required this.hardCount,
     required this.failCount,
     this.isDeckDeleted = false,
+    required this.isGuest,
   });
 
   @override
@@ -46,9 +48,9 @@ class QuizCompletedPage extends StatelessWidget {
                       ),
                       const Spacer(),
                       ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 400.scale()),
+                        constraints: BoxConstraints(maxWidth: 400.w),
                         child: Container(
-                          margin: EdgeInsets.all(16.scale()),
+                          margin: EdgeInsets.all(16.r),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             border: Border.all(color: Colors.black, width: 3),
@@ -64,12 +66,12 @@ class QuizCompletedPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               // Header Image
-                              SizedBox(
-                                height: 250.scale(),
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    if (deck.imageUrl != null)
+                              if (deck.imageUrl != null)
+                                SizedBox(
+                                  height: 250.h,
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
                                       deck.deckImageUrl.startsWith('data:image')
                                           ? Image.memory(
                                               base64Decode(
@@ -86,40 +88,10 @@ class QuizCompletedPage extends StatelessWidget {
                                               fit: BoxFit.cover,
                                               errorBuilder: (_, _, _) =>
                                                   _buildErrorPlaceholder(),
-                                            )
-                                    else
-                                      Container(
-                                        color: Colors.black,
-                                        child: Center(
-                                          child: Icon(
-                                            Icons.gamepad,
-                                            color: Colors.white,
-                                            size: 48.scale(),
-                                          ),
-                                        ),
-                                      ),
-                                    // Overlay Gradient
-                                    Positioned(
-                                      bottom: 0,
-                                      left: 0,
-                                      right: 0,
-                                      child: Container(
-                                        height: 60.scale(),
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              Colors.transparent,
-                                              Colors.black87,
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                            ),
+                                    ],
+                                  ),
                                 ),
-                              ),
 
                               // Content
                               Padding(
@@ -130,7 +102,7 @@ class QuizCompletedPage extends StatelessWidget {
                                     Text(
                                       deck.title.toUpperCase(),
                                       style: TextStyle(
-                                        fontSize: 20,
+                                        fontSize: 24,
                                         fontVariations: [
                                           FontVariation.weight(900),
                                         ],
@@ -187,6 +159,7 @@ class QuizCompletedPage extends StatelessWidget {
                             ),
                             icon: Icons.arrow_forward,
                             iconSide: 'right',
+                            isGuest: isGuest,
                           ),
                         ),
                       ),

@@ -9,4 +9,5 @@ sealed class AuthEvent extends Equatable {
 
 class AuthCheckRequested extends AuthEvent {}
 class AuthLoginRequested extends AuthEvent {}
+class AuthSkippedLogin extends AuthEvent {}
 class AuthLogoutRequested extends AuthEvent {}

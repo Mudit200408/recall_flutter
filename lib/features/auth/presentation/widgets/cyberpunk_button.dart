@@ -7,6 +7,7 @@ class CyberpunkButton extends StatefulWidget {
   final Widget? icon;
   final double width;
   final double height;
+  final Color? color;
 
   const CyberpunkButton({
     super.key,
@@ -15,6 +16,7 @@ class CyberpunkButton extends StatefulWidget {
     this.icon,
     this.width = double.infinity,
     this.height = 64,
+    this.color,
   });
 
   @override
@@ -55,7 +57,7 @@ class _CyberpunkButtonState extends State<CyberpunkButton> {
                 ? const EdgeInsets.only(left: 6, top: 6)
                 : const EdgeInsets.only(right: 6, bottom: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFCCFF00), // Lime Green
+              color: widget.color ?? const Color(0xFFCCFF00), // Lime Green
               border: Border.all(color: Colors.black, width: 2),
             ),
             child: Stack(
@@ -122,7 +124,7 @@ class _ScanlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withValues(alpha:0.05)
+      ..color = Colors.black.withValues(alpha: 0.05)
       ..strokeWidth = 1;
 
     for (double y = 0; y < size.height; y += 4) {

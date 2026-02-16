@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:recall/core/theme/app_colors.dart';
 import 'package:responsive_scaler/responsive_scaler.dart';
 
 class AnimatedButton extends StatefulWidget {
   final String text;
   final IconData? icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final String? iconSide;
   final Color? color;
   final Color? textColor;
+  final bool isGuest;
   const AnimatedButton({
     super.key,
     required this.text,
@@ -17,6 +19,7 @@ class AnimatedButton extends StatefulWidget {
     this.iconSide,
     this.color,
     this.textColor,
+    required this.isGuest,
   });
 
   @override
@@ -31,7 +34,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
     return GestureDetector(
       onTap: () {
         HapticFeedback.mediumImpact();
-        widget.onTap();
+        widget.onTap?.call();
       },
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
@@ -43,7 +46,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
             : Matrix4.identity(),
         constraints: BoxConstraints(minHeight: 64.h),
         decoration: BoxDecoration(
-          color: widget.color ?? const Color(0xFFCCFF00),
+          color: widget.color ?? accentColor(widget.isGuest),
           border: Border.all(color: Colors.black, width: 3),
           boxShadow: _isPressed
               ? null

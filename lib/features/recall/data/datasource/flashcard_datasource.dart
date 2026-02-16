@@ -1,15 +1,11 @@
 import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:recall/features/recall/domain/entities/flashcard.dart';
 
-abstract class FlashcardRepository {
-  // 1: Fetching Data
+abstract class FlashcardDataSource {
   Future<List<Flashcard>> getDueCards(String deckId);
   Future<List<Deck>> getDecks();
-
-  // 2: AI Magic
-  // Returns a list of generated cards from a text source
-  Future<List<Flashcard>> generateFlashCards(String title, int count);
-  // 3. Saving Data
+  
+  // Save a brand new deck
   Future<void> saveDeck(
     String deckTitle,
     List<Flashcard> cards, {
@@ -21,13 +17,13 @@ abstract class FlashcardRepository {
     int hardCount = 0,
     int failCount = 0,
   });
+
+  // Save NEW cards to an EXISTING deck (For "Generate More")
+  Future<void> addCards(String deckId, List<Flashcard> cards);
+
   Future<void> updateCardProgress(Flashcard card);
-
-  // 4. Delete Decks
   Future<void> deleteDeck(String deckId);
-
-  Future<void> generateMoreCards(Deck deck);
-
+  
   Future<void> updateDeckStats(
     String deckId, {
     int easyIncrement = 0,

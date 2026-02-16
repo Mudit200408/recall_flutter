@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:recall/core/theme/app_colors.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
 import 'package:recall/features/recall/presentation/widgets/progress_bar.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
@@ -9,12 +10,14 @@ class DeckCard extends StatelessWidget {
   final Deck deck;
   final VoidCallback onTap;
   final VoidCallback onDelete;
+  final bool isGuest;
 
   const DeckCard({
     super.key,
     required this.deck,
     required this.onTap,
     required this.onDelete,
+    required this.isGuest,
   });
 
   @override
@@ -37,12 +40,12 @@ class DeckCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header Image
-            SizedBox(
-              height: 200.scale(),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (deck.imageUrl != null)
+            if (deck.imageUrl != null)
+              SizedBox(
+                height: 200.scale(),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
                     deck.deckImageUrl.startsWith('data:image')
                         ? Image.memory(
                             base64Decode(deck.deckImageUrl.split(',').last),
@@ -53,37 +56,10 @@ class DeckCard extends StatelessWidget {
                             deck.deckImageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, _, _) => _buildErrorPlaceholder(),
-                          )
-                  else
-                    Container(
-                      color: Colors.black,
-                      child: Center(
-                        child: Icon(
-                          Icons.gamepad,
-                          color: Colors.white,
-                          size: 48.scale(),
-                        ),
-                      ),
-                    ),
-                  // Overlay Gradient
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      height: 60.scale(),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Colors.black87],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                          ),
+                  ],
+                ),
               ),
-            ),
 
             // Content
             Padding(
@@ -178,7 +154,7 @@ class DeckCard extends StatelessWidget {
 
   Widget _builProgressBar(String label, String value, {double progress = 0.0}) {
     final bool isSkipped = deck.skippedDays > 0;
-    final color = isSkipped ? Colors.red : const Color(0xFFCCFF00);
+    final color = isSkipped ? Colors.red : accentColor(isGuest);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,7 +203,7 @@ class DeckCard extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(color: Colors.black, width: 2),
           ),
-          child: ProgressBar(progress: progress, color: color),
+          child: ProgressBar(progress: progress, color: color, isGuest: isGuest),
         ),
       ],
     );

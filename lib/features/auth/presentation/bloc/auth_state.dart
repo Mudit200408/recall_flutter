@@ -20,4 +20,5 @@ class AuthAuthenticated extends AuthState {
   List<Object> get props => [user];
 }
 
+class AuthGuest extends AuthState {}
 class AuthUnauthenticated extends AuthState {}

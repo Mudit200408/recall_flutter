@@ -10,15 +10,19 @@ part 'deck_state.dart';
 
 class DeckBloc extends Bloc<DeckEvent, DeckState> {
   final FlashcardRepository repository;
+  final bool isGuest;
 
-  DeckBloc({required this.repository}) : super(DeckInitial()) {
+  DeckBloc({required this.repository, required this.isGuest})
+    : super(DeckInitial()) {
     on<LoadDecks>(_onLoadDecks);
     on<CreateDeck>(_onCreateDeck);
     on<DeleteDeck>(_onDeleteDeck);
   }
 
   Future<void> _onLoadDecks(LoadDecks event, Emitter<DeckState> emit) async {
-    emit(DeckLoading());
+    if (!isGuest) {
+      emit(DeckLoading());
+    }
     try {
       final decks = await repository.getDecks();
       emit(DeckLoaded(decks: decks));
@@ -85,7 +89,6 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
       final cards = await repository.generateFlashCards(
         event.title,
         event.count,
-        event.useImages,
       );
 
       String? deckImageUrl;

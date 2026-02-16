@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:recall/core/theme/app_colors.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
 
 import 'package:recall/features/recall/domain/entities/deck.dart';
@@ -7,10 +8,10 @@ import 'package:responsive_scaler/responsive_scaler.dart';
 
 class QuizEmptyPage extends StatefulWidget {
   final Deck deck;
-  const QuizEmptyPage({super.key, required this.deck});
+  final bool isGuest;
+  const QuizEmptyPage({super.key, required this.deck, required this.isGuest});
 
   // Neo-Brutalist Colors
-  static const Color primaryColor = Color(0xFFCCFF00);
   static const Color blackColor = Colors.black;
   static const Color backgroundColor = Colors.white;
 
@@ -156,7 +157,10 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
                               Positioned(
                                 top: 16.r,
                                 left: 16.r,
-                                child: _buildNeoBadge('EMPTY CARDS'),
+                                child: _buildNeoBadge(
+                                  'EMPTY CARDS',
+                                  widget.isGuest,
+                                ),
                               ),
                             ],
                           ),
@@ -193,7 +197,7 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
                                   style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
-                                    color: QuizEmptyPage.primaryColor,
+                                    color: accentColor(widget.isGuest),
                                     fontFeatures: const [
                                       FontFeature.tabularFigures(),
                                     ],
@@ -244,6 +248,7 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
                             icon: Icons.keyboard_return,
                             iconSide: 'left',
                             onTap: () => Navigator.pop(context),
+                            isGuest: widget.isGuest,
                           ),
                         ),
                       ],
@@ -258,11 +263,11 @@ class _QuizEmptyPageState extends State<QuizEmptyPage> {
     );
   }
 
-  Widget _buildNeoBadge(String label) {
+  Widget _buildNeoBadge(String label, bool isGuest) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.r, vertical: 4.r),
       decoration: BoxDecoration(
-        color: QuizEmptyPage.primaryColor,
+        color: accentColor(isGuest),
         border: Border.all(color: QuizEmptyPage.blackColor, width: 2),
         boxShadow: const [
           BoxShadow(color: QuizEmptyPage.blackColor, offset: Offset(3, 3)),

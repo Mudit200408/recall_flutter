@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:recall/core/theme/app_colors.dart';
 import 'package:recall/features/recall/presentation/widgets/stripped_painter.dart';
 import 'package:responsive_scaler/responsive_scaler.dart';
 
 class ProgressBar extends StatelessWidget {
   final double progress;
   final Color? color;
-  const ProgressBar({super.key, required this.progress, this.color});
+  final bool isGuest;
+  const ProgressBar({super.key, required this.progress, this.color, required this.isGuest});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class ProgressBar extends StatelessWidget {
         child: CustomPaint(
           painter: StripedProgressPainter(
             progress: progress,
-            color: color ?? const Color(0xFFCCFF00),
+            color: color ?? accentColor(isGuest),
           ),
           size: Size.infinite,
         ),

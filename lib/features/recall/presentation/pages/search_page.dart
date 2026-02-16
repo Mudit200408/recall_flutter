@@ -10,7 +10,8 @@ import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 import 'package:responsive_scaler/responsive_scaler.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  final bool isGuest;
+  const SearchPage({super.key, required this.isGuest});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -139,13 +140,14 @@ class _SearchPageState extends State<SearchPage> {
                                       right: isLast ? 0 : 8.r,
                                     ),
                                     child: DeckCard(
+                                      isGuest: widget.isGuest,
                                       deck: deck,
                                       onTap: () {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (_) =>
-                                                QuizPage(deck: deck),
+                                                QuizPage(deck: deck, isGuest: widget.isGuest),
                                           ),
                                         );
                                       },
@@ -241,6 +243,7 @@ class _SearchPageState extends State<SearchPage> {
                       text: "CANCEL",
                       color: Colors.white,
                       onTap: () => Navigator.pop(context),
+                      isGuest: widget.isGuest,
                     ),
                   ),
                   SizedBox(width: 12.scale()),
@@ -255,6 +258,7 @@ class _SearchPageState extends State<SearchPage> {
                         );
                         Navigator.pop(context);
                       },
+                      isGuest: widget.isGuest,
                     ),
                   ),
                 ],

@@ -142,6 +142,7 @@ class OfflineView extends StatelessWidget {
                           onTap: onRetry,
                           icon: Icons.videogame_asset,
                           iconSide: 'left',
+                          isGuest: false,
                         ),
                       ),
                     ],

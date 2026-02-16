@@ -256,7 +256,9 @@ class LoginPage extends StatelessWidget {
                                       Container(
                                         height: 2,
                                         width: double.infinity,
-                                        color: Colors.red.withValues(alpha: 0.3),
+                                        color: Colors.red.withValues(
+                                          alpha: 0.3,
+                                        ),
                                       ),
                                   ],
                                 ),
@@ -289,6 +291,24 @@ class LoginPage extends StatelessWidget {
                                       ),
                                     );
                                   },
+                                ),
+                                SizedBox(height: 16.h),
+                                // Place this below the "SIGN IN WITH GOOGLE" button
+                                CyberpunkButton(
+                                  text: "USE LOCAL AI MODEL",
+                                  icon: const Icon(
+                                    Icons.psychology,
+                                    size: 32,
+                                    color: Colors.black,
+                                  ),
+                                  color: const Color.fromARGB(255, 0, 255, 225),
+                                  onTap: () {
+                                    context.read<AuthBloc>().add(
+                                      AuthSkippedLogin(),
+                                    );
+                                  },
+                                  width: double.infinity,
+                                  height: 72,
                                 ),
 
                                 SizedBox(height: 64.scale()),

@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:recall/core/theme/app_colors.dart';
 import 'package:recall/features/recall/presentation/widgets/animated_button.dart';
 import 'package:responsive_scaler/responsive_scaler.dart';
 
 class CreateDeckDialog extends StatefulWidget {
   final Function(String topic, int count, bool useImages, int duration)
   onSubmit;
-  const CreateDeckDialog({super.key, required this.onSubmit});
+  final bool isGuest;
+  const CreateDeckDialog({
+    super.key,
+    required this.onSubmit,
+    required this.isGuest,
+  });
 
   @override
   State<CreateDeckDialog> createState() => _CreateDeckDialogState();
@@ -18,7 +24,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
   bool useImages = false;
 
   // Neo-Brutalist Constants
-  static const Color primaryColor = Color(0xFFCCFF00);
+
   static const Color blackColor = Colors.black;
 
   @override
@@ -47,7 +53,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                     decoration: BoxDecoration(color: blackColor),
                     child: Icon(
                       Icons.add,
-                      color: primaryColor,
+                      color: accentColor(widget.isGuest),
                       size: 24.r,
                     ),
                   ),
@@ -129,36 +135,40 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               SizedBox(height: 20.h),
 
               // Image Toggle
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: blackColor, width: 3),
-                  color: useImages ? const Color(0xFFE0E0E0) : Colors.white,
-                ),
-                child: SwitchListTile(
-                  title: Text(
-                    "VISUAL DATA",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.0,
+              if (!widget.isGuest)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: blackColor, width: 3),
+                    color: useImages ? const Color(0xFFE0E0E0) : Colors.white,
+                  ),
+                  child: SwitchListTile(
+                    title: Text(
+                      "VISUAL DATA",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                      ),
                     ),
+                    subtitle: Text(
+                      "Enable AI generated imagery",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    activeThumbColor: blackColor,
+                    activeTrackColor: accentColor(widget.isGuest),
+                    inactiveThumbColor: blackColor,
+                    inactiveTrackColor: Colors.grey[300],
+                    trackOutlineColor: WidgetStateProperty.all(
+                      Colors.transparent,
+                    ),
+                    value: useImages,
+                    onChanged: (value) => setState(() => useImages = value),
                   ),
-                  subtitle: Text(
-                    "Enable AI generated imagery",
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  activeThumbColor: blackColor,
-                  activeTrackColor: primaryColor,
-                  inactiveThumbColor: blackColor,
-                  inactiveTrackColor: Colors.grey[300],
-                  trackOutlineColor: WidgetStateProperty.all(
-                    Colors.transparent,
-                  ),
-                  value: useImages,
-                  onChanged: (value) => setState(() => useImages = value),
                 ),
-              ),
 
-              SizedBox(height: 24.h),
+              if (!widget.isGuest) SizedBox(height: 24.h),
 
               // Action Buttons
               Row(
@@ -168,6 +178,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                       text: "ABORT",
                       onTap: () => Navigator.pop(context),
                       color: Colors.white,
+                      isGuest: widget.isGuest,
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -180,6 +191,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                           Navigator.pop(context);
                         }
                       },
+                      isGuest: widget.isGuest,
                     ),
                   ),
                 ],
@@ -214,10 +226,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               ),
             ),
             Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 8.r,
-                vertical: 2.r,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 2.r),
               decoration: BoxDecoration(
                 color: blackColor,
                 borderRadius: BorderRadius.circular(4.r),
@@ -225,7 +234,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               child: Text(
                 "$value",
                 style: TextStyle(
-                  color: primaryColor,
+                  color: accentColor(widget.isGuest),
                   fontWeight: FontWeight.bold,
                   fontFamily: 'monospace',
                 ),
@@ -238,8 +247,8 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: blackColor,
             inactiveTrackColor: Colors.grey[300],
-            thumbColor: primaryColor,
-            overlayColor: primaryColor.withValues(alpha:0.2),
+            thumbColor: accentColor(widget.isGuest),
+            overlayColor: accentColor(widget.isGuest).withValues(alpha: 0.2),
             trackHeight: 6,
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
             overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
