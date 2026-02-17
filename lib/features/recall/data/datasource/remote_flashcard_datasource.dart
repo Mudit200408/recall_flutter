@@ -123,6 +123,7 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
       'easyCount': easyCount,
       'hardCount': hardCount,
       'skippedDays': 0, // Initial value
+      'lastPlayedDate': null,
     });
 
     // 3: Set Cards Data
@@ -188,6 +189,7 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
         easyCount: data['easyCount'] ?? 0,
         hardCount: data['hardCount'] ?? 0,
         skippedDays: data['skippedDays'] ?? 0,
+        lastPlayedDate: (data['lastPlayedDate'] as Timestamp?)?.toDate(),
       );
     }).toList();
   }
@@ -328,5 +330,19 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
 
     // Only increment skippedDays counter, do NOT extend deadline (scheduledDays)
     await deckRef.update({'skippedDays': FieldValue.increment(daysSkipped)});
+  }
+
+  @override
+  Future<void> markDeckPlayed(String deckId) async {
+    final deckRef = firestore
+        .collection('users')
+        .doc(userId)
+        .collection('decks')
+        .doc(deckId);
+
+    await deckRef.update({
+      'lastPlayedDate': FieldValue.serverTimestamp(),
+      'skippedDays': 0,
+    });
   }
 }

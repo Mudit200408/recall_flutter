@@ -31,4 +31,6 @@ abstract class FlashcardDataSource {
   });
 
   Future<void> registerSkippedDay(String deckId, int daysSkipped);
+
+  Future<void> markDeckPlayed(String deckId);
 }

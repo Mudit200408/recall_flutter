@@ -16,6 +16,7 @@ class Decks extends Table {
   IntColumn get easyCount => integer().withDefault(const Constant(0))();
   IntColumn get hardCount => integer().withDefault(const Constant(0))();
   IntColumn get skippedDays => integer().withDefault(const Constant(0))();
+  DateTimeColumn get lastPlayedDate => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

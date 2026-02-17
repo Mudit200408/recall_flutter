@@ -157,6 +157,18 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _lastPlayedDateMeta = const VerificationMeta(
+    'lastPlayedDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastPlayedDate =
+      GeneratedColumn<DateTime>(
+        'last_played_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -172,6 +184,7 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
     easyCount,
     hardCount,
     skippedDays,
+    lastPlayedDate,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -288,6 +301,15 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
         ),
       );
     }
+    if (data.containsKey('last_played_date')) {
+      context.handle(
+        _lastPlayedDateMeta,
+        lastPlayedDate.isAcceptableOrUnknown(
+          data['last_played_date']!,
+          _lastPlayedDateMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -349,6 +371,10 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
         DriftSqlType.int,
         data['${effectivePrefix}skipped_days'],
       )!,
+      lastPlayedDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_played_date'],
+      ),
     );
   }
 
@@ -372,6 +398,7 @@ class Deck extends DataClass implements Insertable<Deck> {
   final int easyCount;
   final int hardCount;
   final int skippedDays;
+  final DateTime? lastPlayedDate;
   const Deck({
     required this.id,
     required this.title,
@@ -386,6 +413,7 @@ class Deck extends DataClass implements Insertable<Deck> {
     required this.easyCount,
     required this.hardCount,
     required this.skippedDays,
+    this.lastPlayedDate,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -407,6 +435,9 @@ class Deck extends DataClass implements Insertable<Deck> {
     map['easy_count'] = Variable<int>(easyCount);
     map['hard_count'] = Variable<int>(hardCount);
     map['skipped_days'] = Variable<int>(skippedDays);
+    if (!nullToAbsent || lastPlayedDate != null) {
+      map['last_played_date'] = Variable<DateTime>(lastPlayedDate);
+    }
     return map;
   }
 
@@ -429,6 +460,9 @@ class Deck extends DataClass implements Insertable<Deck> {
       easyCount: Value(easyCount),
       hardCount: Value(hardCount),
       skippedDays: Value(skippedDays),
+      lastPlayedDate: lastPlayedDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastPlayedDate),
     );
   }
 
@@ -453,6 +487,7 @@ class Deck extends DataClass implements Insertable<Deck> {
       easyCount: serializer.fromJson<int>(json['easyCount']),
       hardCount: serializer.fromJson<int>(json['hardCount']),
       skippedDays: serializer.fromJson<int>(json['skippedDays']),
+      lastPlayedDate: serializer.fromJson<DateTime?>(json['lastPlayedDate']),
     );
   }
   @override
@@ -472,6 +507,7 @@ class Deck extends DataClass implements Insertable<Deck> {
       'easyCount': serializer.toJson<int>(easyCount),
       'hardCount': serializer.toJson<int>(hardCount),
       'skippedDays': serializer.toJson<int>(skippedDays),
+      'lastPlayedDate': serializer.toJson<DateTime?>(lastPlayedDate),
     };
   }
 
@@ -489,6 +525,7 @@ class Deck extends DataClass implements Insertable<Deck> {
     int? easyCount,
     int? hardCount,
     int? skippedDays,
+    Value<DateTime?> lastPlayedDate = const Value.absent(),
   }) => Deck(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -505,6 +542,9 @@ class Deck extends DataClass implements Insertable<Deck> {
     easyCount: easyCount ?? this.easyCount,
     hardCount: hardCount ?? this.hardCount,
     skippedDays: skippedDays ?? this.skippedDays,
+    lastPlayedDate: lastPlayedDate.present
+        ? lastPlayedDate.value
+        : this.lastPlayedDate,
   );
   Deck copyWithCompanion(DecksCompanion data) {
     return Deck(
@@ -533,6 +573,9 @@ class Deck extends DataClass implements Insertable<Deck> {
       skippedDays: data.skippedDays.present
           ? data.skippedDays.value
           : this.skippedDays,
+      lastPlayedDate: data.lastPlayedDate.present
+          ? data.lastPlayedDate.value
+          : this.lastPlayedDate,
     );
   }
 
@@ -551,7 +594,8 @@ class Deck extends DataClass implements Insertable<Deck> {
           ..write('useImages: $useImages, ')
           ..write('easyCount: $easyCount, ')
           ..write('hardCount: $hardCount, ')
-          ..write('skippedDays: $skippedDays')
+          ..write('skippedDays: $skippedDays, ')
+          ..write('lastPlayedDate: $lastPlayedDate')
           ..write(')'))
         .toString();
   }
@@ -571,6 +615,7 @@ class Deck extends DataClass implements Insertable<Deck> {
     easyCount,
     hardCount,
     skippedDays,
+    lastPlayedDate,
   );
   @override
   bool operator ==(Object other) =>
@@ -588,7 +633,8 @@ class Deck extends DataClass implements Insertable<Deck> {
           other.useImages == this.useImages &&
           other.easyCount == this.easyCount &&
           other.hardCount == this.hardCount &&
-          other.skippedDays == this.skippedDays);
+          other.skippedDays == this.skippedDays &&
+          other.lastPlayedDate == this.lastPlayedDate);
 }
 
 class DecksCompanion extends UpdateCompanion<Deck> {
@@ -605,6 +651,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
   final Value<int> easyCount;
   final Value<int> hardCount;
   final Value<int> skippedDays;
+  final Value<DateTime?> lastPlayedDate;
   final Value<int> rowid;
   const DecksCompanion({
     this.id = const Value.absent(),
@@ -620,6 +667,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     this.easyCount = const Value.absent(),
     this.hardCount = const Value.absent(),
     this.skippedDays = const Value.absent(),
+    this.lastPlayedDate = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DecksCompanion.insert({
@@ -636,6 +684,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     this.easyCount = const Value.absent(),
     this.hardCount = const Value.absent(),
     this.skippedDays = const Value.absent(),
+    this.lastPlayedDate = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        title = Value(title),
@@ -656,6 +705,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     Expression<int>? easyCount,
     Expression<int>? hardCount,
     Expression<int>? skippedDays,
+    Expression<DateTime>? lastPlayedDate,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -672,6 +722,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
       if (easyCount != null) 'easy_count': easyCount,
       if (hardCount != null) 'hard_count': hardCount,
       if (skippedDays != null) 'skipped_days': skippedDays,
+      if (lastPlayedDate != null) 'last_played_date': lastPlayedDate,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -690,6 +741,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     Value<int>? easyCount,
     Value<int>? hardCount,
     Value<int>? skippedDays,
+    Value<DateTime?>? lastPlayedDate,
     Value<int>? rowid,
   }) {
     return DecksCompanion(
@@ -706,6 +758,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
       easyCount: easyCount ?? this.easyCount,
       hardCount: hardCount ?? this.hardCount,
       skippedDays: skippedDays ?? this.skippedDays,
+      lastPlayedDate: lastPlayedDate ?? this.lastPlayedDate,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -752,6 +805,9 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     if (skippedDays.present) {
       map['skipped_days'] = Variable<int>(skippedDays.value);
     }
+    if (lastPlayedDate.present) {
+      map['last_played_date'] = Variable<DateTime>(lastPlayedDate.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -774,6 +830,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
           ..write('easyCount: $easyCount, ')
           ..write('hardCount: $hardCount, ')
           ..write('skippedDays: $skippedDays, ')
+          ..write('lastPlayedDate: $lastPlayedDate, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1333,6 +1390,7 @@ typedef $$DecksTableCreateCompanionBuilder =
       Value<int> easyCount,
       Value<int> hardCount,
       Value<int> skippedDays,
+      Value<DateTime?> lastPlayedDate,
       Value<int> rowid,
     });
 typedef $$DecksTableUpdateCompanionBuilder =
@@ -1350,6 +1408,7 @@ typedef $$DecksTableUpdateCompanionBuilder =
       Value<int> easyCount,
       Value<int> hardCount,
       Value<int> skippedDays,
+      Value<DateTime?> lastPlayedDate,
       Value<int> rowid,
     });
 
@@ -1446,6 +1505,11 @@ class $$DecksTableFilterComposer extends Composer<_$AppDatabase, $DecksTable> {
 
   ColumnFilters<int> get skippedDays => $composableBuilder(
     column: $table.skippedDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastPlayedDate => $composableBuilder(
+    column: $table.lastPlayedDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1548,6 +1612,11 @@ class $$DecksTableOrderingComposer
     column: $table.skippedDays,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get lastPlayedDate => $composableBuilder(
+    column: $table.lastPlayedDate,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$DecksTableAnnotationComposer
@@ -1607,6 +1676,11 @@ class $$DecksTableAnnotationComposer
 
   GeneratedColumn<int> get skippedDays => $composableBuilder(
     column: $table.skippedDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastPlayedDate => $composableBuilder(
+    column: $table.lastPlayedDate,
     builder: (column) => column,
   );
 
@@ -1677,6 +1751,7 @@ class $$DecksTableTableManager
                 Value<int> easyCount = const Value.absent(),
                 Value<int> hardCount = const Value.absent(),
                 Value<int> skippedDays = const Value.absent(),
+                Value<DateTime?> lastPlayedDate = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DecksCompanion(
                 id: id,
@@ -1692,6 +1767,7 @@ class $$DecksTableTableManager
                 easyCount: easyCount,
                 hardCount: hardCount,
                 skippedDays: skippedDays,
+                lastPlayedDate: lastPlayedDate,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1709,6 +1785,7 @@ class $$DecksTableTableManager
                 Value<int> easyCount = const Value.absent(),
                 Value<int> hardCount = const Value.absent(),
                 Value<int> skippedDays = const Value.absent(),
+                Value<DateTime?> lastPlayedDate = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DecksCompanion.insert(
                 id: id,
@@ -1724,6 +1801,7 @@ class $$DecksTableTableManager
                 easyCount: easyCount,
                 hardCount: hardCount,
                 skippedDays: skippedDays,
+                lastPlayedDate: lastPlayedDate,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

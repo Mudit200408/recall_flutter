@@ -50,6 +50,7 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
             easyCount: d.easyCount,
             hardCount: d.hardCount,
             skippedDays: d.skippedDays,
+            lastPlayedDate: d.lastPlayedDate,
           ),
         )
         .toList();
@@ -174,6 +175,16 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
     if (deck != null) {
       await database.insertDeck(
         deck.copyWith(skippedDays: deck.skippedDays + daysSkipped),
+      );
+    }
+  }
+
+  @override
+  Future<void> markDeckPlayed(String deckId) async {
+    final deck = await database.getDeckById(deckId);
+    if (deck != null) {
+      await database.insertDeck(
+        deck.copyWith(lastPlayedDate: Value(DateTime.now()), skippedDays: 0),
       );
     }
   }

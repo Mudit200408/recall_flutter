@@ -172,4 +172,13 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
       );
     }
   }
+
+  @override
+  Future<void> markDeckPlayed(String deckId) {
+    if (isGuestMode) {
+      return localFlashcardDatasource.markDeckPlayed(deckId);
+    } else {
+      return remoteFlashcardDataSource.markDeckPlayed(deckId);
+    }
+  }
 }

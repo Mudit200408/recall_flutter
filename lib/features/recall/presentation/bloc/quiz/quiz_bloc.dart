@@ -114,6 +114,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
               easyIncrement: easyIncrement,
               hardIncrement: hardIncrement,
             ),
+            repository.markDeckPlayed(currentState.deck.id),
           ]);
 
           // Handle Deletion

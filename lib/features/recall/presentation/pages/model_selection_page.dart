@@ -54,7 +54,7 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
       await _refreshState();
 
       if (mounted) {
-        if (!widget.isSettingsMode) {
+        if (widget.isSettingsMode == true) {
           _goToHome();
         } else {
           ToastUtil.showNormal("Switched to ${model.name}!");
@@ -110,14 +110,16 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
         forceMaterialTransparency: true,
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
-        leading: Padding(
-          padding: EdgeInsets.all(8.0.r),
-          child: SquareButton(
-            icon: Icons.arrow_back,
-            onTap: () => Navigator.pop(context),
-            color: Colors.black,
-          ),
-        ),
+        leading: widget.isSettingsMode == true
+            ? null
+            : Padding(
+                padding: EdgeInsets.all(8.0.r),
+                child: SquareButton(
+                  icon: Icons.arrow_back,
+                  onTap: () => Navigator.pop(context),
+                  color: Colors.black,
+                ),
+              ),
         title: Text(
           'AI BRAIN',
           style: TextStyle(

@@ -69,7 +69,7 @@ class _DeckListPageState extends State<DeckListPage> {
                     context,
                     MaterialPageRoute(
                       builder: (_) =>
-                          const ModelSelectionPage(isSettingsMode: true),
+                          const ModelSelectionPage(isSettingsMode: false),
                     ),
                   );
                 },
@@ -196,17 +196,24 @@ class _DeckListPageState extends State<DeckListPage> {
                     builder: (context) {
                       return CreateDeckDialog(
                         isGuest: context.read<AuthBloc>().state is AuthGuest,
-                        onSubmit: (topic, count, difficultyLevel, useImages, duration) {
-                          context.read<DeckBloc>().add(
-                            CreateDeck(
-                              title: topic,
-                              count: count,
-                              difficultyLevel: difficultyLevel,
-                              useImages: useImages,
-                              duration: duration,
-                            ),
-                          );
-                        },
+                        onSubmit:
+                            (
+                              topic,
+                              count,
+                              difficultyLevel,
+                              useImages,
+                              duration,
+                            ) {
+                              context.read<DeckBloc>().add(
+                                CreateDeck(
+                                  title: topic,
+                                  count: count,
+                                  difficultyLevel: difficultyLevel,
+                                  useImages: useImages,
+                                  duration: duration,
+                                ),
+                              );
+                            },
                       );
                     },
                   );

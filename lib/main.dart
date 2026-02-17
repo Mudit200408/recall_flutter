@@ -150,11 +150,11 @@ class _MainAppState extends State<MainApp> {
                         repository: context.read<FlashcardRepository>(),
                         isGuest: isGuest,
                       )..add(LoadDecks()),
-                      child: child!,
+                      child: child,
                     ),
                   );
                 }
-                return child!;
+                return child;
               },
               home: BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {

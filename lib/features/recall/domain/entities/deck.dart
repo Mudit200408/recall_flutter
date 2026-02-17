@@ -14,6 +14,7 @@ class Deck extends Equatable {
   final int hardCount;
   final String difficultyLevel;
   final int skippedDays;
+  final DateTime? lastPlayedDate;
 
   const Deck({
     required this.id,
@@ -30,6 +31,7 @@ class Deck extends Equatable {
     this.hardCount = 0,
 
     this.skippedDays = 0,
+    this.lastPlayedDate,
   });
 
   @override
@@ -47,5 +49,6 @@ class Deck extends Equatable {
     easyCount,
     hardCount,
     skippedDays,
+    lastPlayedDate,
   ];
 }
