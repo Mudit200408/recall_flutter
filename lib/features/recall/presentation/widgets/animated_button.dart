@@ -44,7 +44,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
         transform: _isPressed
             ? Matrix4.translationValues(4, 4, 0)
             : Matrix4.identity(),
-        constraints: BoxConstraints(minHeight: 64.h),
+        constraints: BoxConstraints(minHeight: 64.r),
         decoration: BoxDecoration(
           color: widget.color ?? accentColor(widget.isGuest),
           border: Border.all(color: Colors.black, width: 3),

@@ -54,10 +54,7 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
           final now = DateTime.now();
           final differenceInHours = now.difference(lastGenerated).inHours;
 
-          final differenceInMinutes = now.difference(lastGenerated).inMinutes;
-          // TODO: Revert to production threshold before release
-          // Production: if (differenceInHours >= 20)
-          if (differenceInMinutes >= 1) {
+          if (differenceInHours >= 20) {
             // Check if user has played the latest batch
             final hasPlayedLatestBatch =
                 deck.lastPlayedDate != null &&
@@ -65,13 +62,11 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
 
             if (hasPlayedLatestBatch) {
               // User played — check cooldown + remaining days before generating
-              // TODO: Revert to production threshold before release
-              // Production: final hoursSincePlayed = now.difference(deck.lastPlayedDate!).inHours;
-              // Production: if (hoursSincePlayed >= 20)
-              final minutesSincePlayed = now
+
+              final hoursSincePlayed = now
                   .difference(deck.lastPlayedDate!)
-                  .inMinutes;
-              if (minutesSincePlayed >= 1 &&
+                  .inHours;
+              if (hoursSincePlayed >= 20 &&
                   deck.scheduledDays > deck.daysGenerated) {
                 // Cooldown met + more days to generate → generate next batch
                 _isGenerating = true;
@@ -87,9 +82,7 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
             } else {
               // User hasn't played → register skipped days
               // If we're past the threshold and user hasn't played, that's at least 1 skip
-              // TODO: Revert to production threshold before release
-              // Production: final calculated = (differenceInHours / 24).floor();
-              final calculated = (differenceInMinutes / 2).floor();
+              final calculated = (differenceInHours / 24).floor();
               final newSkippedDays = calculated < 1 ? 1 : calculated;
               if (newSkippedDays > deck.skippedDays) {
                 await repository.registerSkippedDay(

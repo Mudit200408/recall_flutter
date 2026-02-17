@@ -21,6 +21,7 @@ class ModelSelectionPage extends StatefulWidget {
 class _ModelSelectionPageState extends State<ModelSelectionPage> {
   final ModelManagementService _service = ModelManagementService();
   String? _activeModelId;
+  int _downloadedCount = 0;
 
   @override
   void initState() {
@@ -41,8 +42,15 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
 
   Future<void> _refreshState() async {
     final id = await _service.getActiveModelId();
+    int count = 0;
+    for (final model in AIModel.availableModels) {
+      if (await _service.isModelDownloaded(model)) count++;
+    }
     if (mounted) {
-      setState(() => _activeModelId = id);
+      setState(() {
+        _activeModelId = id;
+        _downloadedCount = count;
+      });
     }
   }
 
@@ -51,6 +59,12 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
       await _service.activateModel(model);
 
       if (!mounted) return;
+
+      // If the download was cancelled, activateModel returns silently.
+      // Check if the model is actually downloaded before proceeding.
+      final isDownloaded = await _service.isModelDownloaded(model);
+      if (!isDownloaded) return;
+
       await _refreshState();
 
       if (mounted) {
@@ -168,8 +182,9 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
     BuildContext context,
   ) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.r, vertical: 12.r),
+      margin: EdgeInsets.symmetric(horizontal: 24.r, vertical: 12.r),
       padding: EdgeInsets.all(12.r),
+      constraints: BoxConstraints(maxWidth: 200.r),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.black, width: 3),
@@ -289,7 +304,7 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
                     ),
                   ),
                 ),
-                if (isDownloaded) ...[
+                if (isDownloaded && _downloadedCount > 1) ...[
                   SizedBox(width: 8.w),
                   SizedBox(
                     height: 45.h,

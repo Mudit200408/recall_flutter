@@ -115,8 +115,15 @@ class _MainAppState extends State<MainApp> {
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, authState) {
             final bool isGuest = (authState is AuthGuest);
+            // Reset cached future when leaving guest mode to prevent stale navigation
+            if (!isGuest) {
+              _guestModelFuture = null;
+            }
 
             return MaterialApp(
+              // Force full navigator recreation on auth state change to
+              // dispose stale routes that reference removed providers.
+              key: ValueKey(authState.runtimeType),
               theme: _buildTheme(isGuest),
               debugShowCheckedModeBanner: false,
               builder: (context, child) {

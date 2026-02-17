@@ -10,8 +10,8 @@ class Loader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SizedBox(
-        width: 100.r,
-        height: 100.r,
+        width: 150.r,
+        height: 150.r,
         child: Lottie.asset(
           isGuest
               ? 'assets/lottie/loading-local.json'

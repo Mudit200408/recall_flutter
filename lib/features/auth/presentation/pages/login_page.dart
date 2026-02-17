@@ -73,13 +73,13 @@ class LoginPage extends StatelessWidget {
                                 Row(
                                   children: [
                                     Container(
-                                      width: 12.w,
-                                      height: 12.h,
+                                      width: 12.r,
+                                      height: 12.r,
                                       color: const Color(
                                         0xFF666666,
                                       ), // Muted green/grey
                                     ),
-                                    SizedBox(width: 8.w),
+                                    SizedBox(width: 8.r),
                                     Text(
                                       "NET.VER.2.04",
                                       style: TextStyle(
@@ -453,8 +453,8 @@ class _CornerMarker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 24.w,
-      height: 24.h,
+      width: 24.r,
+      height: 24.r,
       decoration: BoxDecoration(
         border: Border(
           top: isTop ? BorderSide(color: color, width: 2) : BorderSide.none,

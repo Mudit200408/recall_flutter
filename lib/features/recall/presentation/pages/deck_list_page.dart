@@ -76,7 +76,7 @@ class _DeckListPageState extends State<DeckListPage> {
               ),
             ),
           Padding(
-            padding: EdgeInsets.only(right: 16.0.r, bottom: 4.r),
+            padding: EdgeInsets.only(right: 8.0.r, bottom: 4.r),
             child: SquareButton(
               icon: Icons.logout,
               color: const Color.fromARGB(255, 255, 17, 0),
