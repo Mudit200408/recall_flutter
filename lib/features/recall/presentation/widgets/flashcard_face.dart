@@ -25,7 +25,7 @@ class FlashcardFace extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(26.r),
             decoration: const BoxDecoration(
-              color: Color(0xFFF9E006), // brutal-yellow
+              color: Color.fromARGB(255, 221, 255, 0), // brutal-yellow
               border: Border(bottom: BorderSide(color: Colors.black, width: 4)),
             ),
             child: Row(

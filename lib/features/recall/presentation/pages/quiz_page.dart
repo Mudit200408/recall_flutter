@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:recall/core/network/connectivity_cubit.dart';
 import 'package:recall/core/widgets/loader.dart';
 import 'package:recall/features/recall/presentation/bloc/quiz/quiz_bloc.dart';
@@ -13,6 +12,7 @@ import 'package:recall/features/recall/presentation/widgets/flashcard_face.dart'
 import 'package:recall/features/recall/presentation/widgets/flip_card_widget.dart';
 import 'package:recall/features/recall/domain/entities/flashcard.dart';
 import 'package:recall/features/recall/domain/entities/deck.dart';
+import 'package:recall/features/recall/presentation/widgets/futuristic_swipe_overlay.dart';
 import 'package:recall/features/recall/presentation/widgets/progress_bar.dart';
 import 'package:recall/features/recall/presentation/widgets/square_button.dart';
 import 'package:recall/injection_container.dart' as di;
@@ -549,118 +549,32 @@ class _QuizContentState extends State<QuizContent> {
                                 ),
                               ),
 
-                              // Right swipe overlay (Know it - Green)
+                              // Right swipe overlay (Nailed It)
                               if (widget.state.isFlipped &&
                                   horizontalThresholdPercentage > 0)
-                                Positioned.fill(
-                                  child: IgnorePointer(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.withValues(
-                                          alpha:
-                                              (horizontalThresholdPercentage /
-                                                      100)
-                                                  .abs()
-                                                  .clamp(0.0, 0.7),
-                                        ),
-                                        border: Border.all(
-                                          color: Colors.transparent,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Opacity(
-                                          opacity:
-                                              (horizontalThresholdPercentage /
-                                                      100)
-                                                  .abs()
-                                                  .clamp(0.0, 1.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              SvgPicture.asset(
-                                                'assets/svg/easy.svg',
-                                                height: 64.r,
-                                                width: 64.r,
-                                                colorFilter: ColorFilter.mode(
-                                                  Colors.white,
-                                                  BlendMode.srcIn,
-                                                ),
-                                              ),
-                                              SizedBox(height: 8.h),
-                                              Text(
-                                                "NAILED IT",
-                                                style: TextStyle(
-                                                  fontSize: 24,
-                                                  fontVariations: [
-                                                    FontVariation.weight(900),
-                                                  ],
-                                                  color: Colors.white,
-                                                  letterSpacing: 2,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                FuturisticSwipeOverlay(
+                                  baseColor: const Color(
+                                    0xFF39FF14,
+                                  ), // Electric Neon Green
+                                  svgPath: 'assets/svg/easy.svg',
+                                  label: "NAILED IT",
+                                  swipePercentage:
+                                      horizontalThresholdPercentage / 100,
+                                  isRightSwipe: true,
                                 ),
 
-                              // Left swipe overlay (Review - Orange)
+                              // Left swipe overlay (Review)
                               if (widget.state.isFlipped &&
                                   horizontalThresholdPercentage < 0)
-                                Positioned.fill(
-                                  child: IgnorePointer(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange.withValues(
-                                          alpha:
-                                              (horizontalThresholdPercentage /
-                                                      100)
-                                                  .abs()
-                                                  .clamp(0.0, 0.7),
-                                        ),
-                                        border: Border.all(
-                                          color: Colors.transparent,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Opacity(
-                                          opacity:
-                                              (horizontalThresholdPercentage /
-                                                      100)
-                                                  .abs()
-                                                  .clamp(0.0, 1.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              SvgPicture.asset(
-                                                'assets/svg/hard.svg',
-                                                height: 64.h,
-                                                width: 64.w,
-                                                colorFilter: ColorFilter.mode(
-                                                  Colors.white,
-                                                  BlendMode.srcIn,
-                                                ),
-                                              ),
-                                              SizedBox(height: 8.h),
-                                              Text(
-                                                "REVIEW",
-                                                style: TextStyle(
-                                                  fontSize: 24,
-                                                  fontVariations: [
-                                                    FontVariation.weight(900),
-                                                  ],
-                                                  color: Colors.white,
-                                                  letterSpacing: 2,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                FuturisticSwipeOverlay(
+                                  baseColor: const Color(
+                                    0xFFFF5F1F,
+                                  ), // Brighter Neon Tangerine
+                                  svgPath: 'assets/svg/hard.svg',
+                                  label: "REVIEW",
+                                  swipePercentage:
+                                      horizontalThresholdPercentage / 100,
+                                  isRightSwipe: false,
                                 ),
                             ],
                           ),
