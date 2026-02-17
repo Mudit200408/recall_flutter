@@ -9,7 +9,6 @@ class QuizCompletedPage extends StatelessWidget {
   final Deck deck;
   final int easyCount;
   final int hardCount;
-  final int failCount;
   final bool isDeckDeleted;
   final bool isGuest;
 
@@ -18,7 +17,6 @@ class QuizCompletedPage extends StatelessWidget {
     required this.deck,
     required this.easyCount,
     required this.hardCount,
-    required this.failCount,
     this.isDeckDeleted = false,
     required this.isGuest,
   });
@@ -128,7 +126,7 @@ class QuizCompletedPage extends StatelessWidget {
                                         ),
                                         _buildStatItem(
                                           "REVIEW",
-                                          hardCount + failCount,
+                                          hardCount,
                                           Colors.orange,
                                         ),
                                       ],

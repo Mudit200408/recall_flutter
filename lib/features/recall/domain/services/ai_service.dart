@@ -1,5 +1,9 @@
 abstract class AiService {
-  Future<List<FlashcardContent>> generateFlashcards(String title, int count);
+  Future<List<FlashcardContent>> generateFlashcards(
+    String title,
+    String difficultyLevel,
+    int count,
+  );
 }
 
 class FlashcardContent {

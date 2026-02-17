@@ -10,6 +10,7 @@ class LocalAIService implements AiService {
   @override
   Future<List<FlashcardContent>> generateFlashcards(
     String topic,
+    String difficultyLevel,
     int count,
   ) async {
     await _modelManager.ensureActiveModelLoaded();
@@ -21,6 +22,7 @@ class LocalAIService implements AiService {
         '''
 Generate $count flashcards about "$topic".
 Return ONLY a valid JSON array of objects.
+Difficulty Level of questions should be $difficultyLevel.
 Each object must have "front" and "back" keys.
 Do not include any other text, explanations, or markdown formatting.
 

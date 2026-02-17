@@ -58,7 +58,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           deck: currentState.deck,
           easyCount: currentState.easyCount,
           hardCount: currentState.hardCount,
-          failCount: currentState.failCount,
         ),
       );
     }
@@ -75,11 +74,9 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       // 2: Update Stats (Sync)
       int easy = currentState.easyCount;
       int hard = currentState.hardCount;
-      int fail = currentState.failCount;
 
       int easyIncrement = 0;
       int hardIncrement = 0;
-      int failIncrement = 0;
 
       if (event.rating == 5) {
         easy++;
@@ -87,9 +84,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       } else if (event.rating == 3) {
         hard++;
         hardIncrement = 1;
-      } else if (event.rating == 1) {
-        fail++;
-        failIncrement = 1;
       }
 
       // 3: Calculate the next state (Sync)
@@ -107,7 +101,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             deck: currentState.deck,
             easyCount: easy,
             hardCount: hard,
-            failCount: fail,
             isDeckDeleted: shouldDelete,
           ),
         );
@@ -120,7 +113,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
               currentState.deck.id,
               easyIncrement: easyIncrement,
               hardIncrement: hardIncrement,
-              failIncrement: failIncrement,
             ),
           ]);
 
@@ -151,7 +143,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             deck: currentState.deck,
             easyCount: easy,
             hardCount: hard,
-            failCount: fail,
           ),
         );
 
@@ -163,7 +154,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
               currentState.deck.id,
               easyIncrement: easyIncrement,
               hardIncrement: hardIncrement,
-              failIncrement: failIncrement,
             ),
           ]);
         } catch (e) {

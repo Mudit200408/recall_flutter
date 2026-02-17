@@ -8,10 +8,15 @@ abstract class FlashcardRepository {
 
   // 2: AI Magic
   // Returns a list of generated cards from a text source
-  Future<List<Flashcard>> generateFlashCards(String title, int count);
+  Future<List<Flashcard>> generateFlashCards(
+    String title,
+    int count,
+    String difficultyLevel,
+  );
   // 3. Saving Data
   Future<void> saveDeck(
     String deckTitle,
+    String difficultyLevel,
     List<Flashcard> cards, {
     String? imageUrl,
     bool useImages = false,
@@ -19,7 +24,6 @@ abstract class FlashcardRepository {
     int dailyCardCount = 0,
     int easyCount = 0,
     int hardCount = 0,
-    int failCount = 0,
   });
   Future<void> updateCardProgress(Flashcard card);
 
@@ -32,7 +36,6 @@ abstract class FlashcardRepository {
     String deckId, {
     int easyIncrement = 0,
     int hardIncrement = 0,
-    int failIncrement = 0,
   });
 
   Future<void> registerSkippedDay(String deckId, int daysSkipped);

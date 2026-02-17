@@ -26,6 +26,17 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _difficultyLevelMeta = const VerificationMeta(
+    'difficultyLevel',
+  );
+  @override
+  late final GeneratedColumn<String> difficultyLevel = GeneratedColumn<String>(
+    'difficulty_level',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _imageUrlMeta = const VerificationMeta(
     'imageUrl',
   );
@@ -134,18 +145,6 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _failCountMeta = const VerificationMeta(
-    'failCount',
-  );
-  @override
-  late final GeneratedColumn<int> failCount = GeneratedColumn<int>(
-    'fail_count',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
   static const VerificationMeta _skippedDaysMeta = const VerificationMeta(
     'skippedDays',
   );
@@ -162,6 +161,7 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
   List<GeneratedColumn> get $columns => [
     id,
     title,
+    difficultyLevel,
     imageUrl,
     scheduledDays,
     daysGenerated,
@@ -171,7 +171,6 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
     useImages,
     easyCount,
     hardCount,
-    failCount,
     skippedDays,
   ];
   @override
@@ -198,6 +197,17 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
       );
     } else if (isInserting) {
       context.missing(_titleMeta);
+    }
+    if (data.containsKey('difficulty_level')) {
+      context.handle(
+        _difficultyLevelMeta,
+        difficultyLevel.isAcceptableOrUnknown(
+          data['difficulty_level']!,
+          _difficultyLevelMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_difficultyLevelMeta);
     }
     if (data.containsKey('image_url')) {
       context.handle(
@@ -269,12 +279,6 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
         hardCount.isAcceptableOrUnknown(data['hard_count']!, _hardCountMeta),
       );
     }
-    if (data.containsKey('fail_count')) {
-      context.handle(
-        _failCountMeta,
-        failCount.isAcceptableOrUnknown(data['fail_count']!, _failCountMeta),
-      );
-    }
     if (data.containsKey('skipped_days')) {
       context.handle(
         _skippedDaysMeta,
@@ -300,6 +304,10 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
       title: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}title'],
+      )!,
+      difficultyLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}difficulty_level'],
       )!,
       imageUrl: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -337,10 +345,6 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
         DriftSqlType.int,
         data['${effectivePrefix}hard_count'],
       )!,
-      failCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}fail_count'],
-      )!,
       skippedDays: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}skipped_days'],
@@ -357,6 +361,7 @@ class $DecksTable extends Decks with TableInfo<$DecksTable, Deck> {
 class Deck extends DataClass implements Insertable<Deck> {
   final String id;
   final String title;
+  final String difficultyLevel;
   final String? imageUrl;
   final int scheduledDays;
   final int daysGenerated;
@@ -366,11 +371,11 @@ class Deck extends DataClass implements Insertable<Deck> {
   final bool useImages;
   final int easyCount;
   final int hardCount;
-  final int failCount;
   final int skippedDays;
   const Deck({
     required this.id,
     required this.title,
+    required this.difficultyLevel,
     this.imageUrl,
     required this.scheduledDays,
     required this.daysGenerated,
@@ -380,7 +385,6 @@ class Deck extends DataClass implements Insertable<Deck> {
     required this.useImages,
     required this.easyCount,
     required this.hardCount,
-    required this.failCount,
     required this.skippedDays,
   });
   @override
@@ -388,6 +392,7 @@ class Deck extends DataClass implements Insertable<Deck> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['title'] = Variable<String>(title);
+    map['difficulty_level'] = Variable<String>(difficultyLevel);
     if (!nullToAbsent || imageUrl != null) {
       map['image_url'] = Variable<String>(imageUrl);
     }
@@ -401,7 +406,6 @@ class Deck extends DataClass implements Insertable<Deck> {
     map['use_images'] = Variable<bool>(useImages);
     map['easy_count'] = Variable<int>(easyCount);
     map['hard_count'] = Variable<int>(hardCount);
-    map['fail_count'] = Variable<int>(failCount);
     map['skipped_days'] = Variable<int>(skippedDays);
     return map;
   }
@@ -410,6 +414,7 @@ class Deck extends DataClass implements Insertable<Deck> {
     return DecksCompanion(
       id: Value(id),
       title: Value(title),
+      difficultyLevel: Value(difficultyLevel),
       imageUrl: imageUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(imageUrl),
@@ -423,7 +428,6 @@ class Deck extends DataClass implements Insertable<Deck> {
       useImages: Value(useImages),
       easyCount: Value(easyCount),
       hardCount: Value(hardCount),
-      failCount: Value(failCount),
       skippedDays: Value(skippedDays),
     );
   }
@@ -436,6 +440,7 @@ class Deck extends DataClass implements Insertable<Deck> {
     return Deck(
       id: serializer.fromJson<String>(json['id']),
       title: serializer.fromJson<String>(json['title']),
+      difficultyLevel: serializer.fromJson<String>(json['difficultyLevel']),
       imageUrl: serializer.fromJson<String?>(json['imageUrl']),
       scheduledDays: serializer.fromJson<int>(json['scheduledDays']),
       daysGenerated: serializer.fromJson<int>(json['daysGenerated']),
@@ -447,7 +452,6 @@ class Deck extends DataClass implements Insertable<Deck> {
       useImages: serializer.fromJson<bool>(json['useImages']),
       easyCount: serializer.fromJson<int>(json['easyCount']),
       hardCount: serializer.fromJson<int>(json['hardCount']),
-      failCount: serializer.fromJson<int>(json['failCount']),
       skippedDays: serializer.fromJson<int>(json['skippedDays']),
     );
   }
@@ -457,6 +461,7 @@ class Deck extends DataClass implements Insertable<Deck> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'title': serializer.toJson<String>(title),
+      'difficultyLevel': serializer.toJson<String>(difficultyLevel),
       'imageUrl': serializer.toJson<String?>(imageUrl),
       'scheduledDays': serializer.toJson<int>(scheduledDays),
       'daysGenerated': serializer.toJson<int>(daysGenerated),
@@ -466,7 +471,6 @@ class Deck extends DataClass implements Insertable<Deck> {
       'useImages': serializer.toJson<bool>(useImages),
       'easyCount': serializer.toJson<int>(easyCount),
       'hardCount': serializer.toJson<int>(hardCount),
-      'failCount': serializer.toJson<int>(failCount),
       'skippedDays': serializer.toJson<int>(skippedDays),
     };
   }
@@ -474,6 +478,7 @@ class Deck extends DataClass implements Insertable<Deck> {
   Deck copyWith({
     String? id,
     String? title,
+    String? difficultyLevel,
     Value<String?> imageUrl = const Value.absent(),
     int? scheduledDays,
     int? daysGenerated,
@@ -483,11 +488,11 @@ class Deck extends DataClass implements Insertable<Deck> {
     bool? useImages,
     int? easyCount,
     int? hardCount,
-    int? failCount,
     int? skippedDays,
   }) => Deck(
     id: id ?? this.id,
     title: title ?? this.title,
+    difficultyLevel: difficultyLevel ?? this.difficultyLevel,
     imageUrl: imageUrl.present ? imageUrl.value : this.imageUrl,
     scheduledDays: scheduledDays ?? this.scheduledDays,
     daysGenerated: daysGenerated ?? this.daysGenerated,
@@ -499,13 +504,15 @@ class Deck extends DataClass implements Insertable<Deck> {
     useImages: useImages ?? this.useImages,
     easyCount: easyCount ?? this.easyCount,
     hardCount: hardCount ?? this.hardCount,
-    failCount: failCount ?? this.failCount,
     skippedDays: skippedDays ?? this.skippedDays,
   );
   Deck copyWithCompanion(DecksCompanion data) {
     return Deck(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
+      difficultyLevel: data.difficultyLevel.present
+          ? data.difficultyLevel.value
+          : this.difficultyLevel,
       imageUrl: data.imageUrl.present ? data.imageUrl.value : this.imageUrl,
       scheduledDays: data.scheduledDays.present
           ? data.scheduledDays.value
@@ -523,7 +530,6 @@ class Deck extends DataClass implements Insertable<Deck> {
       useImages: data.useImages.present ? data.useImages.value : this.useImages,
       easyCount: data.easyCount.present ? data.easyCount.value : this.easyCount,
       hardCount: data.hardCount.present ? data.hardCount.value : this.hardCount,
-      failCount: data.failCount.present ? data.failCount.value : this.failCount,
       skippedDays: data.skippedDays.present
           ? data.skippedDays.value
           : this.skippedDays,
@@ -535,6 +541,7 @@ class Deck extends DataClass implements Insertable<Deck> {
     return (StringBuffer('Deck(')
           ..write('id: $id, ')
           ..write('title: $title, ')
+          ..write('difficultyLevel: $difficultyLevel, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('scheduledDays: $scheduledDays, ')
           ..write('daysGenerated: $daysGenerated, ')
@@ -544,7 +551,6 @@ class Deck extends DataClass implements Insertable<Deck> {
           ..write('useImages: $useImages, ')
           ..write('easyCount: $easyCount, ')
           ..write('hardCount: $hardCount, ')
-          ..write('failCount: $failCount, ')
           ..write('skippedDays: $skippedDays')
           ..write(')'))
         .toString();
@@ -554,6 +560,7 @@ class Deck extends DataClass implements Insertable<Deck> {
   int get hashCode => Object.hash(
     id,
     title,
+    difficultyLevel,
     imageUrl,
     scheduledDays,
     daysGenerated,
@@ -563,7 +570,6 @@ class Deck extends DataClass implements Insertable<Deck> {
     useImages,
     easyCount,
     hardCount,
-    failCount,
     skippedDays,
   );
   @override
@@ -572,6 +578,7 @@ class Deck extends DataClass implements Insertable<Deck> {
       (other is Deck &&
           other.id == this.id &&
           other.title == this.title &&
+          other.difficultyLevel == this.difficultyLevel &&
           other.imageUrl == this.imageUrl &&
           other.scheduledDays == this.scheduledDays &&
           other.daysGenerated == this.daysGenerated &&
@@ -581,13 +588,13 @@ class Deck extends DataClass implements Insertable<Deck> {
           other.useImages == this.useImages &&
           other.easyCount == this.easyCount &&
           other.hardCount == this.hardCount &&
-          other.failCount == this.failCount &&
           other.skippedDays == this.skippedDays);
 }
 
 class DecksCompanion extends UpdateCompanion<Deck> {
   final Value<String> id;
   final Value<String> title;
+  final Value<String> difficultyLevel;
   final Value<String?> imageUrl;
   final Value<int> scheduledDays;
   final Value<int> daysGenerated;
@@ -597,12 +604,12 @@ class DecksCompanion extends UpdateCompanion<Deck> {
   final Value<bool> useImages;
   final Value<int> easyCount;
   final Value<int> hardCount;
-  final Value<int> failCount;
   final Value<int> skippedDays;
   final Value<int> rowid;
   const DecksCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
+    this.difficultyLevel = const Value.absent(),
     this.imageUrl = const Value.absent(),
     this.scheduledDays = const Value.absent(),
     this.daysGenerated = const Value.absent(),
@@ -612,13 +619,13 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     this.useImages = const Value.absent(),
     this.easyCount = const Value.absent(),
     this.hardCount = const Value.absent(),
-    this.failCount = const Value.absent(),
     this.skippedDays = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DecksCompanion.insert({
     required String id,
     required String title,
+    required String difficultyLevel,
     this.imageUrl = const Value.absent(),
     this.scheduledDays = const Value.absent(),
     this.daysGenerated = const Value.absent(),
@@ -628,16 +635,17 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     this.useImages = const Value.absent(),
     this.easyCount = const Value.absent(),
     this.hardCount = const Value.absent(),
-    this.failCount = const Value.absent(),
     this.skippedDays = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        title = Value(title),
+       difficultyLevel = Value(difficultyLevel),
        cardCount = Value(cardCount),
        dailyCardCount = Value(dailyCardCount);
   static Insertable<Deck> custom({
     Expression<String>? id,
     Expression<String>? title,
+    Expression<String>? difficultyLevel,
     Expression<String>? imageUrl,
     Expression<int>? scheduledDays,
     Expression<int>? daysGenerated,
@@ -647,13 +655,13 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     Expression<bool>? useImages,
     Expression<int>? easyCount,
     Expression<int>? hardCount,
-    Expression<int>? failCount,
     Expression<int>? skippedDays,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
+      if (difficultyLevel != null) 'difficulty_level': difficultyLevel,
       if (imageUrl != null) 'image_url': imageUrl,
       if (scheduledDays != null) 'scheduled_days': scheduledDays,
       if (daysGenerated != null) 'days_generated': daysGenerated,
@@ -663,7 +671,6 @@ class DecksCompanion extends UpdateCompanion<Deck> {
       if (useImages != null) 'use_images': useImages,
       if (easyCount != null) 'easy_count': easyCount,
       if (hardCount != null) 'hard_count': hardCount,
-      if (failCount != null) 'fail_count': failCount,
       if (skippedDays != null) 'skipped_days': skippedDays,
       if (rowid != null) 'rowid': rowid,
     });
@@ -672,6 +679,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
   DecksCompanion copyWith({
     Value<String>? id,
     Value<String>? title,
+    Value<String>? difficultyLevel,
     Value<String?>? imageUrl,
     Value<int>? scheduledDays,
     Value<int>? daysGenerated,
@@ -681,13 +689,13 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     Value<bool>? useImages,
     Value<int>? easyCount,
     Value<int>? hardCount,
-    Value<int>? failCount,
     Value<int>? skippedDays,
     Value<int>? rowid,
   }) {
     return DecksCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
+      difficultyLevel: difficultyLevel ?? this.difficultyLevel,
       imageUrl: imageUrl ?? this.imageUrl,
       scheduledDays: scheduledDays ?? this.scheduledDays,
       daysGenerated: daysGenerated ?? this.daysGenerated,
@@ -697,7 +705,6 @@ class DecksCompanion extends UpdateCompanion<Deck> {
       useImages: useImages ?? this.useImages,
       easyCount: easyCount ?? this.easyCount,
       hardCount: hardCount ?? this.hardCount,
-      failCount: failCount ?? this.failCount,
       skippedDays: skippedDays ?? this.skippedDays,
       rowid: rowid ?? this.rowid,
     );
@@ -711,6 +718,9 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
+    }
+    if (difficultyLevel.present) {
+      map['difficulty_level'] = Variable<String>(difficultyLevel.value);
     }
     if (imageUrl.present) {
       map['image_url'] = Variable<String>(imageUrl.value);
@@ -739,9 +749,6 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     if (hardCount.present) {
       map['hard_count'] = Variable<int>(hardCount.value);
     }
-    if (failCount.present) {
-      map['fail_count'] = Variable<int>(failCount.value);
-    }
     if (skippedDays.present) {
       map['skipped_days'] = Variable<int>(skippedDays.value);
     }
@@ -756,6 +763,7 @@ class DecksCompanion extends UpdateCompanion<Deck> {
     return (StringBuffer('DecksCompanion(')
           ..write('id: $id, ')
           ..write('title: $title, ')
+          ..write('difficultyLevel: $difficultyLevel, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('scheduledDays: $scheduledDays, ')
           ..write('daysGenerated: $daysGenerated, ')
@@ -765,7 +773,6 @@ class DecksCompanion extends UpdateCompanion<Deck> {
           ..write('useImages: $useImages, ')
           ..write('easyCount: $easyCount, ')
           ..write('hardCount: $hardCount, ')
-          ..write('failCount: $failCount, ')
           ..write('skippedDays: $skippedDays, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -1315,6 +1322,7 @@ typedef $$DecksTableCreateCompanionBuilder =
     DecksCompanion Function({
       required String id,
       required String title,
+      required String difficultyLevel,
       Value<String?> imageUrl,
       Value<int> scheduledDays,
       Value<int> daysGenerated,
@@ -1324,7 +1332,6 @@ typedef $$DecksTableCreateCompanionBuilder =
       Value<bool> useImages,
       Value<int> easyCount,
       Value<int> hardCount,
-      Value<int> failCount,
       Value<int> skippedDays,
       Value<int> rowid,
     });
@@ -1332,6 +1339,7 @@ typedef $$DecksTableUpdateCompanionBuilder =
     DecksCompanion Function({
       Value<String> id,
       Value<String> title,
+      Value<String> difficultyLevel,
       Value<String?> imageUrl,
       Value<int> scheduledDays,
       Value<int> daysGenerated,
@@ -1341,7 +1349,6 @@ typedef $$DecksTableUpdateCompanionBuilder =
       Value<bool> useImages,
       Value<int> easyCount,
       Value<int> hardCount,
-      Value<int> failCount,
       Value<int> skippedDays,
       Value<int> rowid,
     });
@@ -1387,6 +1394,11 @@ class $$DecksTableFilterComposer extends Composer<_$AppDatabase, $DecksTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get difficultyLevel => $composableBuilder(
+    column: $table.difficultyLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get imageUrl => $composableBuilder(
     column: $table.imageUrl,
     builder: (column) => ColumnFilters(column),
@@ -1429,11 +1441,6 @@ class $$DecksTableFilterComposer extends Composer<_$AppDatabase, $DecksTable> {
 
   ColumnFilters<int> get hardCount => $composableBuilder(
     column: $table.hardCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get failCount => $composableBuilder(
-    column: $table.failCount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1487,6 +1494,11 @@ class $$DecksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get difficultyLevel => $composableBuilder(
+    column: $table.difficultyLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get imageUrl => $composableBuilder(
     column: $table.imageUrl,
     builder: (column) => ColumnOrderings(column),
@@ -1532,11 +1544,6 @@ class $$DecksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get failCount => $composableBuilder(
-    column: $table.failCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<int> get skippedDays => $composableBuilder(
     column: $table.skippedDays,
     builder: (column) => ColumnOrderings(column),
@@ -1557,6 +1564,11 @@ class $$DecksTableAnnotationComposer
 
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get difficultyLevel => $composableBuilder(
+    column: $table.difficultyLevel,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get imageUrl =>
       $composableBuilder(column: $table.imageUrl, builder: (column) => column);
@@ -1592,9 +1604,6 @@ class $$DecksTableAnnotationComposer
 
   GeneratedColumn<int> get hardCount =>
       $composableBuilder(column: $table.hardCount, builder: (column) => column);
-
-  GeneratedColumn<int> get failCount =>
-      $composableBuilder(column: $table.failCount, builder: (column) => column);
 
   GeneratedColumn<int> get skippedDays => $composableBuilder(
     column: $table.skippedDays,
@@ -1657,6 +1666,7 @@ class $$DecksTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
+                Value<String> difficultyLevel = const Value.absent(),
                 Value<String?> imageUrl = const Value.absent(),
                 Value<int> scheduledDays = const Value.absent(),
                 Value<int> daysGenerated = const Value.absent(),
@@ -1666,12 +1676,12 @@ class $$DecksTableTableManager
                 Value<bool> useImages = const Value.absent(),
                 Value<int> easyCount = const Value.absent(),
                 Value<int> hardCount = const Value.absent(),
-                Value<int> failCount = const Value.absent(),
                 Value<int> skippedDays = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DecksCompanion(
                 id: id,
                 title: title,
+                difficultyLevel: difficultyLevel,
                 imageUrl: imageUrl,
                 scheduledDays: scheduledDays,
                 daysGenerated: daysGenerated,
@@ -1681,7 +1691,6 @@ class $$DecksTableTableManager
                 useImages: useImages,
                 easyCount: easyCount,
                 hardCount: hardCount,
-                failCount: failCount,
                 skippedDays: skippedDays,
                 rowid: rowid,
               ),
@@ -1689,6 +1698,7 @@ class $$DecksTableTableManager
               ({
                 required String id,
                 required String title,
+                required String difficultyLevel,
                 Value<String?> imageUrl = const Value.absent(),
                 Value<int> scheduledDays = const Value.absent(),
                 Value<int> daysGenerated = const Value.absent(),
@@ -1698,12 +1708,12 @@ class $$DecksTableTableManager
                 Value<bool> useImages = const Value.absent(),
                 Value<int> easyCount = const Value.absent(),
                 Value<int> hardCount = const Value.absent(),
-                Value<int> failCount = const Value.absent(),
                 Value<int> skippedDays = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DecksCompanion.insert(
                 id: id,
                 title: title,
+                difficultyLevel: difficultyLevel,
                 imageUrl: imageUrl,
                 scheduledDays: scheduledDays,
                 daysGenerated: daysGenerated,
@@ -1713,7 +1723,6 @@ class $$DecksTableTableManager
                 useImages: useImages,
                 easyCount: easyCount,
                 hardCount: hardCount,
-                failCount: failCount,
                 skippedDays: skippedDays,
                 rowid: rowid,
               ),

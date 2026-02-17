@@ -4,7 +4,13 @@ import 'package:recall/features/recall/presentation/widgets/animated_button.dart
 import 'package:responsive_scaler/responsive_scaler.dart';
 
 class CreateDeckDialog extends StatefulWidget {
-  final Function(String topic, int count, bool useImages, int duration)
+  final Function(
+    String topic,
+    int count,
+    String difficultyLevel,
+    bool useImages,
+    int duration,
+  )
   onSubmit;
   final bool isGuest;
   const CreateDeckDialog({
@@ -20,6 +26,7 @@ class CreateDeckDialog extends StatefulWidget {
 class _CreateDeckDialogState extends State<CreateDeckDialog> {
   String topic = "";
   int count = 5;
+  double difficultyLevel = 1;
   int duration = 3;
   bool useImages = false;
 
@@ -121,7 +128,8 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                 (val) => setState(() => count = val),
               ),
               SizedBox(height: 16.h),
-
+              _buildDifficultySlider(context),
+              SizedBox(height: 16.h),
               // Duration Slider
               _buildSliderParams(
                 context,
@@ -187,7 +195,13 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                       text: 'START',
                       onTap: () {
                         if (topic.isNotEmpty) {
-                          widget.onSubmit(topic, count, useImages, duration);
+                          widget.onSubmit(
+                            topic,
+                            count,
+                            _difficultyLabel,
+                            useImages,
+                            duration,
+                          );
                           Navigator.pop(context);
                         }
                       },
@@ -259,6 +273,93 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
             max: max,
             divisions: (max - min).toInt(),
             onChanged: (val) => onChanged(val.round()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String get _difficultyLabel {
+    switch (difficultyLevel) {
+      case 1:
+        return "Easy";
+      case 2:
+        return "Medium";
+      case 3:
+        return "Hard";
+      default:
+        return "Easy";
+    }
+  }
+
+  Widget _buildDifficultySlider(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Difficulty Level",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 2.r),
+              decoration: BoxDecoration(
+                color: blackColor,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+              child: Text(
+                _difficultyLabel,
+                style: TextStyle(
+                  color: accentColor(widget.isGuest),
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 4.h),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: blackColor,
+            inactiveTrackColor: Colors.grey[300],
+            thumbColor: accentColor(widget.isGuest),
+            overlayColor: accentColor(widget.isGuest).withValues(alpha: 0.2),
+            trackHeight: 6,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+          ),
+          child: Slider(
+            value: difficultyLevel,
+            min: 1,
+            max: 3,
+            divisions: 2,
+            onChanged: (val) => setState(() => difficultyLevel = val),
+          ),
+        ),
+
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12.r),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: ['EASY', 'MEDIUM', 'HARD'].map((label) {
+              final isSelected = _difficultyLabel == label;
+              return Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                  color: isSelected ? blackColor : Colors.grey,
+                  letterSpacing: 0.5,
+                ),
+              );
+            }).toList(),
           ),
         ),
       ],

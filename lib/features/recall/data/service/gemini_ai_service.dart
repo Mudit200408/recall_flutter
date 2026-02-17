@@ -8,6 +8,7 @@ class GeminiAiService implements AiService {
   @override
   Future<List<FlashcardContent>> generateFlashcards(
     String title,
+    String difficultyLevel,
     int count,
   ) async {
     try {
@@ -28,6 +29,7 @@ class GeminiAiService implements AiService {
           '''
       You are a strict teacher. 
       Generate exactly $count flashcards about "$title".
+      Difficulty Level of questions should be $difficultyLevel.
       Return a JSON array where each object has "front" and "back" keys.
       ''';
 

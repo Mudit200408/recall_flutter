@@ -73,6 +73,7 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
   @override
   Future<void> saveDeck(
     String deckTitle,
+    String difficultyLevel,
     List<Flashcard> cards, {
     String? imageUrl,
     bool useImages = false,
@@ -80,7 +81,6 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
     int dailyCardCount = 0,
     int easyCount = 0,
     int hardCount = 0,
-    int failCount = 0,
   }) async {
     // Generate deck image if not provided and enabled
     if (imageUrl == null && useImages) {
@@ -111,6 +111,7 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
     // 2: Set Deck Data
     batch.set(deckRef, {
       'title': deckTitle,
+      'difficultyLevel': difficultyLevel,
       'cardCount': cards.length,
       'createdAt': FieldValue.serverTimestamp(),
       'imageUrl': imageUrl,
@@ -121,7 +122,6 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
       'useImages': useImages,
       'easyCount': easyCount,
       'hardCount': hardCount,
-      'failCount': failCount,
       'skippedDays': 0, // Initial value
     });
 
@@ -177,6 +177,7 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
       return Deck(
         id: doc.id,
         title: data['title'] ?? 'Untitled',
+        difficultyLevel: data['difficultyLevel'] ?? 'easy',
         cardCount: data['cardCount'] ?? 0,
         imageUrl: data['imageUrl'] as String?,
         scheduledDays: data['scheduledDays'] ?? 0,
@@ -186,7 +187,6 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
         useImages: data['useImages'] ?? false,
         easyCount: data['easyCount'] ?? 0,
         hardCount: data['hardCount'] ?? 0,
-        failCount: data['failCount'] ?? 0,
         skippedDays: data['skippedDays'] ?? 0,
       );
     }).toList();
@@ -300,13 +300,11 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
     }
   }
 
-
   @override
   Future<void> updateDeckStats(
     String deckId, {
     int easyIncrement = 0,
     int hardIncrement = 0,
-    int failIncrement = 0,
   }) async {
     final deckRef = firestore
         .collection('users')
@@ -317,7 +315,6 @@ class RemoteFlashcardDataSource implements FlashcardDataSource {
     await deckRef.update({
       'easyCount': FieldValue.increment(easyIncrement),
       'hardCount': FieldValue.increment(hardIncrement),
-      'failCount': FieldValue.increment(failIncrement),
     });
   }
 

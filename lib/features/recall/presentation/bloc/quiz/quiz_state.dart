@@ -19,7 +19,6 @@ class QuizActive extends QuizState {
   final Deck deck;
   final int easyCount;
   final int hardCount;
-  final int failCount;
 
   const QuizActive({
     required this.remainingCards,
@@ -29,7 +28,6 @@ class QuizActive extends QuizState {
     required this.deck,
     this.easyCount = 0,
     this.hardCount = 0,
-    this.failCount = 0,
   });
 
   @override
@@ -41,7 +39,6 @@ class QuizActive extends QuizState {
     deck,
     easyCount,
     hardCount,
-    failCount,
   ];
 }
 
@@ -57,25 +54,17 @@ class QuizFinished extends QuizState {
   final Deck deck;
   final int easyCount;
   final int hardCount;
-  final int failCount;
   final bool isDeckDeleted;
 
   const QuizFinished({
     required this.deck,
     required this.easyCount,
     required this.hardCount,
-    required this.failCount,
     this.isDeckDeleted = false,
   });
 
   @override
-  List<Object> get props => [
-    deck,
-    easyCount,
-    hardCount,
-    failCount,
-    isDeckDeleted,
-  ];
+  List<Object> get props => [deck, easyCount, hardCount, isDeckDeleted];
 }
 
 class QuizError extends QuizState {

@@ -40,6 +40,7 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
           (d) => Deck(
             id: d.id,
             title: d.title,
+            difficultyLevel: d.difficultyLevel,
             scheduledDays: d.scheduledDays,
             daysGenerated: d.daysGenerated,
             lastGeneratedDate: d.lastGeneratedDate,
@@ -48,7 +49,6 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
             useImages: d.useImages,
             easyCount: d.easyCount,
             hardCount: d.hardCount,
-            failCount: d.failCount,
             skippedDays: d.skippedDays,
           ),
         )
@@ -88,6 +88,7 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
   @override
   Future<void> saveDeck(
     String deckTitle,
+    String difficultyLevel,
     List<Flashcard> cards, {
     String? imageUrl,
     bool useImages = false,
@@ -95,7 +96,6 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
     int dailyCardCount = 0,
     int easyCount = 0,
     int hardCount = 0,
-    int failCount = 0,
   }) async {
     final deckId = const Uuid().v4();
     await database.insertDeck(
@@ -103,6 +103,7 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
         id: deckId,
         title: deckTitle,
         scheduledDays: scheduledDays,
+        difficultyLevel: difficultyLevel,
         daysGenerated: 1,
         lastGeneratedDate: DateTime.now(),
         cardCount: cards.length,
@@ -110,7 +111,6 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
         useImages: useImages,
         easyCount: easyCount,
         hardCount: hardCount,
-        failCount: failCount,
         skippedDays: 0,
       ),
     );
@@ -156,7 +156,6 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
     String deckId, {
     int easyIncrement = 0,
     int hardIncrement = 0,
-    int failIncrement = 0,
   }) async {
     final deck = await database.getDeckById(deckId);
     if (deck != null) {
@@ -164,7 +163,6 @@ class LocalFlashcardDatasource implements FlashcardDataSource {
         deck.copyWith(
           easyCount: deck.easyCount + easyIncrement,
           hardCount: deck.hardCount + hardIncrement,
-          failCount: deck.failCount + failIncrement,
         ),
       );
     }

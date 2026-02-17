@@ -4,10 +4,11 @@ import 'package:recall/features/recall/domain/entities/flashcard.dart';
 abstract class FlashcardDataSource {
   Future<List<Flashcard>> getDueCards(String deckId);
   Future<List<Deck>> getDecks();
-  
+
   // Save a brand new deck
   Future<void> saveDeck(
     String deckTitle,
+    String difficultyLevel,
     List<Flashcard> cards, {
     String? imageUrl,
     bool useImages = false,
@@ -15,7 +16,6 @@ abstract class FlashcardDataSource {
     int dailyCardCount = 0,
     int easyCount = 0,
     int hardCount = 0,
-    int failCount = 0,
   });
 
   // Save NEW cards to an EXISTING deck (For "Generate More")
@@ -23,12 +23,11 @@ abstract class FlashcardDataSource {
 
   Future<void> updateCardProgress(Flashcard card);
   Future<void> deleteDeck(String deckId);
-  
+
   Future<void> updateDeckStats(
     String deckId, {
     int easyIncrement = 0,
     int hardIncrement = 0,
-    int failIncrement = 0,
   });
 
   Future<void> registerSkippedDay(String deckId, int daysSkipped);

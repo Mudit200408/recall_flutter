@@ -8,13 +8,13 @@ class SpacedRepetitionService {
     double newEaseFactor = card.easeFactor;
     int newInterval = card.interval;
 
-    // STEP 1: Check if the user failed (Quality < 3)
-    if(quality < 3) {
+    // STEP 1: Check if the user failed (Quality < 2)
+    if(quality < 2) {
       newRepetitions = 0;
       newInterval = 1;
     } 
     
-    // STEP 2: Check if the user passed (Quality >= 3)
+    // STEP 2: Check if the user passed (Quality >= 2)
     else {
 
       // Calculate new Ease Factor

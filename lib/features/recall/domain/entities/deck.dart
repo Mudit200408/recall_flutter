@@ -12,12 +12,13 @@ class Deck extends Equatable {
   final int dailyCardCount;
   final int easyCount;
   final int hardCount;
-  final int failCount;
+  final String difficultyLevel;
   final int skippedDays;
 
   const Deck({
     required this.id,
     required this.title,
+    required this.difficultyLevel,
     required this.cardCount,
     this.imageUrl,
     this.useImages = false,
@@ -27,7 +28,7 @@ class Deck extends Equatable {
     this.dailyCardCount = 0,
     this.easyCount = 0,
     this.hardCount = 0,
-    this.failCount = 0,
+
     this.skippedDays = 0,
   });
 
@@ -35,6 +36,7 @@ class Deck extends Equatable {
   List<Object?> get props => [
     id,
     title,
+    difficultyLevel,
     cardCount,
     imageUrl,
     useImages,
@@ -44,7 +46,6 @@ class Deck extends Equatable {
     dailyCardCount,
     easyCount,
     hardCount,
-    failCount,
     skippedDays,
   ];
 }

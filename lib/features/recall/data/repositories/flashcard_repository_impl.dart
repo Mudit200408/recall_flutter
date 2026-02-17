@@ -28,8 +28,16 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
   }
 
   @override
-  Future<List<Flashcard>> generateFlashCards(String title, int count) async {
-    final contentList = await aiService.generateFlashcards(title, count);
+  Future<List<Flashcard>> generateFlashCards(
+    String title,
+    int count,
+    String difficultyLevel,
+  ) async {
+    final contentList = await aiService.generateFlashcards(
+      title,
+      difficultyLevel,
+      count,
+    );
 
     return contentList
         .map(
@@ -47,6 +55,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
   Future<void> generateMoreCards(Deck deck) async {
     final contentList = await aiService.generateFlashcards(
       deck.title,
+      deck.difficultyLevel,
       deck.dailyCardCount,
     );
 
@@ -98,6 +107,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
   @override
   Future<void> saveDeck(
     String deckTitle,
+    String difficultyLevel,
     List<Flashcard> cards, {
     String? imageUrl,
     bool useImages = false,
@@ -105,11 +115,11 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
     int dailyCardCount = 0,
     int easyCount = 0,
     int hardCount = 0,
-    int failCount = 0,
   }) {
     if (isGuestMode) {
       return localFlashcardDatasource.saveDeck(
         deckTitle,
+        difficultyLevel,
         cards,
         imageUrl: imageUrl,
         useImages: useImages,
@@ -117,11 +127,11 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
         dailyCardCount: dailyCardCount,
         easyCount: easyCount,
         hardCount: hardCount,
-        failCount: failCount,
       );
     } else {
       return remoteFlashcardDataSource.saveDeck(
         deckTitle,
+        difficultyLevel,
         cards,
         imageUrl: imageUrl,
         useImages: useImages,
@@ -129,7 +139,6 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
         dailyCardCount: dailyCardCount,
         easyCount: easyCount,
         hardCount: hardCount,
-        failCount: failCount,
       );
     }
   }
@@ -148,21 +157,18 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
     String deckId, {
     int easyIncrement = 0,
     int hardIncrement = 0,
-    int failIncrement = 0,
   }) {
     if (isGuestMode) {
       return localFlashcardDatasource.updateDeckStats(
         deckId,
         easyIncrement: easyIncrement,
         hardIncrement: hardIncrement,
-        failIncrement: failIncrement,
       );
     } else {
       return remoteFlashcardDataSource.updateDeckStats(
         deckId,
         easyIncrement: easyIncrement,
         hardIncrement: hardIncrement,
-        failIncrement: failIncrement,
       );
     }
   }

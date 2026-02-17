@@ -75,29 +75,26 @@ class _MainAppState extends State<MainApp> {
   // Cache the guest model future so FutureBuilder doesn't re-fire on rebuilds
   Future<String?>? _guestModelFuture;
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = ThemeData(
+  ThemeData _buildTheme(bool isGuest) {
+    final accentColor = isGuest
+        ? const Color.fromARGB(255, 0, 255, 225)
+        : const Color(0xFFCCFF00);
+
+    return ThemeData(
       scaffoldBackgroundColor: Colors.white,
-      primaryColor: Color(0xFFCCFF00),
+      primaryColor: accentColor,
       fontFamily: 'SpaceGrotesk',
       textSelectionTheme: TextSelectionThemeData(
-        cursorColor: Color.fromARGB(
-          255,
-          184,
-          230,
-          0,
-        ), // Color of the blinking cursor
-        selectionColor: Color(
-          0xFFCCFF00,
-        ).withValues(alpha: 0.3), // Color of highlighted text
-        selectionHandleColor: Color(
-          0xFFCCFF00,
-        ), // Color of the "bubbles" at the ends of a selection
+        cursorColor: accentColor,
+        selectionColor: accentColor.withValues(alpha: 0.3),
+        selectionHandleColor: accentColor,
       ),
-      // colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
       useMaterial3: true,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -115,20 +112,20 @@ class _MainAppState extends State<MainApp> {
           const Breakpoint(start: 601, end: 1200, name: TABLET),
           const Breakpoint(start: 1201, end: 1920, name: DESKTOP),
         ],
-        child: MaterialApp(
-          theme: theme,
-          debugShowCheckedModeBanner: false,
-          builder: (context, child) {
-            child = ResponsiveScaler.scale(context: context, child: child!);
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, authState) {
+            final bool isGuest = (authState is AuthGuest);
 
-            return BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, authState) {
+            return MaterialApp(
+              theme: _buildTheme(isGuest),
+              debugShowCheckedModeBanner: false,
+              builder: (context, child) {
+                child = ResponsiveScaler.scale(context: context, child: child!);
+
                 if (authState is AuthAuthenticated || authState is AuthGuest) {
                   final String userId = authState is AuthAuthenticated
                       ? authState.user.uid
                       : "guest_login";
-
-                  final bool isGuest = (authState is AuthGuest);
 
                   final AiService aiService = isGuest
                       ? LocalAIService()
@@ -145,9 +142,7 @@ class _MainAppState extends State<MainApp> {
                         httpClient: http.Client(),
                         imageService: di.sl(),
                       ),
-
                       aiService: aiService,
-
                       isGuestMode: isGuest,
                     ),
                     child: BlocProvider(
@@ -161,43 +156,41 @@ class _MainAppState extends State<MainApp> {
                 }
                 return child!;
               },
+              home: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  if (state is AuthAuthenticated) {
+                    return const DeckListPage(isGuest: false);
+                  }
+                  if (state is AuthGuest) {
+                    _guestModelFuture ??= ModelManagementService()
+                        .getActiveModelId();
+                    return FutureBuilder<String?>(
+                      future: _guestModelFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Scaffold(
+                            body: Center(child: Loader(isGuest: true)),
+                          );
+                        }
+                        final activeModelId = snapshot.data;
+                        if (activeModelId != null && activeModelId.isNotEmpty) {
+                          return const DeckListPage(isGuest: true);
+                        }
+                        return const ModelSelectionPage(isSettingsMode: true);
+                      },
+                    );
+                  }
+                  if (state is AuthLoading) {
+                    return const Scaffold(
+                      body: Center(child: Loader(isGuest: false)),
+                    );
+                  }
+                  return const LoginPage();
+                },
+              ),
             );
           },
-          home: BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              if (state is AuthAuthenticated) {
-                return const DeckListPage(isGuest: false);
-              }
-              if (state is AuthGuest) {
-                // Cache future so FutureBuilder doesn't re-fire on rebuilds
-                _guestModelFuture ??= ModelManagementService()
-                    .getActiveModelId();
-                return FutureBuilder<String?>(
-                  future: _guestModelFuture,
-
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Scaffold(
-                        body: Center(child: Loader(isGuest: true)),
-                      );
-                    }
-                    final activeModelId = snapshot.data;
-
-                    if (activeModelId != null && activeModelId.isNotEmpty) {
-                      return const DeckListPage(isGuest: true);
-                    }
-                    return const ModelSelectionPage(isSettingsMode: false);
-                  },
-                );
-              }
-              if (state is AuthLoading) {
-                return const Scaffold(
-                  body: Center(child: Loader(isGuest: false)),
-                );
-              }
-              return const LoginPage();
-            },
-          ),
         ),
       ),
     );

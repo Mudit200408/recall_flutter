@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 class Decks extends Table {
   TextColumn get id => text()();
   TextColumn get title => text()();
+  TextColumn get difficultyLevel => text()();
   TextColumn get imageUrl => text().nullable()();
   IntColumn get scheduledDays => integer().withDefault(const Constant(0))();
   IntColumn get daysGenerated => integer().withDefault(const Constant(0))();
@@ -14,7 +15,6 @@ class Decks extends Table {
   // Stats
   IntColumn get easyCount => integer().withDefault(const Constant(0))();
   IntColumn get hardCount => integer().withDefault(const Constant(0))();
-  IntColumn get failCount => integer().withDefault(const Constant(0))();
   IntColumn get skippedDays => integer().withDefault(const Constant(0))();
 
   @override

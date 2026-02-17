@@ -89,6 +89,7 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
       final cards = await repository.generateFlashCards(
         event.title,
         event.count,
+        event.difficultyLevel,
       );
 
       String? deckImageUrl;
@@ -96,6 +97,7 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
       // Save the result to Firestore
       await repository.saveDeck(
         event.title,
+        event.difficultyLevel,
         cards,
         imageUrl: deckImageUrl,
         useImages: event.useImages,
@@ -103,7 +105,6 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
         dailyCardCount: event.count,
         easyCount: 0,
         hardCount: 0,
-        failCount: 0,
       );
 
       // Refresh the list to show the new deck
