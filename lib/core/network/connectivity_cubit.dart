@@ -39,6 +39,16 @@ class ConnectivityCubit extends Cubit<ConnectivityState> {
     });
   }
 
+  Future<bool> checkConnection() async {
+    final hasAccess = await _connectivityService.hasInternetAccess;
+    if (hasAccess) {
+      emit(ConnectivityOnline());
+    } else {
+      emit(ConnectivityOffline());
+    }
+    return hasAccess;
+  }
+
   @override
   Future<void> close() {
     _subscription?.cancel();

@@ -114,8 +114,10 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
               easyIncrement: easyIncrement,
               hardIncrement: hardIncrement,
             ),
-            repository.markDeckPlayed(currentState.deck.id),
           ]);
+          // markDeckPlayed must run AFTER updateDeckStats completes
+          // because both read-modify-write the same deck row
+          await repository.markDeckPlayed(currentState.deck.id);
 
           // Handle Deletion
           if (shouldDelete) {

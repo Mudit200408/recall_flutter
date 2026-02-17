@@ -1,8 +1,22 @@
 import 'dart:convert';
 
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:recall/features/recall/domain/services/ai_service.dart';
+
+// ✅ Top-level function — does both jsonDecode + mapping in one isolate call
+List<FlashcardContent> _parseGeminiFlashcardsJson(String jsonString) {
+  final List<dynamic> jsonList = jsonDecode(jsonString);
+  return jsonList
+      .map(
+        (item) => FlashcardContent(
+          front: item['front'] ?? 'Error',
+          back: item['back'] ?? 'Error',
+        ),
+      )
+      .toList();
+}
 
 class GeminiAiService implements AiService {
   @override
@@ -39,31 +53,18 @@ class GeminiAiService implements AiService {
 
       if (responseText == null) throw Exception("AI returned empty response");
 
-      List<dynamic> jsonList = [];
       try {
-        jsonList = jsonDecode(responseText);
+        return await compute(_parseGeminiFlashcardsJson, responseText);
       } catch (e) {
         // Fallback robust parsing
         int startIndex = responseText.indexOf('[');
         int endIndex = responseText.lastIndexOf(']');
         if (startIndex != -1 && endIndex != -1) {
           final jsonStr = responseText.substring(startIndex, endIndex + 1);
-          jsonList = jsonDecode(jsonStr);
+          return await compute(_parseGeminiFlashcardsJson, jsonStr);
         }
+        rethrow;
       }
-
-      final results = <FlashcardContent>[];
-
-      for (var item in jsonList) {
-        results.add(
-          FlashcardContent(
-            front: item['front'] ?? 'Error',
-            back: item['back'] ?? 'Error',
-          ),
-        );
-      }
-
-      return results;
     } catch (e) {
       debugPrint("AI Generation Error: $e");
       rethrow; // Rethrow to let the Bloc handle the error (and prevent deck creation)

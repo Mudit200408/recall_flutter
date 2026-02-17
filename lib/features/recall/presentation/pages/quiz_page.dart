@@ -66,7 +66,7 @@ class QuizPage extends StatelessWidget {
                               isOffline == true)) {
                         return OfflineView(
                           onRetry: () {
-                            context.read<QuizBloc>().add(StartQuiz(deck: deck));
+                            context.read<ConnectivityCubit>().checkConnection();
                           },
                         );
                       }
@@ -136,9 +136,9 @@ class QuizPage extends StatelessWidget {
                       return (isOffline && !isGuest)
                           ? OfflineView(
                               onRetry: () {
-                                context.read<QuizBloc>().add(
-                                  StartQuiz(deck: deck),
-                                );
+                                context
+                                    .read<ConnectivityCubit>()
+                                    .checkConnection();
                               },
                             )
                           : QuizContent(state: state, isGuest: isGuest);
@@ -302,13 +302,15 @@ class _QuizContentState extends State<QuizContent> {
               _buildHeader(context),
               SizedBox(height: 16.h),
 
-              _buildProgressBar(),
+              RepaintBoundary(child: _buildProgressBar()),
               SizedBox(height: 16.h),
 
-              _buildCard(remainingCards, isMobile, maxCardWidth: 400),
+              RepaintBoundary(
+                child: _buildCard(remainingCards, isMobile, maxCardWidth: 400),
+              ),
 
               // Swipe hints
-              _buildSwipeHints(),
+              RepaintBoundary(child: _buildSwipeHints()),
               SizedBox(height: 32.h), // Bottom padding for scroll
             ],
           ),
@@ -320,7 +322,7 @@ class _QuizContentState extends State<QuizContent> {
   Widget _buildSwipeHints() {
     if (widget.state.isFlipped) {
       return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 26.r),
+        padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 52.r),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -357,7 +359,7 @@ class _QuizContentState extends State<QuizContent> {
       );
     } else {
       return Padding(
-        padding: EdgeInsets.symmetric(vertical: 26.r),
+        padding: EdgeInsets.symmetric(vertical: 52.r),
         child: Text(
           "TAP TO DECRYPT",
           style: TextStyle(
@@ -388,14 +390,16 @@ class _QuizContentState extends State<QuizContent> {
               _buildHeader(context),
               SizedBox(height: 16.h),
 
-              _buildProgressBar(),
+              RepaintBoundary(child: _buildProgressBar()),
               SizedBox(height: 16.h),
 
               // Card takes all remaining vertical space
-              _buildCard(remainingCards, isMobile, maxCardWidth: 700),
+              RepaintBoundary(
+                child: _buildCard(remainingCards, isMobile, maxCardWidth: 700),
+              ),
 
               // Swipe hints
-              _buildSwipeHints(),
+              RepaintBoundary(child: _buildSwipeHints()),
               SizedBox(height: 32.h), // Bottom padding
             ],
           ),
@@ -523,7 +527,6 @@ class _QuizContentState extends State<QuizContent> {
                                     child: ClipRRect(
                                       child: FlashcardFace(
                                         text: card.front,
-                                        color: Colors.deepPurple,
                                         label: "QUESTION",
                                       ),
                                     ),
@@ -539,7 +542,6 @@ class _QuizContentState extends State<QuizContent> {
                                     child: ClipRRect(
                                       child: FlashcardFace(
                                         text: card.back,
-                                        color: Colors.indigo,
                                         label: "ANSWER",
                                       ),
                                     ),

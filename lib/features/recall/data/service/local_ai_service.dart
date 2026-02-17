@@ -1,8 +1,23 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:recall/features/recall/data/service/model_management_service.dart';
 import 'package:recall/features/recall/domain/services/ai_service.dart';
+
+// ✅ Top-level function — required for compute() to work
+// Instance methods can't be sent to another isolate because they capture `this`
+List<FlashcardContent> _parseFlashcardsJson(String jsonString) {
+  final List<dynamic> data = jsonDecode(jsonString);
+  return data
+      .map(
+        (e) => FlashcardContent(
+          front: e['front'].toString(),
+          back: e['back'].toString(),
+        ),
+      )
+      .toList();
+}
 
 class LocalAIService implements AiService {
   final ModelManagementService _modelManager = ModelManagementService();
@@ -47,15 +62,8 @@ Example:
     }
 
     try {
-      final List<dynamic> data = jsonDecode(contentToParse);
-      return data
-          .map(
-            (e) => FlashcardContent(
-              front: e['front'].toString(),
-              back: e['back'].toString(),
-            ),
-          )
-          .toList();
+      final result = await compute(_parseFlashcardsJson, contentToParse);
+      return result;
     } catch (e) {
       debugPrint("Gemma JSON Parse Error: $responseText");
 
@@ -67,16 +75,9 @@ Example:
           // Try appending closing bracket
           final int lastBrace = contentToParse.lastIndexOf('}');
           if (lastBrace != -1) {
-            contentToParse = contentToParse.substring(0, lastBrace + 1) + ']';
-            final List<dynamic> data = jsonDecode(contentToParse);
-            return data
-                .map(
-                  (e) => FlashcardContent(
-                    front: e['front'].toString(),
-                    back: e['back'].toString(),
-                  ),
-                )
-                .toList();
+            contentToParse = '${contentToParse.substring(0, lastBrace + 1)}]';
+            final result = await compute(_parseFlashcardsJson, contentToParse);
+            return result;
           }
         }
       } catch (_) {}

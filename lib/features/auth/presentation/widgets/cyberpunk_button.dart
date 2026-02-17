@@ -8,6 +8,7 @@ class CyberpunkButton extends StatefulWidget {
   final double width;
   final double height;
   final Color? color;
+  final bool isOffline;
 
   const CyberpunkButton({
     super.key,
@@ -17,6 +18,7 @@ class CyberpunkButton extends StatefulWidget {
     this.width = double.infinity,
     this.height = 64,
     this.color,
+    this.isOffline = false,
   });
 
   @override
@@ -30,35 +32,31 @@ class _CyberpunkButtonState extends State<CyberpunkButton> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.heavyImpact();
-        widget.onTap();
+        !widget.isOffline ? HapticFeedback.heavyImpact() : null;
+        !widget.isOffline ? widget.onTap() : null;
       },
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
       child: Stack(
         children: [
-          // Background Shadow (Hard offset)
-          if (!_isPressed)
-            Positioned(
-              left: 6,
-              top: 6,
-              right: 0,
-              bottom: 0,
-              child: Container(color: Colors.black),
-            ),
-
-          // Main Button Container
           AnimatedContainer(
             duration: const Duration(milliseconds: 50),
-            width: widget.width,
+            transform: _isPressed && !widget.isOffline
+                ? Matrix4.translationValues(4, 4, 0)
+                : Matrix4.identity(),
             height: widget.height,
-            margin: _isPressed
-                ? const EdgeInsets.only(left: 6, top: 6)
-                : const EdgeInsets.only(right: 6, bottom: 6),
+            width: widget.width,
             decoration: BoxDecoration(
-              color: widget.color ?? const Color(0xFFCCFF00), // Lime Green
-              border: Border.all(color: Colors.black, width: 2),
+              color: widget.color ?? const Color(0xFFCCFF00),
+              border: Border.all(color: Colors.black, width: 3),
+              boxShadow: _isPressed
+                  ? null
+                  : widget.isOffline
+                  ? null
+                  : const [
+                      BoxShadow(color: Colors.black, offset: Offset(4, 4)),
+                    ],
             ),
             child: Stack(
               children: [

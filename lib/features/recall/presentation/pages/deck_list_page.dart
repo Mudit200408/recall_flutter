@@ -304,7 +304,7 @@ class _DeckListPageState extends State<DeckListPage> {
       child: OfflineView(
         onRetry: () {
           // Trigger a reload or connectivity check
-          context.read<DeckBloc>().add(LoadDecks());
+          context.read<ConnectivityCubit>().checkConnection();
         },
       ),
     );

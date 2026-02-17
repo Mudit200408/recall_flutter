@@ -11,6 +11,8 @@ class AnimatedButton extends StatefulWidget {
   final Color? color;
   final Color? textColor;
   final bool isGuest;
+  final bool isSelected;
+
   const AnimatedButton({
     super.key,
     required this.text,
@@ -19,6 +21,7 @@ class AnimatedButton extends StatefulWidget {
     this.iconSide,
     this.color,
     this.textColor,
+    this.isSelected = false,
     required this.isGuest,
   });
 
@@ -33,7 +36,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.mediumImpact();
+        !widget.isSelected ? HapticFeedback.mediumImpact() : null;
         widget.onTap?.call();
       },
       onTapDown: (_) => setState(() => _isPressed = true),
@@ -41,7 +44,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 50),
-        transform: _isPressed
+        transform: _isPressed && !widget.isSelected
             ? Matrix4.translationValues(4, 4, 0)
             : Matrix4.identity(),
         constraints: BoxConstraints(minHeight: 64.r),
@@ -49,6 +52,8 @@ class _AnimatedButtonState extends State<AnimatedButton> {
           color: widget.color ?? accentColor(widget.isGuest),
           border: Border.all(color: Colors.black, width: 3),
           boxShadow: _isPressed
+              ? null
+              : widget.isSelected
               ? null
               : const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
         ),

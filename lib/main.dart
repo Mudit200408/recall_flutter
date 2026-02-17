@@ -19,6 +19,7 @@ import 'package:recall/features/recall/data/service/model_management_service.dar
 import 'package:recall/features/recall/domain/repositories/flashcard_repository.dart';
 import 'package:recall/core/network/connectivity_cubit.dart';
 import 'package:recall/core/network/connectivity_service.dart';
+import 'package:recall/core/notifications/notification_service.dart';
 import 'package:recall/features/recall/domain/services/ai_service.dart';
 import 'package:recall/features/recall/presentation/bloc/deck/deck_bloc.dart';
 import 'package:recall/features/recall/presentation/pages/deck_list_page.dart';
@@ -155,6 +156,7 @@ class _MainAppState extends State<MainApp> {
                     child: BlocProvider(
                       create: (context) => DeckBloc(
                         repository: context.read<FlashcardRepository>(),
+                        notificationService: di.sl<NotificationService>(),
                         isGuest: isGuest,
                       )..add(LoadDecks()),
                       child: child,

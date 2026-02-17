@@ -3,15 +3,9 @@ import 'package:responsive_scaler/responsive_scaler.dart';
 
 class FlashcardFace extends StatelessWidget {
   final String text;
-  final Color color;
   final String label; // "Question" or "Answer"
 
-  const FlashcardFace({
-    super.key,
-    required this.text,
-    required this.color,
-    required this.label,
-  });
+  const FlashcardFace({super.key, required this.text, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +23,7 @@ class FlashcardFace extends StatelessWidget {
         children: [
           // 1. Header Bar (Fixed Height)
           Container(
-            padding: EdgeInsets.all(16.r),
+            padding: EdgeInsets.all(26.r),
             decoration: const BoxDecoration(
               color: Color(0xFFF9E006), // brutal-yellow
               border: Border(bottom: BorderSide(color: Colors.black, width: 4)),
@@ -40,7 +34,7 @@ class FlashcardFace extends StatelessWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      Icon(Icons.memory, color: Colors.black, size: 20.r),
+                      Icon(Icons.memory, color: Colors.black, size: 24.r),
                       SizedBox(width: 8.w),
                       Flexible(
                         child: Text(
@@ -50,7 +44,7 @@ class FlashcardFace extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.black,
                             fontVariations: const [FontVariation.weight(900)],
-                            fontSize: 18,
+                            fontSize: 21,
                             letterSpacing: -0.5,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -60,16 +54,13 @@ class FlashcardFace extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 6.r, vertical: 2.r),
                   color: Colors.black,
                   child: Text(
                     label == "QUESTION" ? "ID_049" : "ID_050",
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -109,7 +100,7 @@ class FlashcardFace extends StatelessWidget {
                                     label == "QUESTION"
                                         ? "STATUS: ENCRYPTED"
                                         : "STATUS: DECRYPTED",
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Color(0x9906F957),
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
@@ -118,7 +109,7 @@ class FlashcardFace extends StatelessWidget {
                                   ),
                                   Text(
                                     "PKT_LOSS: ${label == "QUESTION" ? '0%' : '100%'}",
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Color(0x9906F957),
                                       fontSize: 12,
                                     ),
@@ -147,7 +138,7 @@ class FlashcardFace extends StatelessWidget {
                               children: [
                                 Text(
                                   text.toUpperCase(),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 24,
                                     fontWeight: FontWeight.w900,
@@ -202,7 +193,7 @@ class FlashcardFace extends StatelessWidget {
           ),
           Text(
             label == "QUESTION" ? "> " : "> DATA DECRYPTED SUCCESSFULLY.",
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.grey,
               fontSize: 11,
               fontFamily: 'monospace',

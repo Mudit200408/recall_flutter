@@ -290,6 +290,7 @@ class LoginPage extends StatelessWidget {
                                               },
                                         width: double.infinity,
                                         height: 72.h,
+                                        isOffline: isOffline,
                                       ),
                                     );
                                   },

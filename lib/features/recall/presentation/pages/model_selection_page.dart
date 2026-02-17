@@ -301,6 +301,7 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
                           ? (isActive ? Colors.grey[300] : Colors.blue[100])
                           : accentColor(widget.isSettingsMode),
                       isGuest: widget.isSettingsMode,
+                      isSelected: isActive,
                     ),
                   ),
                 ),
