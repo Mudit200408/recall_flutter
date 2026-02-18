@@ -46,10 +46,12 @@ void main() async {
     minScale: 0.8,
     maxScale: 1.2,
   );
+
+  const token = String.fromEnvironment('HUGGINGFACE_TOKEN');
+
   FlutterGemma.initialize(
     //huggingFaceToken: 'YOUR_HUGGINGFACE_TOKEN',
-    huggingFaceToken: const String.fromEnvironment('HUGGINGFACE_TOKEN'),
-
+    huggingFaceToken: token.isNotEmpty ? token : null,
     maxDownloadRetries: 10,
   );
 
