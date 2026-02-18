@@ -26,13 +26,27 @@ class DeckListPage extends StatefulWidget {
   State<DeckListPage> createState() => _DeckListPageState();
 }
 
-class _DeckListPageState extends State<DeckListPage> {
+class _DeckListPageState extends State<DeckListPage>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final authState = context.read<AuthBloc>().state;
-    if (authState is AuthAuthenticated) {
-      sl<NotificationService>().initialize(authState.user.uid);
+    final userId = authState is AuthAuthenticated ? authState.user.uid : null;
+    sl<NotificationService>().initialize(userId: userId);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<DeckBloc>().add(LoadDecks());
     }
   }
 
@@ -89,92 +103,102 @@ class _DeckListPageState extends State<DeckListPage> {
           child: Container(color: Colors.black, height: 4),
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: 12.0.r,
-                horizontal: 24.0.r,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "RECALL",
-                    style: TextStyle(
-                      fontSize: 52,
-                      letterSpacing: 4,
-                      color: Colors.black,
-                      height: 1.0,
-                      fontFamily: "ArchivoBlack",
-                    ),
-                  ),
-                  SizedBox(height: 8.0.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.0.r,
-                      vertical: 4.0.r,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      "MASTER YOUR MIND",
+      body: RefreshIndicator(
+        color: Colors.black,
+        backgroundColor: Colors.white,
+        onRefresh: () async {
+          context.read<DeckBloc>().add(LoadDecks());
+          // Artificial delay to show the spinner briefly
+          await Future.delayed(const Duration(seconds: 1));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: 12.0.r,
+                  horizontal: 24.0.r,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "RECALL",
                       style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2.0,
-                        color: Colors.white,
+                        fontSize: 52,
+                        letterSpacing: 4,
+                        color: Colors.black,
+                        height: 1.0,
+                        fontFamily: "ArchivoBlack",
                       ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 8.0.h),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.0.r,
+                        vertical: 4.0.r,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        "MASTER YOUR MIND",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          BlocBuilder<ConnectivityCubit, ConnectivityState>(
-            builder: (context, connectivityState) {
-              final isMobile = ResponsiveBreakpoints.of(context).isMobile;
-              final isOffline = connectivityState is ConnectivityOffline;
-              return BlocBuilder<DeckBloc, DeckState>(
-                builder: (context, state) {
-                  if (state is DeckLoading) {
+            BlocBuilder<ConnectivityCubit, ConnectivityState>(
+              builder: (context, connectivityState) {
+                final isMobile = ResponsiveBreakpoints.of(context).isMobile;
+                final isOffline = connectivityState is ConnectivityOffline;
+                return BlocBuilder<DeckBloc, DeckState>(
+                  builder: (context, state) {
+                    if (state is DeckLoading) {
+                      return SliverFillRemaining(
+                        child: Center(child: Loader(isGuest: widget.isGuest)),
+                      );
+                    } else if (state is DeckLoaded) {
+                      if (state.decks.isEmpty) {
+                        return SliverFillRemaining(child: _buildEmptyView());
+                      }
+                      return isOffline && !widget.isGuest
+                          ? _buildOfflineView()
+                          : _buildDeckList(state, isMobile);
+                    } else if (state is DeckError) {
+                      final message = state.message.toLowerCase();
+                      if (!widget.isGuest &&
+                          (message.contains('connection') ||
+                              message.contains('network') ||
+                              message.contains('socket') ||
+                              message.contains('offline') ||
+                              message.contains('clientexception'))) {
+                        return _buildOfflineView();
+                      }
+                      return SliverFillRemaining(
+                        child: Center(child: Text(state.message)),
+                      );
+                    }
                     return SliverFillRemaining(
                       child: Center(child: Loader(isGuest: widget.isGuest)),
                     );
-                  } else if (state is DeckLoaded) {
-                    if (state.decks.isEmpty) {
-                      return SliverFillRemaining(child: _buildEmptyView());
-                    }
-                    return isOffline && !widget.isGuest
-                        ? _buildOfflineView()
-                        : _buildDeckList(state, isMobile);
-                  } else if (state is DeckError) {
-                    final message = state.message.toLowerCase();
-                    if (!widget.isGuest &&
-                        (message.contains('connection') ||
-                            message.contains('network') ||
-                            message.contains('socket') ||
-                            message.contains('offline') ||
-                            message.contains('clientexception'))) {
-                      return _buildOfflineView();
-                    }
-                    return SliverFillRemaining(
-                      child: Center(child: Text(state.message)),
-                    );
-                  }
-                  return SliverFillRemaining(
-                    child: Center(child: Loader(isGuest: widget.isGuest)),
-                  );
-                },
-              );
-            },
-          ),
-          SliverToBoxAdapter(child: SizedBox(height: 60.0.h)),
-        ],
+                  },
+                );
+              },
+            ),
+            SliverToBoxAdapter(child: SizedBox(height: 60.0.h)),
+          ],
+        ),
       ),
 
       floatingActionButton: BlocBuilder<ConnectivityCubit, ConnectivityState>(
@@ -259,6 +283,7 @@ class _DeckListPageState extends State<DeckListPage> {
                       child: DeckCard(
                         isGuest: widget.isGuest,
                         deck: deck,
+                        isGenerating: state.generatingDeckId == deck.id,
                         onTap: () async {
                           await Navigator.push(
                             context,

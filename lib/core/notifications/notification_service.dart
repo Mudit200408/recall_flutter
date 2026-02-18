@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -7,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -15,9 +15,23 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _localPlugin =
       FlutterLocalNotificationsPlugin();
 
-  final _random = Random();
+  Future<void> initialize({String? userId}) async {
+    // 0: Initialize Timezones
+    tz.initializeTimeZones();
+    try {
+      final timeZoneName = await FlutterTimezone.getLocalTimezone();
+      debugPrint("DETECTED TIMEZONE: $timeZoneName");
+      tz.setLocalLocation(tz.getLocation(timeZoneName.toString()));
+      debugPrint("Timezone initialized to: $timeZoneName");
+    } catch (e) {
+      debugPrint(
+        "Could not get local timezone, defaulting to Asia/Kolkata: $e",
+      );
+      tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+    }
+    debugPrint("Final Local Timezone: ${tz.local.name}");
+    debugPrint("Timezones initialized");
 
-  Future<void> initialize(String userId) async {
     // 1: Request Permission
     NotificationSettings settings = await _messaging.requestPermission(
       alert: true,
@@ -28,39 +42,9 @@ class NotificationService {
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       debugPrint("Notification Permission Granted");
 
-      // 2: Get the device token (with APNS retry for iOS)
-      if (Platform.isIOS) {
-        // On iOS, wait for the APNS token before requesting FCM token.
-        // This can fail on simulators where APNS isn't supported — that's OK.
-        try {
-          String? apnsToken = await _messaging.getAPNSToken();
-          if (apnsToken == null) {
-            for (int i = 0; i < 3; i++) {
-              await Future.delayed(const Duration(seconds: 2));
-              apnsToken = await _messaging.getAPNSToken();
-              if (apnsToken != null) break;
-            }
-          }
-        } catch (e) {
-          debugPrint("APNS token not available (expected on simulator): $e");
-        }
-      }
-
-      try {
-        String? token = await _messaging.getToken();
-        if (token != null) {
-          debugPrint("FCM token: $token");
-          await _saveToken(userId, token);
-        }
-      } catch (e) {
-        debugPrint("Error getting FCM token: $e");
-      }
-
       // Initialize Local Notifications
-      tz.initializeTimeZones();
-
       const androidSettings = AndroidInitializationSettings(
-        '@mipmap/ic_launcher',
+        '@mipmap/launcher_icon',
       );
       const iosSettings = DarwinInitializationSettings();
 
@@ -70,6 +54,48 @@ class NotificationService {
           iOS: iosSettings,
         ),
       );
+      debugPrint("Local Notifications Plugin Initialized");
+
+      // Request Android 13+ Notification Permission & Exact Alarms
+      final androidImplementation = _localPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+
+      if (androidImplementation != null) {
+        await androidImplementation.requestNotificationsPermission();
+        await androidImplementation.requestExactAlarmsPermission();
+      }
+
+      // 2: Get the device token (with APNS retry for iOS) — skip for guests
+      if (userId != null) {
+        if (Platform.isIOS) {
+          // On iOS, wait for the APNS token before requesting FCM token.
+          // This can fail on simulators where APNS isn't supported — that's OK.
+          try {
+            String? apnsToken = await _messaging.getAPNSToken();
+            if (apnsToken == null) {
+              for (int i = 0; i < 3; i++) {
+                await Future.delayed(const Duration(seconds: 2));
+                apnsToken = await _messaging.getAPNSToken();
+                if (apnsToken != null) break;
+              }
+            }
+          } catch (e) {
+            debugPrint("APNS token not available (expected on simulator): $e");
+          }
+        }
+
+        try {
+          String? token = await _messaging.getToken();
+          if (token != null) {
+            debugPrint("FCM token: $token");
+            await _saveToken(userId, token);
+          }
+        } catch (e) {
+          debugPrint("Error getting FCM token: $e");
+        }
+      }
 
       // 3: Listen for Foreground Messages
       // (If the app is open, the notification doesn't pop up automatically. We handle it here.)
@@ -93,6 +119,7 @@ class NotificationService {
     DateTime dueDate, {
     String? deckTitle,
   }) async {
+    debugPrint("Attempting to schedule study reminder for $dueDate");
     var scheduledDate = tz.TZDateTime.from(dueDate, tz.local);
 
     final title = deckTitle != null
@@ -105,6 +132,15 @@ class NotificationService {
     // Use deckTitle hashCode for unique ID so notifications don't overwrite each other
     final notificationId = deckTitle?.hashCode.abs() ?? 0;
 
+    debugPrint("Current time (local): ${tz.TZDateTime.now(tz.local)}");
+    debugPrint("Scheduled time: $scheduledDate");
+
+    if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) {
+      debugPrint("WARNING: Scheduled time is in the past!");
+      // Optional: Bump it to the future for testing
+      // scheduledDate = scheduledDate.add(const Duration(minutes: 1));
+    }
+
     await _localPlugin.zonedSchedule(
       id: notificationId,
       title: title,
@@ -112,104 +148,39 @@ class NotificationService {
       scheduledDate: scheduledDate,
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
-          'recall_study_channel',
+          'recall_study_channel_v2', // Changed ID to force update
           'Study Reminders',
-          importance: Importance.high,
+          importance: Importance.max,
           priority: Priority.high,
+          enableLights: true,
+          enableVibration: true,
+          playSound: true,
         ),
         iOS: DarwinNotificationDetails(),
       ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode:
+          AndroidScheduleMode.exactAllowWhileIdle, // Changed to exact
     );
 
     debugPrint("Scheduled reminder for: $scheduledDate (deck: $deckTitle)");
+
+    final pendingNotifications = await _localPlugin
+        .pendingNotificationRequests();
+    debugPrint("🔔 --- PENDING NOTIFICATIONS ---");
+    for (var notification in pendingNotifications) {
+      debugPrint(
+        "ID: ${notification.id} | Title: ${notification.title} | Body: ${notification.body} | Payload: ${notification.payload}",
+      );
+    }
+    debugPrint("🔔 -----------------------------");
   }
 
-  // ── Instant Notification: New Deck Ready ─────────────────────────────
-
-  static const _newDeckTitles = [
-    '🔥 Fresh cards dropped!',
-    '🚀 New batch unlocked!',
-    '🎯 Cards incoming!',
-    '⚡ Level up time!',
-    '🧠 Brain fuel ready!',
-  ];
-
-  static const _newDeckBodies = [
-    'Your "{DECK}" deck just got new cards. Tap to play!',
-    '"{DECK}" has fresh cards waiting. Don\'t leave them hanging!',
-    'New "{DECK}" cards are hot off the press. Go crush them! 💪',
-    '"{DECK}" restocked! Time to recall like a boss.',
-    'Your "{DECK}" deck leveled up with new cards. Let\'s go! 🎮',
-  ];
-
-  Future<void> notifyNewDeckReady(String deckTitle) async {
-    final title = _newDeckTitles[_random.nextInt(_newDeckTitles.length)];
-    final body = _newDeckBodies[_random.nextInt(_newDeckBodies.length)]
-        .replaceAll('{DECK}', deckTitle);
-
-    final notificationId = ('new_$deckTitle').hashCode.abs() % 100000;
-
-    await _localPlugin.show(
-      id: notificationId,
-      title: title,
-      body: body,
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'recall_deck_ready_channel',
-          'New Deck Ready',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
+  Future<void> cancelNotification(String deckTitle) async {
+    final notificationId = deckTitle.hashCode.abs();
+    await _localPlugin.cancel(id: notificationId);
+    debugPrint(
+      "Cancelled notification for deck: $deckTitle (ID: $notificationId)",
     );
-
-    debugPrint("🔔 Notified: new deck ready for \"$deckTitle\"");
-  }
-
-  // ── Instant Notification: Skipped Day ────────────────────────────────
-
-  static const _skippedTitles = [
-    '😬 You missed a day!',
-    '👀 Where\'d you go?',
-    '💀 Streak broken!',
-    '🫠 Cards are lonely...',
-    '⏰ Comeback time!',
-  ];
-
-  static const _skippedBodies = [
-    '"{DECK}" misses you. Jump back in before you forget! 🧠',
-    'You skipped {DAYS} day(s) on "{DECK}". Your brain cells are crying.',
-    '"{DECK}" cards are gathering dust. Tap to revive your streak!',
-    '{DAYS} day(s) without "{DECK}"?! Let\'s fix that right now. 💪',
-    'Your "{DECK}" deck is feeling neglected. Show it some love! ❤️',
-  ];
-
-  Future<void> notifySkippedDay(String deckTitle, int daysSkipped) async {
-    final title = _skippedTitles[_random.nextInt(_skippedTitles.length)];
-    final body = _skippedBodies[_random.nextInt(_skippedBodies.length)]
-        .replaceAll('{DECK}', deckTitle)
-        .replaceAll('{DAYS}', daysSkipped.toString());
-
-    final notificationId = ('skip_$deckTitle').hashCode.abs() % 100000;
-
-    await _localPlugin.show(
-      id: notificationId,
-      title: title,
-      body: body,
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'recall_skipped_channel',
-          'Skipped Days',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
-    );
-
-    debugPrint("🔔 Notified: skipped $daysSkipped day(s) for \"$deckTitle\"");
   }
 
   //4: Save Token to Firestore

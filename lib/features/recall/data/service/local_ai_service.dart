@@ -53,35 +53,36 @@ Example:
       throw Exception("Model returned Empty text");
     }
 
-    // Attempt to extract JSON array using regex if the response is cluttered
-    String contentToParse = responseText;
-    final jsonArrayRegex = RegExp(r'\[.*\]', dotAll: true);
-    final match = jsonArrayRegex.firstMatch(responseText);
-    if (match != null) {
-      contentToParse = match.group(0)!;
+    // 1. Strip Markdown code blocks if present
+    String cleanResponse = responseText;
+    if (cleanResponse.contains('```json')) {
+      cleanResponse = cleanResponse
+          .replaceAll('```json', '')
+          .replaceAll('```', '');
+    } else if (cleanResponse.contains('```')) {
+      cleanResponse = cleanResponse.replaceAll('```', '');
+    }
+
+    // 2. Find the JSON array (first [ and last ])
+    final int startIndex = cleanResponse.indexOf('[');
+    final int endIndex = cleanResponse.lastIndexOf(']');
+
+    if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+      cleanResponse = cleanResponse.substring(startIndex, endIndex + 1);
+
+      // Fix: Ensure commas between objects (common model error)
+      cleanResponse = cleanResponse.replaceAll(RegExp(r'\}\s*\{'), '}, {');
+    } else {
+      debugPrint("Gemma Raw Response (No JSON found): $responseText");
+      throw const FormatException("Could not find JSON array in response");
     }
 
     try {
-      final result = await compute(_parseFlashcardsJson, contentToParse);
+      final result = await compute(_parseFlashcardsJson, cleanResponse);
       return result;
     } catch (e) {
-      debugPrint("Gemma JSON Parse Error: $responseText");
-
-      // Fallback: Try to repair the JSON or parse loosely if it's really broken
-      // This is a simple fallback for common small-model errors like missing closing brackets
-      try {
-        contentToParse = contentToParse.trim();
-        if (!contentToParse.endsWith(']')) {
-          // Try appending closing bracket
-          final int lastBrace = contentToParse.lastIndexOf('}');
-          if (lastBrace != -1) {
-            contentToParse = '${contentToParse.substring(0, lastBrace + 1)}]';
-            final result = await compute(_parseFlashcardsJson, contentToParse);
-            return result;
-          }
-        }
-      } catch (_) {}
-
+      debugPrint("Gemma JSON Parse Error: $e");
+      debugPrint("Attempted to parse: $cleanResponse");
       rethrow;
     }
   }

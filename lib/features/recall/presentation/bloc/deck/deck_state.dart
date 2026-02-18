@@ -4,7 +4,7 @@ sealed class DeckState extends Equatable {
   const DeckState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class DeckInitial extends DeckState {}
@@ -13,14 +13,15 @@ class DeckLoading extends DeckState {}
 
 class DeckLoaded extends DeckState {
   final List<Deck> decks;
-  const DeckLoaded({required this.decks});
+  final String? generatingDeckId;
+  const DeckLoaded({required this.decks, this.generatingDeckId});
   @override
-  List<Object> get props => [decks];
+  List<Object?> get props => [decks, generatingDeckId];
 }
 
 class DeckError extends DeckState {
   final String message;
   const DeckError({required this.message});
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
 }

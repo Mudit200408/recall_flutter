@@ -16,6 +16,12 @@ class Deck extends Equatable {
   final int skippedDays;
   final DateTime? lastPlayedDate;
 
+  bool get isAvailable {
+    if (lastGeneratedDate == null) return false;
+    if (lastPlayedDate == null) return true;
+    return lastGeneratedDate!.isAfter(lastPlayedDate!);
+  }
+
   const Deck({
     required this.id,
     required this.title,

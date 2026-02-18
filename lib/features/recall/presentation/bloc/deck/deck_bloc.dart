@@ -45,7 +45,6 @@ List<DeckAction> _analyzeDeckActions(List<Deck> decks) {
     final lastGenerated = deck.lastGeneratedDate;
     if (lastGenerated != null) {
       final differenceInHours = now.difference(lastGenerated).inHours;
-
       if (differenceInHours >= 20) {
         // Check if user has played the latest batch
         final hasPlayedLatestBatch =
@@ -55,6 +54,7 @@ List<DeckAction> _analyzeDeckActions(List<Deck> decks) {
         if (hasPlayedLatestBatch) {
           // User played — check cooldown + remaining days before generating
           final hoursSincePlayed = now.difference(deck.lastPlayedDate!).inHours;
+
           if (hoursSincePlayed >= 20 &&
               deck.scheduledDays > deck.daysGenerated) {
             // Cooldown met + more days to generate → generate next batch
@@ -90,6 +90,7 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
   final NotificationService notificationService;
   final bool isGuest;
   bool _isGenerating = false; // Guard against concurrent generation
+  String? _generatingDeckId;
 
   DeckBloc({
     required this.repository,
@@ -107,7 +108,7 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
     }
     try {
       final decks = await repository.getDecks();
-      emit(DeckLoaded(decks: decks));
+      emit(DeckLoaded(decks: decks, generatingDeckId: _generatingDeckId));
 
       // Skip generation checks if already generating
       if (_isGenerating) return;
@@ -118,30 +119,38 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
       for (final action in actions) {
         switch (action.type) {
           case DeckActionType.delete:
+            final deckToDelete = decks.firstWhere((d) => d.id == action.deckId);
+            await notificationService.cancelNotification(deckToDelete.title);
             await repository.deleteDeck(action.deckId);
             needsReload = true;
             break;
           case DeckActionType.generate:
             _isGenerating = true;
+            _generatingDeckId = action.deckId;
             try {
+              emit(
+                DeckLoaded(decks: decks, generatingDeckId: _generatingDeckId),
+              );
+
               final deck = decks.firstWhere((d) => d.id == action.deckId);
               await repository.generateMoreCards(deck);
-              notificationService.notifyNewDeckReady(deck.title);
+              // notificationService.notifyNewDeckReady(deck.title);
             } finally {
               _isGenerating = false;
+              _generatingDeckId = null;
             }
             needsReload = true;
             break;
           case DeckActionType.registerSkip:
-            final skippedDeck = decks.firstWhere((d) => d.id == action.deckId);
+            // final skippedDeck = decks.firstWhere((d) => d.id == action.deckId);
             await repository.registerSkippedDay(
               action.deckId,
               action.skippedDaysIncrement!,
             );
-            notificationService.notifySkippedDay(
-              skippedDeck.title,
-              action.skippedDaysIncrement!,
-            );
+            // notificationService.notifySkippedDay(
+            //   skippedDeck.title,
+            //   action.skippedDaysIncrement!,
+            // );
             needsReload = true;
             break;
         }
@@ -192,6 +201,16 @@ class DeckBloc extends Bloc<DeckEvent, DeckState> {
     DeleteDeck event,
     Emitter<DeckState> emit,
   ) async {
+    if (state is DeckLoaded) {
+      try {
+        final deck = (state as DeckLoaded).decks.firstWhere(
+          (d) => d.id == event.deckId,
+        );
+        await notificationService.cancelNotification(deck.title);
+      } catch (_) {
+        // Deck not found in current state, proceed anyway
+      }
+    }
     emit(DeckLoading());
     try {
       await repository.deleteDeck(event.deckId);

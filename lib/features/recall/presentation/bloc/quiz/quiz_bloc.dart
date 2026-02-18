@@ -121,12 +121,15 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
           // Handle Deletion
           if (shouldDelete) {
+            await notificationService.cancelNotification(
+              currentState.deck.title,
+            );
             await repository.deleteDeck(currentState.deck.id);
           } else {
             // Only schedule reminder if NOT deleted
-            final tomorrow = DateTime.now().add(const Duration(days: 1));
+            final nextReview = DateTime.now().add(const Duration(hours: 20));
             notificationService.scheduleStudyReminder(
-              tomorrow,
+              nextReview,
               deckTitle: currentState.deck.title,
             );
           }
