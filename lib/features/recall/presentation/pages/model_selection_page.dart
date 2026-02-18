@@ -12,7 +12,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ModelSelectionPage extends StatefulWidget {
   final bool isSettingsMode;
-  const ModelSelectionPage({super.key, this.isSettingsMode = false});
+  final bool isGuest;
+  const ModelSelectionPage({
+    super.key,
+    this.isSettingsMode = false,
+    this.isGuest = true,
+  });
 
   @override
   State<ModelSelectionPage> createState() => _ModelSelectionPageState();
@@ -210,7 +215,7 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: accentColor(widget.isSettingsMode),
+                    color: accentColor(widget.isGuest),
                     border: Border.all(color: Colors.black, width: 2),
                   ),
                   child: Text(
@@ -269,7 +274,7 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
                 Expanded(
                   child: ProgressBar(
                     progress: progress / 100,
-                    isGuest: widget.isSettingsMode,
+                    isGuest: widget.isGuest,
                   ),
                 ),
                 Padding(
@@ -299,8 +304,8 @@ class _ModelSelectionPageState extends State<ModelSelectionPage> {
                       onTap: isActive ? null : () => _onActivate(model),
                       color: isDownloaded
                           ? (isActive ? Colors.grey[300] : Colors.blue[100])
-                          : accentColor(widget.isSettingsMode),
-                      isGuest: widget.isSettingsMode,
+                          : accentColor(widget.isGuest),
+                      isGuest: widget.isGuest,
                       isSelected: isActive,
                     ),
                   ),
