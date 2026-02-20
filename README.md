@@ -20,6 +20,9 @@ Recall is a personal project designed to explore the integration of **AI (On-Dev
 ## 📸 Screenshots
 <img src="screenshot/screenshot.png" />
 
+## 🎥 Recording
+https://github.com/user-attachments/assets/2ef08b94-230c-4c28-87ac-75f91b10cbfb
+
 ---
 
 ## 🛠 Tech Stack
@@ -29,6 +32,36 @@ Recall is a personal project designed to explore the integration of **AI (On-Dev
 -   **AI**: `flutter_gemma` (Local), Google Gemini (Cloud)
 -   **Backend**: Firebase (Auth, Firestore)
 -   **UI**: `responsive_framework` + `responsive_scaler`, Custom Neo-Brutalist widgets
+
+---
+
+## 📁 Project Architecture
+
+This project follows **Clean Architecture** principles structured by **Features** to ensure scalability, separation of concerns, and maintainability.
+
+```text
+lib/
+├── core/                       # Shared app-wide functionality
+│   ├── configs/                # App configuration (e.g. Gemini/HuggingFace keys)
+│   ├── database/               # Local persistence and storage
+│   ├── network/                # Network abstractions
+│   ├── notifications/          # Local push notifications setup
+│   ├── theme/                  # Neo-brutalist styling & custom colors
+│   ├── usecases/               # Base UseCase classes
+│   ├── utils/                  # Helper extensions and formatting functions
+│   └── widgets/                # Common reusable UI components
+├── features/                   # Feature-based, independent modules
+│   ├── auth/                   # Authentication feature
+│   │   ├── data/               # API clients, DTOs, DataSources
+│   │   ├── domain/             # Entities, Repository Interfaces, UseCases
+│   │   └── presentation/       # UI Pages, Auth BLoC, Auth Widgets
+│   └── recall/                 # Core AI flashcard & learning feature
+│       ├── data/               # Models, Local/Remote DataSources, AI Services
+│       ├── domain/             # Core business logic (Deck, Cards, Repositories)
+│       └── presentation/       # UI Pages, DeckBloc, QuizBloc, Feature Widgets
+├── injection_container.dart    # Dependency Injection setup (GetIt)
+└── main.dart                   # Application entry point
+```
 
 ---
 
