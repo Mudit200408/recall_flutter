@@ -1,5 +1,7 @@
 # Recall 🧠
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Recall is a personal project designed to explore the integration of **AI (On-Device + Cloud)** into mobile apps while pushing the boundaries of UI design with a **Neo-Brutalist** aesthetic. It aims to make learning engaging through gamification and automated flashcard generation.
 
 ## 🚀 Features
@@ -127,3 +129,9 @@ flutter build apk --release --dart-define-from-file=config.json
 ```
 
 ---
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
